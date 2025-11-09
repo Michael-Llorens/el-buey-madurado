@@ -37,8 +37,8 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-10 text-gray-200 font-medium">
           <NavLink href="/Home">Home</NavLink>
           <NavLink href="/carta">Carta</NavLink>
-          <NavLink href="#sobre-nosotros">Sobre Nosotros</NavLink>
-          <NavLink href="#contacto">Contacto</NavLink>
+          <NavLink href="/SobreNosotros">Sobre Nosotros</NavLink>
+          <NavLink href="/Contacto">Contacto</NavLink>
         </ul>
 
         {/* Botón desktop */}
