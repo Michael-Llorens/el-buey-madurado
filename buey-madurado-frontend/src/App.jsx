@@ -11,7 +11,7 @@ import Footer from "./components/Footer/Footer";
 function App() {
   return (
     <Router>
-      <main className="relative min-h-screen bg-amber-950 overflow-x-hidden">
+      <main className="relative min-h-screen bg-[#160a00] overflow-x-hidden">
         <Navbar />
 
         <div className="pt-20">

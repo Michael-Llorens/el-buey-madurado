@@ -14,14 +14,15 @@ export default function FooterHorario() {
         <a
           href="tel:+34670775786"
           aria-label="Llamar ahora"
-          className="inline-block px-5 py-2 rounded-full font-semibold bg-amber-500 text-[#1a1410]
-          hover:bg-[#1a1410] hover:text-amber-500 border-2 border-amber-500
-          transform hover:scale-105 transition-all duration-300 text-sm shadow-md"
+          className="inline-flex items-center px-5 py-2 rounded-full font-semibold bg-amber-500 text-[#1a1410]
+      hover:bg-[#1a1410] hover:text-amber-500 border-2 border-amber-500
+      transform hover:scale-105 transition-all duration-300 text-sm shadow-md"
         >
-          <FaPhoneAlt className="inline-block transform scale-x-[-1] mr-3" />
+          <FaPhoneAlt className="mr-3 text-lg" />
           Llamar ahora
         </a>
       </div>
+
     </div>
   );
 }

@@ -4,7 +4,7 @@ const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       ssl: true,
-      tlsAllowInvalidCertificates: true, // 🔧 desarrollo en Windows
+      tlsAllowInvalidCertificates: true,
     });
     console.log("✅ MongoDB conectado correctamente");
   } catch (error) {

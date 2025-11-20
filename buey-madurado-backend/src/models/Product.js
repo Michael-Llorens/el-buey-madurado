@@ -1,15 +1,24 @@
 import mongoose from "mongoose";
+import "./Ingredientes.js";
 
-const productSchema = new mongoose.Schema(
-  {
-    nombre: { type: String, required: true },
-    descripcion: { type: String, required: true },
-    precio: { type: Number, required: true },
-    categoria: { type: String, enum: ["hamburguesa", "entrante", "postre"], required: true },
-    imagen: { type: String }, // opcional, por si más adelante agregas URLs de imágenes
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+
+  // Tipos ampliados
+  type: {
+    type: String,
+    enum: ["hamburguesa", "sandwich", "postre", "bebida", "entrante", "carne"],
+    required: true
   },
-  { timestamps: true }
-);
 
-const Product = mongoose.model("Product", productSchema);
-export default Product;
+  price: { type: Number, required: true },
+  description: { type: String },
+
+  ingredients: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Ingredient" }
+  ],
+
+  allowExtras: { type: Boolean, default: true }
+});
+
+export default mongoose.model("Product", productSchema);
