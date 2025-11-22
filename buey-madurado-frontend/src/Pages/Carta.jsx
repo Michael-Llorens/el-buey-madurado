@@ -3,7 +3,7 @@ import axios from "axios";
 import Button from "../components/Button";
 
 export default function Carta() {
-  const [categoria, setCategoria] = useState("entrante");
+  const [categoria, setCategoria] = useState("todos");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [productos, setProductos] = useState([]);
   const [productoActual, setProductoActual] = useState({
@@ -18,6 +18,7 @@ export default function Carta() {
     { label: "Entrantes", value: "entrante" },
     { label: "Hamburguesas", value: "hamburguesa" },
     { label: "Postres", value: "postre" },
+    { label: "Bebidas", value: "bebida" },
   ];
 
   const tiposProducto = [
@@ -129,6 +130,14 @@ export default function Carta() {
 
       {/* 🔹 Botones de filtro */}
       <div className="flex justify-center gap-4 my-6 flex-wrap">
+        {/* 🔹 Botón para mostrar todos los productos */}
+        <Button
+          variant={categoria === "todos" ? "primary_carta" : "secondary_carta"}
+          className="px-6 py-3 text-base md:text-lg"
+          onClick={() => setCategoria("todos")}
+        >
+          Mostrar Todos
+        </Button>
         {categorias.map((cat) => (
           <Button
             key={cat.value}
@@ -139,7 +148,10 @@ export default function Carta() {
             {cat.label}
           </Button>
         ))}
+
+
       </div>
+
 
       {/* 🔹 Botón añadir producto */}
       <div className="flex justify-center my-6">
