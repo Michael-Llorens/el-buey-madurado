@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "../../components/Button";
+import Button from "../Button";
 import hamburguesaInicio from "../../assets/images/hamburgesa-inicio.png"; 
 
 export default function HeroSection() {

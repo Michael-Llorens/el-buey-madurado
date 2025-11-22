@@ -1,7 +1,7 @@
 // FooterSocial.jsx
 import React from "react";
 import { FaInstagram, FaFacebookF, FaEnvelope } from "react-icons/fa";
-import SocialButton from "../../components/SocialButtom"; // ruta correcta
+import SocialButton from "./SocialButtom";
 
 export default function FooterSocial() {
   return (

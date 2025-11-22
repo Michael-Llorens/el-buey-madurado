@@ -21,10 +21,24 @@ export default function Button({ children, variant = "primary", size = "md", cla
       ${base}
     `,
     secondary: `
-      bg-white text-amber-900 border border-amber-900
-      hover:bg-amber-100
+      bg-black text-amber-500 border border-amber-900 
+      hover:bg-amber-500 hover:text-[#1a1410]
+      hover:border-amber-500
       ${base}
     `,
+    primary_carta: `
+      bg-amber-500 text-[#1a1410]
+      hover:bg-[#1a1410] hover:text-amber-500
+      hover:border-amber-500
+      ${base}
+    `,
+    secondary_carta: `
+      bg-black text-amber-500 border-amber-900 
+      hover:bg-amber-500 hover:text-[#1a1410]
+      hover:border-amber-500
+      ${base}
+    `,
+    
   };
 
   return (

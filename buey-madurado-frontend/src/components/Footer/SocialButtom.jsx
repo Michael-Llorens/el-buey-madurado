@@ -1,5 +1,5 @@
 import React from "react";
-import "../components/SocialButtom.css";
+import "./SocialButtom.css";
 
 export default function SocialButton({ href, ariaLabel, children }) {
   return (
