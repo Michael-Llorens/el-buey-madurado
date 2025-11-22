@@ -35,7 +35,7 @@ export default function Navbar() {
 
         {/* Menú desktop */}
         <ul className="hidden md:flex items-center gap-10 text-gray-200 font-medium">
-          <NavLink href="/Home">Home</NavLink>
+          <NavLink href="/">Home</NavLink>
           <NavLink href="/carta">Carta</NavLink>
           <NavLink href="/SobreNosotros">Sobre Nosotros</NavLink>
           <NavLink href="/Contacto">Contacto</NavLink>
