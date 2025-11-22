@@ -10,7 +10,7 @@ export default function ProductoList({ categoria, onEditar, onEliminar }) {
   useEffect(() => {
     const fetchProductos = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/productos`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/productos`);
         setProductos(response.data);
       } catch {
         setError("Error al cargar los productos");
