@@ -67,9 +67,10 @@ export default function Navbar() {
         style={{ minWidth: "220px", maxWidth: "280px" }}
       >
         <ul className="flex flex-col items-start p-6 space-y-4">
-          <NavLink href="#carta">Carta</NavLink>
-          <NavLink href="#sobre-nosotros">Sobre Nosotros</NavLink>
-          <NavLink href="#contacto">Contacto</NavLink>
+          <NavLink href="/">Home</NavLink>
+          <NavLink href="/carta">Carta</NavLink>
+          <NavLink href="/sobre-nosotros">Sobre Nosotros</NavLink>
+          <NavLink href="/contacto">Contacto</NavLink>
           <Button variant="primary" size="md">Reservar</Button>
         </ul>
       </div>
