@@ -48,8 +48,6 @@ _________________________
 - [Express.js](https://expressjs.com/)
 - [MongoDB Atlas](https://www.mongodb.com/atlas/database)
 - [Mongoose](https://mongoosejs.com/)
-- [dotenv](https://www.npmjs.com/package/dotenv)
-- [Cors](https://www.npmjs.com/package/cors)
 
 _________________________
 
