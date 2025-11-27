@@ -69,7 +69,7 @@ export default function Navbar() {
         <ul className="flex flex-col items-start p-6 space-y-4">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/carta">Carta</NavLink>
-          <NavLink href="/sobre-nosotros">Sobre Nosotros</NavLink>
+          <NavLink href="/SobreNosotros">Sobre Nosotros</NavLink>
           <NavLink href="/contacto">Contacto</NavLink>
           <Button variant="primary" size="md">Reservar</Button>
         </ul>
