@@ -1,7 +1,7 @@
-// src/pages/Carta.jsx
 import { useState } from "react";
 import { menuItems } from "../data/menu";
 import { menuImages } from "../assets/menu";
+import "./Carta.css";
 
 const slides = [
   { key: "Entrantes", titulo: "Entrantes" },
@@ -12,35 +12,69 @@ const slides = [
 
 export default function Carta() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [nextSlide, setNextSlide] = useState(null);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [animationDirection, setAnimationDirection] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const handlePrev = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    
+    // Calcular el siguiente slide
+    const newSlide = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+    
     setAnimationDirection("right");
+    setNextSlide(newSlide);
+    
+    // Cambiar slide después de 1s (cuando la vieja está a mitad)
     setTimeout(() => {
-      setCurrentSlide((prev) =>
-        prev === 0 ? slides.length - 1 : prev - 1
-      );
+      setCurrentSlide(newSlide);
+    }, 1000);
+    
+    // Limpiar y finalizar después de 2s
+    setTimeout(() => {
+      setNextSlide(null);
       setAnimationDirection(null);
-    }, 300);
+      setIsAnimating(false);
+    }, 2000);
   };
 
   const handleNext = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    
+    // Calcular el siguiente slide
+    const newSlide = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
+    
     setAnimationDirection("left");
+    setNextSlide(newSlide);
+    
+    // Cambiar slide después de 1s (cuando la vieja está a mitad)
     setTimeout(() => {
-      setCurrentSlide((prev) =>
-        prev === slides.length - 1 ? 0 : prev + 1
-      );
+      setCurrentSlide(newSlide);
+    }, 1000);
+    
+    // Limpiar y finalizar después de 2s
+    setTimeout(() => {
+      setNextSlide(null);
       setAnimationDirection(null);
-    }, 300);
+      setIsAnimating(false);
+    }, 2000);
   };
 
   const activeCategoria = slides[currentSlide].key;
   const activoTitulo = slides[currentSlide].titulo;
+  const nextCategoria = nextSlide !== null ? slides[nextSlide].key : null;
+  const nextTitulo = nextSlide !== null ? slides[nextSlide].titulo : null;
 
   const productosFiltrados = menuItems.filter(
     (item) => item.categoria === activeCategoria
   );
+
+  const nextProductosFiltrados = nextSlide !== null
+    ? menuItems.filter((item) => item.categoria === nextCategoria)
+    : [];
 
   const handleAbrirProducto = (producto) => {
     setProductoSeleccionado(producto);
@@ -52,207 +86,174 @@ export default function Carta() {
     document.body.style.overflow = "auto";
   };
 
-  // Clases de animación
-  const getAnimationClass = () => {
-    if (animationDirection === "left") {
-      return "animate-slide-out-left";
-    }
-    if (animationDirection === "right") {
-      return "animate-slide-out-right";
-    }
-    return "animate-slide-in";
-  };
+  // Función para renderizar el contenido de la carta
+  const renderCartaContent = (categoria, titulo, productos) => (
+    <>
+      {/* Decoración esquinas */}
+      <div className="carta-corner carta-corner-top-left"></div>
+      <div className="carta-corner carta-corner-top-right"></div>
+      <div className="carta-corner carta-corner-bottom-left"></div>
+      <div className="carta-corner carta-corner-bottom-right"></div>
+
+      {/* Contenido */}
+      <div className="carta-content">
+        {/* Título de categoría */}
+        <div className="carta-category-header">
+          <div className="carta-decorative-line"></div>
+          <h2 className="carta-category-title">{titulo}</h2>
+          <div className="carta-decorative-line"></div>
+        </div>
+
+        {/* Grid de productos */}
+        {productos.length > 0 ? (
+          <div className="carta-products-grid">
+            {productos.map((producto) => (
+              <div
+                key={producto.id}
+                className="carta-product-item"
+                onClick={() => handleAbrirProducto(producto)}
+              >
+                {/* Imagen del producto */}
+                {menuImages[producto.id] && (
+                  <div className="carta-product-image-wrapper">
+                    <img
+                      src={menuImages[producto.id]}
+                      alt={producto.nombre}
+                      loading="lazy"
+                      className="carta-product-image"
+                    />
+                  </div>
+                )}
+
+                {/* Info del producto */}
+                <div className="carta-product-info">
+                  <div className="carta-product-header">
+                    <h3 className="carta-product-name">
+                      {producto.nombre}
+                    </h3>
+                    <span className="carta-product-price">
+                      {producto.precio.toFixed(2)} €
+                    </span>
+                  </div>
+
+                  <p className="carta-product-description">
+                    {producto.descripcion}
+                  </p>
+
+                  {/* Detalles */}
+                  <div className="carta-product-details">
+                    {producto.detalle && (
+                      <p className="carta-detail-item">
+                        • {producto.detalle}
+                      </p>
+                    )}
+                    {producto.incluye && (
+                      <p className="carta-detail-item">
+                        • {producto.incluye}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="carta-empty">
+            <p>No hay productos en esta categoría</p>
+          </div>
+        )}
+      </div>
+
+      {/* Pie de página */}
+      <div className="carta-footer">
+        <p className="carta-footer-text">
+          Av. de Selgas, 5 - 46800 Xàtiva, Valencia • +34 600 000 000
+        </p>
+      </div>
+    </>
+  );
 
   return (
-    <section className="min-h-screen pt-16 sm:pt-20 md:pt-24 px-2 sm:px-4 md:px-6 pb-8 sm:pb-12 md:pb-16 bg-gradient-to-b from-black via-gray-950 to-black">
-      <style>{`
-        @keyframes slideOutLeft {
-          0% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(-100%);
-          }
-        }
-
-        @keyframes slideOutRight {
-          0% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateX(100%);
-          }
-        }
-
-        @keyframes slideIn {
-          0% {
-            opacity: 0;
-            transform: translateX(0);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        .animate-slide-out-left {
-          animation: slideOutLeft 0.3s ease-in-out;
-        }
-
-        .animate-slide-out-right {
-          animation: slideOutRight 0.3s ease-in-out;
-        }
-
-        .animate-slide-in {
-          animation: slideIn 0.3s ease-in-out;
-        }
-      `}</style>
-
-      <div className="max-w-7xl mx-auto w-full">
+    <section className="carta-section">
+      <div className="carta-container">
         {/* Encabezado */}
-        <div className="text-center mb-6 sm:mb-8 md:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-amber-300 mb-2 sm:mb-3 drop-shadow-lg">
-            Nuestra Carta
-          </h1>
-          <p className="text-gray-300 max-w-2xl mx-auto text-xs sm:text-sm md:text-lg px-2">
+        {/* <div className="carta-header">
+          <h1 className="carta-title">Nuestra Carta</h1>
+          <p className="carta-subtitle">
             Descubre nuestras especialidades elaboradas con carne madurada
             y productos de proximidad.
           </p>
-        </div>
+        </div> */}
 
-        {/* Contenedor principal tipo "hoja de carta" */}
-        <div className="flex items-stretch justify-between gap-2 sm:gap-4 md:gap-8">
+        {/* Contenedor principal */}
+        <div className="carta-wrapper">
           {/* Botón izquierda */}
           <button
             onClick={handlePrev}
-            className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black font-bold rounded-full flex items-center justify-center shadow-2xl transition transform hover:scale-110 active:scale-95 hover:shadow-amber-400/50"
+            className="carta-button carta-button-prev"
             aria-label="Categoría anterior"
             title="Página anterior"
+            disabled={isAnimating}
           >
-            <span className="text-lg sm:text-xl md:text-2xl">&#x2190;</span>
+            <span className="carta-button-icon">&#x2190;</span>
           </button>
 
           {/* Contenedor de carta tipo "página" */}
-          <div className="flex-1 min-w-0">
-            {/* Efecto de sombra de carta */}
-            <div className="relative bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-2xl p-4 sm:p-6 md:p-8 lg:p-12 border border-sm:border-2 border-amber-200">
-              {/* Decoración esquinas tipo carta antigua - visible solo en desktop */}
-              <div className="hidden sm:block absolute top-3 sm:top-4 left-3 sm:left-4 w-4 sm:w-6 h-4 sm:h-6 border-l-2 border-t-2 border-amber-400 opacity-50"></div>
-              <div className="hidden sm:block absolute top-3 sm:top-4 right-3 sm:right-4 w-4 sm:w-6 h-4 sm:h-6 border-r-2 border-t-2 border-amber-400 opacity-50"></div>
-              <div className="hidden sm:block absolute bottom-3 sm:bottom-4 left-3 sm:left-4 w-4 sm:w-6 h-4 sm:h-6 border-l-2 border-b-2 border-amber-400 opacity-50"></div>
-              <div className="hidden sm:block absolute bottom-3 sm:bottom-4 right-3 sm:right-4 w-4 sm:w-6 h-4 sm:h-6 border-r-2 border-b-2 border-amber-400 opacity-50"></div>
-
-              {/* Contenedor animado */}
-              <div className={`${getAnimationClass()}`}>
-                {/* Título de categoría con línea decorativa */}
-                <div className="mb-4 sm:mb-6 md:mb-10 text-center">
-                  <div className="flex items-center justify-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                    <div className="h-0.5 sm:h-1 w-6 sm:w-12 bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"></div>
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-amber-900">
-                      {activoTitulo}
-                    </h2>
-                    <div className="h-0.5 sm:h-1 w-6 sm:w-12 bg-gradient-to-l from-amber-600 to-amber-400 rounded-full"></div>
-                  </div>
-                  <p className="text-amber-700 text-xs sm:text-sm italic">El Buey Madurado</p>
-                </div>
-
-                {/* Grid de productos */}
-                {productosFiltrados.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-                    {productosFiltrados.map((producto) => (
-                      <div
-                        key={producto.id}
-                        className="border-b-2 sm:border-b-2 border-dashed border-amber-400/40 pb-3 sm:pb-4 md:pb-6 last:border-b-0 last:pb-0 group"
-                      >
-                        {/* Nombre y precio */}
-                        <div
-                          onClick={() => handleAbrirProducto(producto)}
-                          className="cursor-pointer mb-2 sm:mb-3 transition-all duration-300 hover:scale-105"
-                        >
-                          <div className="flex items-start justify-between gap-2 sm:gap-4 mb-1 sm:mb-2">
-                            <h3 className="text-base sm:text-lg md:text-xl font-bold text-amber-900 flex-1 line-clamp-2">
-                              {producto.nombre}
-                            </h3>
-                            <span className="text-lg sm:text-xl md:text-2xl font-bold text-amber-700 whitespace-nowrap flex-shrink-0">
-                              {producto.precio.toFixed(2)} €
-                            </span>
-                          </div>
-
-                          {/* Descripción */}
-                          <p className="text-xs sm:text-sm md:text-base text-amber-800 leading-relaxed italic line-clamp-2 sm:line-clamp-3">
-                            {producto.descripcion}
-                          </p>
-
-                          {/* Detalles adicionales */}
-                          <div className="space-y-0.5 sm:space-y-1 mt-1 sm:mt-2 text-xs text-amber-700">
-                            {producto.detalle && (
-                              <p className="font-semibold truncate">• {producto.detalle}</p>
-                            )}
-                            {producto.incluye && (
-                              <p className="font-semibold truncate">• {producto.incluye}</p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Imagen pequeña en la carta */}
-                        {menuImages[producto.id] && (
-                          <div className="mt-2 sm:mt-3 rounded-lg overflow-hidden h-24 sm:h-32 md:h-40 border border-amber-400/30 hover:border-amber-400 transition">
-                            <img
-                              src={menuImages[producto.id]}
-                              alt={producto.nombre}
-                              loading="lazy"
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-                              onClick={() => handleAbrirProducto(producto)}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 sm:py-12">
-                    <p className="text-amber-700 text-sm sm:text-lg">
-                      No hay productos en esta categoría
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Pie de página tipo carta */}
-              <div className="mt-4 sm:mt-6 md:mt-10 pt-3 sm:pt-4 md:pt-6 border-t border-amber-400/40 text-center">
-                <p className="text-xs text-amber-700 italic">
-                  Av. de Selgas, 5 - 46800 Xàtiva, Valencia • +34 600 000 000
-                </p>
-              </div>
+          <div className="carta-page-wrapper">
+            {/* Página actual (saliente) */}
+            <div 
+              className={`carta-page ${
+                isAnimating && animationDirection === "left" 
+                  ? "carta-page-out-left" 
+                  : isAnimating && animationDirection === "right"
+                  ? "carta-page-out-right"
+                  : ""
+              }`}
+            >
+              {renderCartaContent(activeCategoria, activoTitulo, productosFiltrados)}
             </div>
+
+            {/* Página siguiente (entrante) */}
+            {nextSlide !== null && (
+              <div 
+                className={`carta-page carta-page-incoming ${
+                  animationDirection === "left" 
+                    ? "carta-page-in-from-right" 
+                    : "carta-page-in-from-left"
+                }`}
+                style={{
+                  visibility: isAnimating ? 'visible' : 'hidden'
+                }}
+              >
+                {renderCartaContent(nextCategoria, nextTitulo, nextProductosFiltrados)}
+              </div>
+            )}
           </div>
 
           {/* Botón derecha */}
           <button
             onClick={handleNext}
-            className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black font-bold rounded-full flex items-center justify-center shadow-2xl transition transform hover:scale-110 active:scale-95 hover:shadow-amber-400/50"
+            className="carta-button carta-button-next"
             aria-label="Categoría siguiente"
             title="Página siguiente"
+            disabled={isAnimating}
           >
-            <span className="text-lg sm:text-xl md:text-2xl">&#x2192;</span>
+            <span className="carta-button-icon">&#x2192;</span>
           </button>
         </div>
 
-        {/* Indicador de posición del carrusel */}
-        <div className="flex justify-center gap-2 sm:gap-3 mt-6 sm:mt-8 md:mt-10">
+        {/* Indicadores */}
+        <div className="carta-indicators">
           {slides.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`h-2 sm:h-3 rounded-full transition-all duration-300 cursor-pointer ${
-                index === currentSlide
-                  ? "w-6 sm:w-8 md:w-10 bg-amber-400 shadow-lg shadow-amber-400/50"
-                  : "w-2 sm:w-3 bg-amber-700 hover:bg-amber-500"
+              onClick={() => {
+                if (!isAnimating) setCurrentSlide(index);
+              }}
+              className={`carta-indicator ${
+                index === currentSlide ? "carta-indicator-active" : ""
               }`}
+              disabled={isAnimating}
             />
           ))}
         </div>
@@ -261,111 +262,115 @@ export default function Carta() {
       {/* MODAL/POPUP */}
       {productoSeleccionado && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4"
+          className="carta-modal-overlay"
           onClick={handleCerrarProducto}
         >
           <div
-            className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 sm:border-4 border-amber-400 rounded-2xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
+            className="carta-modal"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Botón cerrar */}
             <button
               onClick={handleCerrarProducto}
-              className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10 w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black font-bold rounded-full flex items-center justify-center transition transform hover:scale-110 shadow-lg text-lg sm:text-xl"
+              className="carta-modal-close"
               aria-label="Cerrar"
             >
               ✕
             </button>
 
             {/* Contenido del modal */}
-            <div className="p-4 sm:p-6 md:p-8 lg:p-12">
+            <div className="carta-modal-content">
               {/* Imagen grande */}
-              <div className="mb-4 sm:mb-6 md:mb-8 rounded-xl sm:rounded-2xl overflow-hidden h-48 sm:h-64 md:h-96 bg-black border-2 sm:border-4 border-amber-400">
+              <div className="carta-modal-image-wrapper">
                 {menuImages[productoSeleccionado.id] ? (
                   <img
                     src={menuImages[productoSeleccionado.id]}
                     alt={productoSeleccionado.nombre}
-                    className="w-full h-full object-cover"
+                    className="carta-modal-image"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">Sin imagen disponible</span>
+                  <div className="carta-modal-image-placeholder">
+                    <span>Sin imagen disponible</span>
                   </div>
                 )}
               </div>
 
-              {/* Información del producto */}
-              <div className="space-y-3 sm:space-y-4 md:space-y-6">
+              {/* Información */}
+              <div className="carta-modal-info">
                 {/* Nombre */}
                 <div>
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-amber-900 mb-2 sm:mb-3">
+                  <h2 className="carta-modal-title">
                     {productoSeleccionado.nombre}
                   </h2>
-                  <div className="h-0.5 sm:h-1 w-16 sm:w-24 bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"></div>
+                  <div className="carta-modal-divider"></div>
                 </div>
 
                 {/* Precio */}
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-amber-700 text-base sm:text-lg font-semibold">Precio:</span>
-                  <span className="text-2xl sm:text-3xl font-bold text-amber-600">
+                <div className="carta-modal-price-group">
+                  <span className="carta-modal-label">Precio:</span>
+                  <span className="carta-modal-price">
                     {productoSeleccionado.precio.toFixed(2)} €
                   </span>
                 </div>
 
                 {/* Categoría */}
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-amber-700 text-base sm:text-lg font-semibold">Categoría:</span>
-                  <span className="px-3 sm:px-4 py-1 sm:py-2 bg-amber-400 text-amber-900 rounded-full text-xs sm:text-sm font-bold border-2 border-amber-600">
+                <div className="carta-modal-category-group">
+                  <span className="carta-modal-label">Categoría:</span>
+                  <span className="carta-modal-badge">
                     {productoSeleccionado.categoria}
                   </span>
                 </div>
 
-                {/* Descripción completa */}
+                {/* Descripción */}
                 <div>
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-amber-900 mb-2 sm:mb-3">
-                    Descripción
-                  </h3>
-                  <p className="text-amber-800 text-sm sm:text-base md:text-lg leading-relaxed italic">
+                  <h3 className="carta-modal-subtitle">Descripción</h3>
+                  <p className="carta-modal-description">
                     {productoSeleccionado.descripcion}
                   </p>
                 </div>
 
                 {/* Detalles adicionales */}
-                {(productoSeleccionado.detalle || productoSeleccionado.incluye || productoSeleccionado.tipo) && (
-                  <div className="bg-amber-200/50 border-2 border-amber-400 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 space-y-2 sm:space-y-3">
+                {(productoSeleccionado.detalle ||
+                  productoSeleccionado.incluye ||
+                  productoSeleccionado.tipo) && (
+                  <div className="carta-modal-details-box">
                     {productoSeleccionado.detalle && (
                       <div>
-                        <span className="text-amber-900 text-xs sm:text-sm font-bold">INFORMACIÓN:</span>
-                        <p className="text-amber-800 text-xs sm:text-base mt-0.5 sm:mt-1 font-semibold">
+                        <span className="carta-modal-details-label">
+                          INFORMACIÓN:
+                        </span>
+                        <p className="carta-modal-details-text">
                           {productoSeleccionado.detalle}
                         </p>
                       </div>
                     )}
                     {productoSeleccionado.incluye && (
                       <div>
-                        <span className="text-amber-900 text-xs sm:text-sm font-bold">INCLUYE:</span>
-                        <p className="text-amber-800 text-xs sm:text-base mt-0.5 sm:mt-1 font-semibold">
+                        <span className="carta-modal-details-label">
+                          INCLUYE:
+                        </span>
+                        <p className="carta-modal-details-text">
                           {productoSeleccionado.incluye}
                         </p>
                       </div>
                     )}
                     {productoSeleccionado.tipo && (
                       <div>
-                        <span className="text-amber-900 text-xs sm:text-sm font-bold">TIPO:</span>
-                        <p className="text-amber-800 text-xs sm:text-base mt-0.5 sm:mt-1 font-semibold">
+                        <span className="carta-modal-details-label">
+                          TIPO:
+                        </span>
+                        <p className="carta-modal-details-text">
                           {productoSeleccionado.tipo}
                         </p>
                       </div>
                     )}
                   </div>
                 )}
-              </div>
 
-              {/* Botón acción */}
-              <div className="mt-6 sm:mt-8 md:mt-10 flex gap-3">
+                {/* Botón cerrar */}
                 <button
                   onClick={handleCerrarProducto}
-                  className="flex-1 bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black font-bold py-2 sm:py-3 md:py-4 rounded-lg sm:rounded-xl transition transform hover:scale-105 active:scale-95 text-sm sm:text-base md:text-lg shadow-lg"
+                  className="carta-modal-button"
                 >
                   Cerrar
                 </button>
