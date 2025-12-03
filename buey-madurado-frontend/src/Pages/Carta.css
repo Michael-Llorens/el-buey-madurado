@@ -3,7 +3,13 @@
   min-height: 100vh;
   padding-top: 4rem;
   padding-bottom: 4rem;
-  background: linear-gradient(to bottom, #000, #111827, #000);
+  background: linear-gradient(to bottom, #000, #201100, #000);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.carta-section::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 640px) {
@@ -109,30 +115,51 @@
   }
 }
 
-/* ===== BOTONES ===== */
+/* ===== BOTONES - FLECHAS FINAS MEJORADAS ===== */
 .carta-button {
-  flex-shrink: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background: linear-gradient(to bottom right, #fbbf24, #d97706);
-  color: #000;
-  font-weight: bold;
+  background: transparent;
+  color: #b45309;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
   transition: all 0.3s ease;
   cursor: pointer;
   border: none;
-  position: relative;
-  overflow: hidden;
+  overflow: visible;
+  padding: 0;
+  z-index: 35;
+}
+
+/* Botón izquierda - MAS HACIA FUERA EN MOBILE */
+.carta-button-prev {
+  left: -0.5rem;
+}
+
+/* Botón derecha - MAS HACIA FUERA EN MOBILE */
+.carta-button-next {
+  right: -0.5rem;
 }
 
 @media (min-width: 640px) {
   .carta-button {
     width: 3rem;
     height: 3rem;
+  }
+
+  /* Tablet - más hacia fuera */
+  .carta-button-prev {
+    left: -2.5rem;
+  }
+
+  .carta-button-next {
+    right: -2.5rem;
   }
 }
 
@@ -141,6 +168,15 @@
     width: 3.5rem;
     height: 3.5rem;
   }
+
+  /* Tablet grande - más hacia fuera */
+  .carta-button-prev {
+    left: -2.75rem;
+  }
+
+  .carta-button-next {
+    right: -2.75rem;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -148,38 +184,36 @@
     width: 4rem;
     height: 4rem;
   }
+
+  /* Desktop - dentro de la carta */
+  .carta-button-prev {
+    left: 1.5rem;
+  }
+
+  .carta-button-next {
+    right: 1.5rem;
+  }
 }
 
 .carta-button:hover:not(:disabled) {
-  background: linear-gradient(to bottom right, #fcd34d, #f59e0b);
-  transform: scale(1.1);
-  box-shadow: 0 25px 50px rgba(251, 146, 60, 0.5);
+  color: #d97706;
+  transform: translateY(-50%) scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(180, 83, 9, 0.4));
 }
 
 .carta-button:active:not(:disabled) {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.95);
 }
 
 .carta-button:disabled {
-  opacity: 0.6;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
-.carta-button-icon {
-  font-size: 1rem;
-  display: block;
-}
-
-@media (min-width: 640px) {
-  .carta-button-icon {
-    font-size: 1.25rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .carta-button-icon {
-    font-size: 1.5rem;
-  }
+.carta-button svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
 }
 
 /* ===== PÁGINA WRAPPER ===== */
@@ -188,6 +222,18 @@
   min-width: 0;
   perspective: 1000px;
   position: relative;
+}
+
+@media (min-width: 1024px) {
+  .carta-page-wrapper {
+    padding: 0 4rem; /* Más ancho en desktop */
+  }
+}
+
+@media (min-width: 1280px) {
+  .carta-page-wrapper {
+    padding: 0 5rem; /* Aún más ancho en desktop grande */
+  }
 }
 
 /* ===== PÁGINA ===== */
@@ -202,6 +248,25 @@
   flex-direction: column;
   transition: box-shadow 0.3s ease;
   border: 1px solid #fde047;
+}
+
+/* ===== PÁGINA BOTTOM (DEBAJO - SIEMPRE LA SIGUIENTE) ===== */
+.carta-page-bottom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+/* ===== PÁGINA TOP (ARRIBA - LA ACTUAL - SE ANIMA) ===== */
+.carta-page-top {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
 }
 
 @media (min-width: 640px) {
@@ -247,11 +312,11 @@
   visibility: visible;
 }
 
-/* ===== ANIMACIONES DE PÁGINA - CARRUSEL 3D ===== */
+/* ===== ANIMACIONES DE PÁGINA - SALIDA SIMPLE ===== */
 @keyframes pageOutLeft {
   0% {
     opacity: 1;
-    transform: rotateY(0deg) translateX(0);
+    transform: rotateY(0deg) translateX(0px);
   }
   100% {
     opacity: 0;
@@ -262,7 +327,7 @@
 @keyframes pageOutRight {
   0% {
     opacity: 1;
-    transform: rotateY(0deg) translateX(0);
+    transform: rotateY(0deg) translateX(0px);
   }
   100% {
     opacity: 0;
@@ -270,52 +335,14 @@
   }
 }
 
-@keyframes pageInFromRight {
-  0% {
-    opacity: 0;
-    transform: rotateY(25deg) translateX(100%);
-  }
-  100% {
-    opacity: 1;
-    transform: rotateY(0deg) translateX(0);
-  }
-}
-
-@keyframes pageInFromLeft {
-  0% {
-    opacity: 0;
-    transform: rotateY(-25deg) translateX(-100%);
-  }
-  100% {
-    opacity: 1;
-    transform: rotateY(0deg) translateX(0);
-  }
-}
-
-/* La vieja se va a la IZQUIERDA (clickeaste derecha) */
+/* La carta se va a la IZQUIERDA (clickeaste derecha) */
 .carta-page-out-left {
-  animation: pageOutLeft 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  z-index: 2;
+  animation: pageOutLeft 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
 
-/* La vieja se va a la DERECHA (clickeaste izquierda) */
+/* La carta se va a la DERECHA (clickeaste izquierda) */
 .carta-page-out-right {
-  animation: pageOutRight 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  z-index: 2;
-}
-
-/* La nueva ENTRA POR LA DERECHA (cuando salimos a izquierda) */
-.carta-page-in-from-right {
-  animation: pageInFromRight 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: 1s;
-  z-index: 1;
-}
-
-/* La nueva ENTRA POR LA IZQUIERDA (cuando salimos a derecha) */
-.carta-page-in-from-left {
-  animation: pageInFromLeft 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  animation-delay: 1s;
-  z-index: 1;
+  animation: pageOutRight 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
 
 /* ===== DECORACIÓN ESQUINAS ===== */
@@ -438,6 +465,8 @@
   grid-template-columns: 1fr;
   gap: 1.5rem;
   flex: 1;
+  contain: content;
+  width: 100%;
 }
 
 @media (min-width: 640px) {
@@ -448,6 +477,13 @@
 }
 
 @media (min-width: 1024px) {
+  .carta-products-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
   .carta-products-grid {
     gap: 2rem;
   }
@@ -469,10 +505,18 @@
   padding-bottom: 0;
 }
 
+@media (min-width: 640px) {
+  .carta-product-item {
+    padding-bottom: 1rem;
+    gap: 0.75rem;
+    border-bottom: none;
+  }
+}
+
 @media (min-width: 768px) {
   .carta-product-item {
-    padding-bottom: 1.5rem;
-    gap: 1rem;
+    padding-bottom: 1rem;
+    gap: 0.75rem;
   }
 }
 
@@ -483,7 +527,7 @@
 /* ===== IMAGEN PRODUCTO ===== */
 .carta-product-image-wrapper {
   width: 100%;
-  height: 150px;
+  height: 220px;
   border-radius: 0.5rem;
   overflow: hidden;
   border: 1px solid rgba(251, 146, 60, 0.3);
@@ -492,14 +536,20 @@
 
 @media (min-width: 640px) {
   .carta-product-image-wrapper {
-    height: 160px;
+    height: 240px;
   }
 }
 
 @media (min-width: 768px) {
   .carta-product-image-wrapper {
-    height: 200px;
+    height: 260px;
     border-radius: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carta-product-image-wrapper {
+    height: 280px;
   }
 }
 
@@ -1023,4 +1073,26 @@
 
 .carta-modal-button:active {
   transform: scale(0.95);
+}
+
+/* ===== PREVENT SCROLLBAR SHIFT ===== */
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+body {
+  scrollbar-gutter: stable;
+}
+
+html.modal-open {
+  overflow-y: scroll;
+  padding-right: 0 !important;
+}
+
+/* ===== SENTINEL PARA VISIBILIDAD DE BOTONES ===== */
+.carta-sentinel {
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
