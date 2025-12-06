@@ -1,76 +1,30 @@
-// src/assets/menu/index.js
-// Hay que comprimir todas la imagenes que estan en la carpeta
-
-import entrantePicana from "./quesadilla.webp";
-import entranteCecina from "./quesadilla.webp";
-import entranteQuesadilla from "./quesadilla.webp";
-import entrantePatatas from "./quesadilla.webp";
-import entranteBunuelos from "./quesadilla.webp";
-import entranteGyozas from "./quesadilla.webp";
-import entranteTartar from "./quesadilla.webp";
-import entrantePanBao from "./quesadilla.webp";
-
-import carneSolomillo from "./carne.webp";
-import carneEntrecot from "./carne.webp";
-import carneChuleton from "./carne.webp";
-
-import sandwichElBuey from "./hamburgesa.webp";
-import sandwichGallego from "./hamburgesa.webp";
-
-import hamCheeseLover from "./hamburgesa.webp";
-import hamBuffalo from "./hamburgesa.webp";
-import hamEmmy from "./hamburgesa.webp";
-import hamPistacha from "./hamburgesa.webp";
-import hamSuprema from "./hamburgesa.webp";
-import hamElBuey from "./hamburgesa.webp";
-
-import postreTartaTradicional from "./tarta-twix.webp";
-import postreTartaDonuts from "./tarta-twix.webp";
-import postreTartaPantera from "./tarta-twix.webp";
-import postreTartaTwix from "./tarta-twix.webp";
-import postreTartaOreo from "./tarta-twix.webp";
-
-import bebidaCocacola from "./fanta.webp";
-import bebidaCocacolaZero from "./fanta.webp";
-import bebidaFantaNaranja from "./fanta.webp";
-import bebidaFantaLimon from "./fanta.webp";
-import bebidaNesteaMaracuya from "./fanta.webp";
-import bebidaAgua from "./fanta.webp";
-
 export const menuImages = {
-  "ent-1": entrantePicana,
-  "ent-2": entranteCecina,
-  "ent-3": entranteQuesadilla,
-  "ent-4": entrantePatatas,
-  "ent-5": entranteBunuelos,
-  "ent-6": entranteGyozas,
-  "ent-7": entranteTartar,
-  "ent-8": entrantePanBao,
+  "ent-1": "quesadilla_wwq31k",
+  "ent-2": "quesadilla_wwq31k",
+  "ent-3": "quesadilla_wwq31k",
+  "ent-4": "quesadilla_wwq31k",
+  "ent-5": "quesadilla_wwq31k",
+  "ent-6": "quesadilla_wwq31k",
+  "ent-7": "quesadilla_wwq31k",
+  "ent-8": "quesadilla_wwq31k",
 
-  "car-1": carneSolomillo,
-  "car-2": carneEntrecot,
-  "car-3": carneChuleton,
+  "car-1": "carne_fghlkr",
+  "car-2": "carne_fghlkr",
+  "car-3": "carne_fghlkr",
 
-  "san-1": sandwichElBuey,
-  "san-2": sandwichGallego,
+  "san-1": "hamburgesa_w58ate",
+  "san-2": "hamburgesa_w58ate",
 
-  "ham-1": hamCheeseLover,
-  "ham-2": hamBuffalo,
-  "ham-3": hamEmmy,
-  "ham-4": hamPistacha,
-  "ham-5": hamSuprema,
-  "ham-6": hamElBuey,
+  "ham-1": "hamburgesa_w58ate",
+  "ham-2": "hamburgesa_w58ate",
+  "ham-3": "hamburgesa_w58ate",
+  "ham-4": "hamburgesa_w58ate",
+  "ham-5": "hamburgesa_w58ate",
+  "ham-6": "hamburgesa_w58ate",
 
-  "pos-1": postreTartaTradicional,
-  "pos-2": postreTartaDonuts,
-  "pos-3": postreTartaPantera,
-  "pos-4": postreTartaTwix,
-  "pos-5": postreTartaOreo,
-
-  "beb-1": bebidaCocacola,
-  "beb-2": bebidaCocacolaZero,
-  "beb-3": bebidaFantaNaranja,
-  "beb-4": bebidaFantaLimon,
-  "beb-5": bebidaNesteaMaracuya,
-  "beb-6": bebidaAgua,
+  "pos-1": "tarta-twix_iiod2d",
+  "pos-2": "tarta-twix_iiod2d",
+  "pos-3": "tarta-twix_iiod2d",
+  "pos-4": "tarta-twix_iiod2d",
+  "pos-5": "tarta-twix_iiod2d",
 };

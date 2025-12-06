@@ -1,28 +1,34 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { menuItems } from "../data/menu";
-import { menuImages } from "../assets/menu";
-import "./Carta.css";
+// src/app/carta/page.tsx
+'use client';
+
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { menuItems } from '@/lib/menu';
+import { menuImages } from '@/assets/menu/index.js';
+import { CldImage } from 'next-cloudinary';
+import './carta.css';
 
 const slides = [
-  { key: "Entrantes", titulo: "Entrantes" },
-  { key: "Carnes", titulo: "Carnes" },
-  { key: "Sándwich y hamburguesas", titulo: "Sándwich y hamburguesas" },
-  { key: "Postres", titulo: "Postres" },
+  { key: 'Entrantes', titulo: 'Entrantes' },
+  { key: 'Carnes', titulo: 'Carnes' },
+  { key: 'Sándwich y hamburguesas', titulo: 'Sándwich y hamburguesas' },
+  { key: 'Postres', titulo: 'Postres' },
 ];
 
-export default function Carta() {
+export default function CartaPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-  const [animationDirection, setAnimationDirection] = useState(null);
+  const [productoSeleccionado, setProductoSeleccionado] = useState<any>(null);
+  const [animationDirection, setAnimationDirection] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [imagesLoaded, setImagesLoaded] = useState({});
-  const cartaSectionRef = useRef(null);
+  const [imagesLoaded, setImagesLoaded] = useState<{ [key: string]: boolean }>({});
+  const [buttonsVisible, setButtonsVisible] = useState(false);
+  const cartaSectionRef = useRef<HTMLDivElement>(null);
+  const buttonContainerRef = useRef<HTMLDivElement>(null);
 
   // Precargar imágenes
   useEffect(() => {
-    const preloadImages = (productos) => {
+    const preloadImages = (productos: any[]) => {
       productos.forEach((producto) => {
-        if (menuImages[producto.id] && !imagesLoaded[producto.id]) {
+        if (menuImages[producto.id as keyof typeof menuImages] && !imagesLoaded[producto.id]) {
           const img = new Image();
           img.onload = () => {
             setImagesLoaded((prev) => ({
@@ -30,28 +36,44 @@ export default function Carta() {
               [producto.id]: true,
             }));
           };
-          img.src = menuImages[producto.id];
+          img.src = menuImages[producto.id as keyof typeof menuImages]?.src || '';
         }
       });
     };
 
     slides.forEach((slide) => {
-      const productos = menuItems.filter(
-        (item) => item.categoria === slide.key
-      );
+      const productos = menuItems.filter((item) => item.categoria === slide.key);
       preloadImages(productos);
     });
   }, [imagesLoaded]);
 
+  // Intersection Observer para visibilidad de botones
+  useEffect(() => {
+    if (!cartaSectionRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setButtonsVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(cartaSectionRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   const handlePrev = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setAnimationDirection("right");
+    setAnimationDirection('right');
 
     setTimeout(() => {
-      setCurrentSlide((prev) =>
-        prev === 0 ? slides.length - 1 : prev - 1
-      );
+      setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
       setAnimationDirection(null);
       setIsAnimating(false);
     }, 1000);
@@ -60,12 +82,10 @@ export default function Carta() {
   const handleNext = () => {
     if (isAnimating) return;
     setIsAnimating(true);
-    setAnimationDirection("left");
+    setAnimationDirection('left');
 
     setTimeout(() => {
-      setCurrentSlide((prev) =>
-        prev === slides.length - 1 ? 0 : prev + 1
-      );
+      setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
       setAnimationDirection(null);
       setIsAnimating(false);
     }, 1000);
@@ -75,9 +95,9 @@ export default function Carta() {
   const activoTitulo = slides[currentSlide].titulo;
 
   let nextSlideIndex;
-  if (animationDirection === "left") {
+  if (animationDirection === 'left') {
     nextSlideIndex = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
-  } else if (animationDirection === "right") {
+  } else if (animationDirection === 'right') {
     nextSlideIndex = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
   } else {
     nextSlideIndex = currentSlide === slides.length - 1 ? 0 : currentSlide + 1;
@@ -86,17 +106,17 @@ export default function Carta() {
   const nextCategoria = slides[nextSlideIndex].key;
   const nextTitulo = slides[nextSlideIndex].titulo;
 
-  const productosFiltrados = useMemo(() =>
-    menuItems.filter((item) => item.categoria === activeCategoria),
+  const productosFiltrados = useMemo(
+    () => menuItems.filter((item) => item.categoria === activeCategoria),
     [activeCategoria]
   );
 
-  const nextProductosFiltrados = useMemo(() =>
-    menuItems.filter((item) => item.categoria === nextCategoria),
+  const nextProductosFiltrados = useMemo(
+    () => menuItems.filter((item) => item.categoria === nextCategoria),
     [nextCategoria]
   );
 
-  const handleAbrirProducto = (producto) => {
+  const handleAbrirProducto = (producto: any) => {
     setProductoSeleccionado(producto);
     document.documentElement.classList.add('modal-open');
   };
@@ -106,7 +126,7 @@ export default function Carta() {
     document.documentElement.classList.remove('modal-open');
   };
 
-  const renderCartaContent = (categoria, titulo, productos) => (
+  const renderCartaContent = (_categoria: string, titulo: string, productos: any[]) => (
     <>
       <div className="carta-corner carta-corner-top-left"></div>
       <div className="carta-corner carta-corner-top-right"></div>
@@ -128,19 +148,14 @@ export default function Carta() {
                 className="carta-product-item"
                 onClick={() => handleAbrirProducto(producto)}
               >
-                {menuImages[producto.id] && (
+                {menuImages[producto.id as keyof typeof menuImages] && (
                   <div className="carta-product-image-wrapper">
-                    <img
-                      src={menuImages[producto.id]}
+                    <CldImage
+                      src={menuImages[producto.id as keyof typeof menuImages] || ''}
                       alt={producto.nombre}
-                      loading="eager"
+                      width={400}
+                      height={300}
                       className="carta-product-image"
-                      onLoad={() => {
-                        setImagesLoaded((prev) => ({
-                          ...prev,
-                          [producto.id]: true,
-                        }));
-                      }}
                     />
                   </div>
                 )}
@@ -148,22 +163,14 @@ export default function Carta() {
                 <div className="carta-product-info">
                   <div className="carta-product-header">
                     <h3 className="carta-product-name">{producto.nombre}</h3>
-                    <span className="carta-product-price">
-                      {producto.precio.toFixed(2)} €
-                    </span>
+                    <span className="carta-product-price">{producto.precio.toFixed(2)} €</span>
                   </div>
 
-                  <p className="carta-product-description">
-                    {producto.descripcion}
-                  </p>
+                  <p className="carta-product-description">{producto.descripcion}</p>
 
                   <div className="carta-product-details">
-                    {producto.detalle && (
-                      <p className="carta-detail-item">• {producto.detalle}</p>
-                    )}
-                    {producto.incluye && (
-                      <p className="carta-detail-item">• {producto.incluye}</p>
-                    )}
+                    {producto.detalle && <p className="carta-detail-item">• {producto.detalle}</p>}
+                    {producto.incluye && <p className="carta-detail-item">• {producto.incluye}</p>}
                   </div>
                 </div>
               </div>
@@ -191,8 +198,8 @@ export default function Carta() {
           <div className="carta-header">
             <h1 className="carta-title">Nuestra Carta</h1>
             <p className="carta-subtitle">
-              Descubre nuestras especialidades elaboradas con carne madurada
-              y productos de proximidad.
+              Descubre nuestras especialidades elaboradas con carne madurada y productos de
+              proximidad.
             </p>
           </div>
 
@@ -201,34 +208,13 @@ export default function Carta() {
               <div className="carta-page carta-page-bottom">
                 {renderCartaContent(nextCategoria, nextTitulo, nextProductosFiltrados)}
               </div>
-              {/* BOTONES SIEMPRE DENTRO DE LA CARTA */}
-              <button
-                onClick={handlePrev}
-                className="carta-button carta-button-prev"
-                aria-label="Categoría anterior"
-                disabled={isAnimating}
-              >
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 8L10 16L20 24" />
-                </svg>
-              </button>
 
-              <button
-                onClick={handleNext}
-                className="carta-button carta-button-next"
-                aria-label="Categoría siguiente"
-                disabled={isAnimating}
-              >
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 8L22 16L12 24" />
-                </svg>
-              </button>
               <div
-                className={`carta-page carta-page-top ${isAnimating && animationDirection === "left"
-                  ? "carta-page-out-left"
-                  : isAnimating && animationDirection === "right"
-                    ? "carta-page-out-right"
-                    : ""
+                className={`carta-page carta-page-top ${isAnimating && animationDirection === 'left'
+                    ? 'carta-page-out-left'
+                    : isAnimating && animationDirection === 'right'
+                      ? 'carta-page-out-right'
+                      : ''
                   }`}
               >
                 {renderCartaContent(activeCategoria, activoTitulo, productosFiltrados)}
@@ -243,20 +229,63 @@ export default function Carta() {
                 onClick={() => {
                   if (!isAnimating) setCurrentSlide(index);
                 }}
-                className={`carta-indicator ${index === currentSlide ? "carta-indicator-active" : ""
-                  }`}
+                className={`carta-indicator ${index === currentSlide ? 'carta-indicator-active' : ''}`}
                 disabled={isAnimating}
               />
             ))}
           </div>
         </div>
 
+        {/* BOTONES */}
+        <div
+          className={`carta-buttons-container ${buttonsVisible ? 'carta-buttons-visible' : ''}`}
+          ref={buttonContainerRef}
+        >
+          <button
+            onClick={handlePrev}
+            className="carta-button carta-button-prev"
+            aria-label="Categoría anterior"
+            disabled={isAnimating}
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 32 32"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 8L10 16L20 24" />
+            </svg>
+          </button>
+
+          <button
+            onClick={handleNext}
+            className="carta-button carta-button-next"
+            aria-label="Categoría siguiente"
+            disabled={isAnimating}
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 32 32"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 8L22 16L12 24" />
+            </svg>
+          </button>
+        </div>
+
+        {/* MODAL */}
         {productoSeleccionado && (
           <div className="carta-modal-overlay" onClick={handleCerrarProducto}>
-            <div
-              className="carta-modal"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className="carta-modal" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={handleCerrarProducto}
                 className="carta-modal-close"
@@ -267,9 +296,9 @@ export default function Carta() {
 
               <div className="carta-modal-content">
                 <div className="carta-modal-image-wrapper">
-                  {menuImages[productoSeleccionado.id] ? (
+                  {menuImages[productoSeleccionado.id as keyof typeof menuImages] ? (
                     <img
-                      src={menuImages[productoSeleccionado.id]}
+                      src={menuImages[productoSeleccionado.id as keyof typeof menuImages]?.src}
                       alt={productoSeleccionado.nombre}
                       className="carta-modal-image"
                     />
@@ -282,31 +311,23 @@ export default function Carta() {
 
                 <div className="carta-modal-info">
                   <div>
-                    <h2 className="carta-modal-title">
-                      {productoSeleccionado.nombre}
-                    </h2>
+                    <h2 className="carta-modal-title">{productoSeleccionado.nombre}</h2>
                     <div className="carta-modal-divider"></div>
                   </div>
 
                   <div className="carta-modal-price-group">
                     <span className="carta-modal-label">Precio:</span>
-                    <span className="carta-modal-price">
-                      {productoSeleccionado.precio.toFixed(2)} €
-                    </span>
+                    <span className="carta-modal-price">{productoSeleccionado.precio.toFixed(2)} €</span>
                   </div>
 
                   <div className="carta-modal-category-group">
                     <span className="carta-modal-label">Categoría:</span>
-                    <span className="carta-modal-badge">
-                      {productoSeleccionado.categoria}
-                    </span>
+                    <span className="carta-modal-badge">{productoSeleccionado.categoria}</span>
                   </div>
 
                   <div>
                     <h3 className="carta-modal-subtitle">Descripción</h3>
-                    <p className="carta-modal-description">
-                      {productoSeleccionado.descripcion}
-                    </p>
+                    <p className="carta-modal-description">{productoSeleccionado.descripcion}</p>
                   </div>
 
                   {(productoSeleccionado.detalle ||
@@ -315,32 +336,20 @@ export default function Carta() {
                       <div className="carta-modal-details-box">
                         {productoSeleccionado.detalle && (
                           <div>
-                            <span className="carta-modal-details-label">
-                              INFORMACIÓN:
-                            </span>
-                            <p className="carta-modal-details-text">
-                              {productoSeleccionado.detalle}
-                            </p>
+                            <span className="carta-modal-details-label">INFORMACIÓN:</span>
+                            <p className="carta-modal-details-text">{productoSeleccionado.detalle}</p>
                           </div>
                         )}
                         {productoSeleccionado.incluye && (
                           <div>
-                            <span className="carta-modal-details-label">
-                              INCLUYE:
-                            </span>
-                            <p className="carta-modal-details-text">
-                              {productoSeleccionado.incluye}
-                            </p>
+                            <span className="carta-modal-details-label">INCLUYE:</span>
+                            <p className="carta-modal-details-text">{productoSeleccionado.incluye}</p>
                           </div>
                         )}
                         {productoSeleccionado.tipo && (
                           <div>
-                            <span className="carta-modal-details-label">
-                              TIPO:
-                            </span>
-                            <p className="carta-modal-details-text">
-                              {productoSeleccionado.tipo}
-                            </p>
+                            <span className="carta-modal-details-label">TIPO:</span>
+                            <p className="carta-modal-details-text">{productoSeleccionado.tipo}</p>
                           </div>
                         )}
                       </div>
