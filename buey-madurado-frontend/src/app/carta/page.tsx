@@ -28,7 +28,10 @@ export default function CartaPage() {
   useEffect(() => {
     const preloadImages = (productos: any[]) => {
       productos.forEach((producto) => {
-        if (menuImages[producto.id as keyof typeof menuImages] && !imagesLoaded[producto.id]) {
+        const imagePath = menuImages[producto.id as keyof typeof menuImages];
+
+        // ✅ CAMBIO: No accedas a .src, usa directamente
+        if (imagePath && !imagesLoaded[producto.id]) {
           const img = new Image();
           img.onload = () => {
             setImagesLoaded((prev) => ({
@@ -36,7 +39,7 @@ export default function CartaPage() {
               [producto.id]: true,
             }));
           };
-          img.src = menuImages[producto.id as keyof typeof menuImages]?.src || '';
+          img.src = imagePath; // ✅ AQUÍ: sin .src
         }
       });
     };
@@ -211,10 +214,10 @@ export default function CartaPage() {
 
               <div
                 className={`carta-page carta-page-top ${isAnimating && animationDirection === 'left'
-                    ? 'carta-page-out-left'
-                    : isAnimating && animationDirection === 'right'
-                      ? 'carta-page-out-right'
-                      : ''
+                  ? 'carta-page-out-left'
+                  : isAnimating && animationDirection === 'right'
+                    ? 'carta-page-out-right'
+                    : ''
                   }`}
               >
                 {renderCartaContent(activeCategoria, activoTitulo, productosFiltrados)}
@@ -298,7 +301,7 @@ export default function CartaPage() {
                 <div className="carta-modal-image-wrapper">
                   {menuImages[productoSeleccionado.id as keyof typeof menuImages] ? (
                     <img
-                      src={menuImages[productoSeleccionado.id as keyof typeof menuImages]?.src}
+                      src={menuImages[productoSeleccionado.id as keyof typeof menuImages] || ''}
                       alt={productoSeleccionado.nombre}
                       className="carta-modal-image"
                     />
