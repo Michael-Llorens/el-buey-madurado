@@ -1,6 +1,7 @@
 {
   "type": "module",
   "dependencies": {
+    "next-cloudinary": "^6.17.5",
     "react-icons": "^5.5.0"
   },
   "scripts": {
