@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 
 // GET - OBTENER UN PRODUCTO POR ID
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -42,7 +42,7 @@ export async function GET(
 
 // PUT - EDITAR UN PRODUCTO
 export async function PUT(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -57,7 +57,7 @@ export async function PUT(
       );
     }
 
-    const body = await req.json();
+    const body = await _req.json();
     const productoActualizado = await Producto.findByIdAndUpdate(
       id,
       body,
@@ -88,7 +88,7 @@ export async function PUT(
 
 // DELETE - DESACTIVAR PRODUCTO (SOFT DELETE)
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

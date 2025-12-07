@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 
 // GET - OBTENER UN INGREDIENTE POR ID
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -40,7 +40,7 @@ export async function GET(
 
 // PUT - EDITAR UN INGREDIENTE
 export async function PUT(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -55,7 +55,7 @@ export async function PUT(
       );
     }
 
-    const body = await req.json();
+    const body = await _req.json();
     const ingredienteActualizado = await Ingrediente.findByIdAndUpdate(
       id,
       body,
@@ -84,7 +84,7 @@ export async function PUT(
 
 // DELETE - DESACTIVAR INGREDIENTE (SOFT DELETE)
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
