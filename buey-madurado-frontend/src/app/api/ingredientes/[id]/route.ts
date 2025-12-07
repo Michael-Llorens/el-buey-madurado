@@ -6,19 +6,21 @@ import { Types } from 'mongoose';
 // GET - OBTENER UN INGREDIENTE POR ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     await connectDB();
 
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'ID inválido' },
         { status: 400 }
       );
     }
 
-    const ingrediente = await Ingrediente.findById(params.id);
+    const ingrediente = await Ingrediente.findById(id);
 
     if (!ingrediente) {
       return NextResponse.json(
@@ -39,12 +41,14 @@ export async function GET(
 // PUT - EDITAR UN INGREDIENTE
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     await connectDB();
 
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'ID inválido' },
         { status: 400 }
@@ -53,7 +57,7 @@ export async function PUT(
 
     const body = await req.json();
     const ingredienteActualizado = await Ingrediente.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true, runValidators: true }
     );
@@ -81,12 +85,14 @@ export async function PUT(
 // DELETE - DESACTIVAR INGREDIENTE (SOFT DELETE)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     await connectDB();
 
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'ID inválido' },
         { status: 400 }
@@ -94,7 +100,7 @@ export async function DELETE(
     }
 
     const ingredienteDesactivado = await Ingrediente.findByIdAndUpdate(
-      params.id,
+      id,
       { activo: false },
       { new: true }
     );

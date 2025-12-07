@@ -1,28 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/app/api/lib/conectBD';
-import Product from '@/app/api/models/Product';
+import Producto from '@/app/api/models/Product';
 import { Types } from 'mongoose';
 
-// ============================================
 // GET - OBTENER UN PRODUCTO POR ID
-// ============================================
-// Endpoint: GET /api/productos/507f1f77bcf86cd799439020
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     await connectDB();
 
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'ID inválido' },
         { status: 400 }
       );
     }
 
-    // Buscar producto y populate todos los ingredientes
-    const producto = await Product.findById(params.id)
+    const producto = await Producto.findById(id)
       .populate('ingredientes.ingrediente')
       .populate('ingredientesExtra');
 
@@ -33,10 +31,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: producto,
-    });
+    return NextResponse.json({ success: true, data: producto });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },
@@ -45,23 +40,17 @@ export async function GET(
   }
 }
 
-// ============================================
 // PUT - EDITAR UN PRODUCTO
-// ============================================
-// Endpoint: PUT /api/productos/507f1f77bcf86cd799439020
-// Body: (puedes actualizar cualquier campo)
-// {
-//   "precio": 18.00,
-//   "disponible": false
-// }
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     await connectDB();
 
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'ID inválido' },
         { status: 400 }
@@ -69,10 +58,8 @@ export async function PUT(
     }
 
     const body = await req.json();
-
-    // Actualizar y populate automáticamente
-    const productoActualizado = await Product.findByIdAndUpdate(
-      params.id,
+    const productoActualizado = await Producto.findByIdAndUpdate(
+      id,
       body,
       { new: true, runValidators: true }
     )
@@ -99,30 +86,25 @@ export async function PUT(
   }
 }
 
-// ============================================
-// DELETE - DESACTIVAR UN PRODUCTO (SOFT DELETE)
-// ============================================
-// Endpoint: DELETE /api/productos/507f1f77bcf86cd799439020
-// 
-// ⚠️ SOFT DELETE: Marcamos como inactivo, no borramos
-// Razón: Conservar histórico de pedidos
+// DELETE - DESACTIVAR PRODUCTO (SOFT DELETE)
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     await connectDB();
 
-    if (!Types.ObjectId.isValid(params.id)) {
+    if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { success: false, error: 'ID inválido' },
         { status: 400 }
       );
     }
 
-    // Marcar como inactivo
-    const productoDesactivado = await Product.findByIdAndUpdate(
-      params.id,
+    const productoDesactivado = await Producto.findByIdAndUpdate(
+      id,
       { activo: false },
       { new: true }
     )
