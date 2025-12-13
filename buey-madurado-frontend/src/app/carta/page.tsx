@@ -23,7 +23,7 @@ export default function CartaPage() {
   const [imagesLoaded, setImagesLoaded] = useState<{ [key: string]: boolean }>(
     {}
   );
-  const [buttonPositions, setButtonPositions] = useState({ left: '1rem', right: '1rem' });
+
   const cartaSectionRef = useRef<HTMLDivElement>(null);
   const cartaWrapperRef = useRef<HTMLDivElement>(null);
   const buttonContainerRef = useRef<HTMLDivElement>(null);
@@ -53,31 +53,6 @@ export default function CartaPage() {
       preloadImages(productos);
     });
   }, [imagesLoaded]);
-
-  // Calcular posición de los botones según el scroll y tamaño de la carta
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!cartaWrapperRef.current) return;
-
-      const rect = cartaWrapperRef.current.getBoundingClientRect();
-      const cartaLeft = rect.left;
-      const cartaRight = window.innerWidth - rect.right;
-
-      setButtonPositions({
-        left: `${cartaLeft}px`,
-        right: `${cartaRight}px`,
-      });
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleScroll);
-    handleScroll(); // Ejecutar al cargar
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, []);
 
   const handlePrev = () => {
     if (isAnimating) return;
