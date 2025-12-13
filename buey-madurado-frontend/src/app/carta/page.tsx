@@ -115,7 +115,7 @@ export default function CartaPage() {
   };
 
   const renderCartaContent = (
-    categoria: string,
+    _categoria: string,
     titulo: string,
     productos: any
   ) => (
