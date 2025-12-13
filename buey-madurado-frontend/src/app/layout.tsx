@@ -1,4 +1,3 @@
-// src/app/layout.tsx
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar/Navbar';
@@ -9,7 +8,7 @@ export const metadata: Metadata = {
   title: 'El Buey Madurado - Carne Madurada Premium',
   description: 'Tienda online de carne madurada...',
   icons: {
-    icon: '/logo-fondo-blanco.ico',  // ← Tu logo actual
+    icon: '/logo-fondo-blanco.ico',
   },
 };
 
