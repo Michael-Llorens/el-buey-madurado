@@ -174,5 +174,4 @@ const ingredienteSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Ingrediente ||
-  mongoose.model('Ingrediente', ingredienteSchema);
+export default mongoose.models.Ingrediente || mongoose.model('Ingrediente', ingredienteSchema, 'ingredientes'); 

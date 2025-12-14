@@ -1,20 +1,125 @@
 'use client';
 
-interface Ingrediente {
-  id: string;
+import { useEffect, useState } from 'react';
+
+interface IngredienteFetch {
+  _id: string;
   nombre: string;
-  cantidad: number;
-  unidad: string;
-  precio_unitario: number;
+  categoria: string;
+  precioBase: number;
+  precioExtra: number;
+  inventario: {
+    cantidad: number;
+    unidad: string;
+  };
+  disponible: boolean;
+  activo: boolean;
 }
 
 interface IngredientCardGridProps {
-  ingredientes: Ingrediente[];
-  onEditar: (ingrediente: Ingrediente) => void;
-  onEliminar: (id: string) => void;
+  onEditar?: (ingrediente: IngredienteFetch) => void;
+  onEliminar?: (id: string) => void;
 }
 
-export default function IngredientCardGrid({ ingredientes, onEditar, onEliminar }: IngredientCardGridProps) {
+export default function IngredientCardGrid({
+  onEditar,
+  onEliminar,
+}: IngredientCardGridProps) {
+  const [ingredientes, setIngredientes] = useState<IngredienteFetch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false); // ← NUEVO
+
+  // Marcar cuando el componente está montado en el cliente
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Cargar ingredientes desde la API (SOLO en el cliente)
+  useEffect(() => {
+    if (!mounted) return; // ← Esperar a que esté montado
+
+    const fetchIngredientes = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+
+        if (!token) {
+          setError('No hay token. Por favor, haz login primero.');
+          setLoading(false);
+          return;
+        }
+
+        console.log('Token encontrado:', token.substring(0, 20) + '...');
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/ingredientes`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`, // ← CON Bearer
+            },
+          }
+        );
+
+        console.log('Response status:', res.status);
+
+        const data = await res.json();
+
+        console.log('Response data:', data);
+
+        if (!res.ok) {
+          throw new Error(data.error || `Error ${res.status}: ${res.statusText}`);
+        }
+
+        if (!data.success) {
+          throw new Error(data.error || 'Error desconocido');
+        }
+
+        setIngredientes(data.data);
+      } catch (err: any) {
+        console.error('Fetch error:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIngredientes();
+  }, [mounted]); // ← Dependencia en mounted
+
+  const handleEliminar = (id: string) => {
+    if (confirm('¿Estás seguro que quieres eliminar este ingrediente?')) {
+      if (onEliminar) {
+        onEliminar(id);
+      }
+      setIngredientes(ingredientes.filter((ing) => ing._id !== id));
+      alert('✅ Ingrediente eliminado');
+    }
+  };
+
+  const handleEditar = (ingrediente: IngredienteFetch) => {
+    if (onEditar) {
+      onEditar(ingrediente);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-12 text-center border border-gray-700">
+        <p className="text-gray-400 text-lg">Cargando ingredientes...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-12 text-center border border-gray-700">
+        <p className="text-red-500 text-lg">Error: {error}</p>
+      </div>
+    );
+  }
+
   if (ingredientes.length === 0) {
     return (
       <div className="bg-gray-800 rounded-lg p-12 text-center border border-gray-700">
@@ -26,11 +131,10 @@ export default function IngredientCardGrid({ ingredientes, onEditar, onEliminar 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {ingredientes.map((ingrediente) => {
-        const total = ingrediente.cantidad * ingrediente.precio_unitario;
 
         return (
           <div
-            key={ingrediente.id}
+            key={ingrediente._id}
             className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden hover:border-amber-500 transition"
           >
             {/* Header con ícono */}
@@ -43,40 +147,56 @@ export default function IngredientCardGrid({ ingredientes, onEditar, onEliminar 
 
             {/* Contenido */}
             <div className="p-4 space-y-3">
+              {/* Categoría */}
+              <div className="flex justify-between">
+                <span className="text-gray-400">Categoría:</span>
+                <span className="text-white font-semibold">
+                  {ingrediente.categoria}
+                </span>
+              </div>
+
               {/* Cantidad */}
               <div className="flex justify-between">
                 <span className="text-gray-400">Cantidad:</span>
                 <span className="text-white font-semibold">
-                  {ingrediente.cantidad} {ingrediente.unidad}
+                  {ingrediente.inventario.cantidad} {ingrediente.inventario.unidad}
                 </span>
               </div>
 
-              {/* Precio unitario */}
+              {/* Precio Base */}
               <div className="flex justify-between">
-                <span className="text-gray-400">P. Unitario:</span>
+                <span className="text-gray-400">P. Base:</span>
                 <span className="text-amber-400 font-semibold">
-                  ${ingrediente.precio_unitario.toFixed(2)}
+                  ${ingrediente.precioBase.toFixed(2)}
                 </span>
               </div>
 
-              {/* Total */}
-              <div className="bg-gray-700 rounded p-2 flex justify-between">
-                <span className="text-gray-300 font-semibold">Total:</span>
-                <span className="text-green-400 font-bold text-lg">
-                  ${total.toFixed(2)}
+              {/* Precio Extra */}
+              <div className="flex justify-between">
+                <span className="text-gray-400">P. Extra:</span>
+                <span className="text-green-400 font-semibold">
+                  ${ingrediente.precioExtra.toFixed(2)}
+                </span>
+              </div>
+
+              {/* Disponible */}
+              <div className="flex justify-between">
+                <span className="text-gray-400">Disponible:</span>
+                <span className="text-white font-semibold">
+                  {ingrediente.disponible ? '✅ Sí' : '❌ No'}
                 </span>
               </div>
 
               {/* Botones */}
               <div className="flex gap-2 mt-4">
                 <button
-                  onClick={() => onEditar(ingrediente)}
+                  onClick={() => handleEditar(ingrediente)}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold transition"
                 >
                   ✏️ Editar
                 </button>
                 <button
-                  onClick={() => onEliminar(ingrediente.id)}
+                  onClick={() => handleEliminar(ingrediente._id)}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-semibold transition"
                 >
                   🗑️ Eliminar

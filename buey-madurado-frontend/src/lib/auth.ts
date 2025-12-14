@@ -1,8 +1,17 @@
 import jwt from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secretoNode';
-const JWT_EXPIRATION = '2 hours';
+// ⚠️ IMPORTANTE: Usa exactamente la misma SECRET en login y validación
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET no está definida en .env.local');
+}
+
+// Assert para TypeScript: JWT_SECRET no será undefined a partir de aquí
+const JWT_SECRET_VERIFIED: string = JWT_SECRET;
+
+const JWT_EXPIRATION = '24 hours';
 
 export interface TokenPayload {
   usuario: string;
@@ -14,8 +23,8 @@ export interface TokenPayload {
 // Generar token (Bearer)
 export function generarToken(usuario: string, rol: string): string {
   return jwt.sign(
-    { usuario, rol }, 
-    JWT_SECRET, 
+    { usuario, rol },
+    JWT_SECRET_VERIFIED,
     { expiresIn: JWT_EXPIRATION }
   );
 }
@@ -23,9 +32,10 @@ export function generarToken(usuario: string, rol: string): string {
 // Validar token
 export function validarToken(token: string): TokenPayload | null {
   try {
-    const resultado = jwt.verify(token, JWT_SECRET);
+    const resultado = jwt.verify(token, JWT_SECRET_VERIFIED);
     return resultado as TokenPayload;
   } catch (e) {
+    console.error('Token validation error:', e);
     return null;
   }
 }
@@ -37,7 +47,10 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 // Comparar contraseña
-export async function compararPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+export async function compararPassword(
+  plainPassword: string,
+  hashedPassword: string
+): Promise<boolean> {
   return bcryptjs.compare(plainPassword, hashedPassword);
 }
 
@@ -50,7 +63,7 @@ export function extraerTokenDelHeader(authHeader: string | null): string | null 
   return null;
 }
 
-// Middleware de protección
+// Middleware de protección (para Express)
 export function protegerRuta(rolesPermitidos: string[] = []) {
   return (req: any, res: any, next: any) => {
     const authHeader = req.headers['authorization'];
@@ -59,23 +72,26 @@ export function protegerRuta(rolesPermitidos: string[] = []) {
     if (!token) {
       return res.status(401).json({
         ok: false,
-        error: 'Usuario no autorizado - No token'
+        error: 'Usuario no autorizado - No token',
       });
     }
 
     const resultado = validarToken(token);
-    
+
     if (!resultado) {
       return res.status(401).json({
         ok: false,
-        error: 'Usuario no autorizado - Invalid token'
+        error: 'Usuario no autorizado - Invalid token',
       });
     }
 
-    if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(resultado.rol)) {
+    if (
+      rolesPermitidos.length > 0 &&
+      !rolesPermitidos.includes(resultado.rol)
+    ) {
       return res.status(403).json({
         ok: false,
-        error: 'Permiso denegado - Rol insuficiente'
+        error: 'Permiso denegado - Rol insuficiente',
       });
     }
 

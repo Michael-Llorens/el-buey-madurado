@@ -2,9 +2,10 @@
 
 interface ButtonGridProps {
   setModo: (modo: 'add-product' | 'add-ingredient' | 'list-products' | 'list-ingredients') => void;
+  onListarIngredientes?: () => void; // ← NUEVA: para navegar a página de ingredientes
 }
 
-export default function ButtonGrid({ setModo }: ButtonGridProps) {
+export default function ButtonGrid({ setModo, onListarIngredientes }: ButtonGridProps) {
   const buttons = [
     {
       id: 'add-product',
@@ -36,7 +37,13 @@ export default function ButtonGrid({ setModo }: ButtonGridProps) {
       title: 'Listar Ingredientes',
       color: 'from-purple-500 to-purple-600',
       hoverColor: 'hover:from-purple-600 hover:to-purple-700',
-      action: () => setModo('list-ingredients'),
+      action: () => {
+        if (onListarIngredientes) {
+          onListarIngredientes(); // ← Llama a la función de navegación
+        } else {
+          setModo('list-ingredients'); // ← Fallback si no existe
+        }
+      },
     },
   ];
 

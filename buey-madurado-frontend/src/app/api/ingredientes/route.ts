@@ -1,68 +1,111 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/app/api/lib/conectBD';
+import { validarToken, extraerTokenDelHeader } from '@/lib/auth';
+import conectarDB from '@/app/api/lib/conectBD';
 import Ingrediente from '@/app/api/models/Ingredientes';
 
-// GET - LISTAR TODOS LOS INGREDIENTES
-export async function GET(req: NextRequest) {
+// ✅ GET: Obtener ingredientes
+export async function GET(request: NextRequest) {
   try {
-    await connectDB();
+    const authHeader = request.headers.get('authorization');
+    const token = extraerTokenDelHeader(authHeader);
 
-    const { searchParams } = new URL(req.url);
-    const activo = searchParams.get('activo');
-    const disponible = searchParams.get('disponible');
-    const categoria = searchParams.get('categoria');
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: 'No token provided' },
+        { status: 401 }
+      );
+    }
 
-    const filter: any = {};
-    if (activo !== null) filter.activo = activo === 'true';
-    if (disponible !== null) filter.disponible = disponible === 'true';
-    if (categoria) filter.categoria = categoria;
+    const payload = validarToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
 
-    const ingredientes = await Ingrediente.find(filter).sort({ nombre: 1 });
+    await conectarDB();
+    const ingredientes = await Ingrediente.find({});
 
     return NextResponse.json({
+      ok: true,
       success: true,
       data: ingredientes,
-      total: ingredientes.length,
     });
   } catch (error: any) {
+    console.error('Error fetching ingredientes:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { ok: false, error: error.message },
       { status: 500 }
     );
   }
 }
 
-// POST - CREAR NUEVO INGREDIENTE
-export async function POST(req: NextRequest) {
+// ✅ POST: Crear ingrediente
+export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-    const body = await req.json();
+    const authHeader = request.headers.get('authorization');
+    const token = extraerTokenDelHeader(authHeader);
 
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: 'No token provided' },
+        { status: 401 }
+      );
+    }
+
+    const payload = validarToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    await conectarDB();
+
+    const body = await request.json();
+
+    // Validar campos obligatorios
     if (!body.nombre || !body.categoria || body.precioBase === undefined || body.precioExtra === undefined) {
       return NextResponse.json(
-        { success: false, error: 'Faltan campos requeridos' },
+        { ok: false, error: 'Faltan campos obligatorios' },
         { status: 400 }
       );
     }
 
-    const existe = await Ingrediente.findOne({ nombre: body.nombre });
-    if (existe) {
-      return NextResponse.json(
-        { success: false, error: 'El ingrediente ya existe' },
-        { status: 400 }
-      );
-    }
+    // Crear nuevo ingrediente
+    const nuevoIngrediente = new Ingrediente({
+      nombre: body.nombre,
+      categoria: body.categoria,
+      descripcion: body.descripcion || '',
+      precioBase: Number(body.precioBase),
+      precioExtra: Number(body.precioExtra),
+      imagen: body.imagen || '',
+      inventario: {
+        cantidad: Number(body.inventario?.cantidad || 100),
+        unidad: body.inventario?.unidad || 'g',
+      },
+      alergenicos: body.alergenicos || [],
+      disponible: body.disponible !== undefined ? body.disponible : true,
+      activo: body.activo !== undefined ? body.activo : true,
+    });
 
-    const nuevoIngrediente = new Ingrediente(body);
     await nuevoIngrediente.save();
 
     return NextResponse.json(
-      { success: true, message: 'Ingrediente creado exitosamente', data: nuevoIngrediente },
+      {
+        ok: true,
+        success: true,
+        data: nuevoIngrediente,
+        message: 'Ingrediente creado exitosamente',
+      },
       { status: 201 }
     );
   } catch (error: any) {
+    console.error('Error creating ingrediente:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { ok: false, error: error.message },
       { status: 500 }
     );
   }

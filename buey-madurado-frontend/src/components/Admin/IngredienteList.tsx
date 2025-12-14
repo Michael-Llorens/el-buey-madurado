@@ -1,26 +1,87 @@
 'use client';
 
-interface Ingrediente {
-  id: string;
+import { useEffect, useState } from 'react';
+
+interface IngredienteFetch {
+  _id: string;
   nombre: string;
-  cantidad: number;
-  unidad: string;
-  precio_unitario: number;
-  createdAt: string;
+  categoria: string;
+  precioBase: number;
+  precioExtra: number;
+  inventario: {
+    cantidad: number;
+    unidad: string;
+  };
+  disponible: boolean;
+  activo: boolean;
 }
 
 interface IngredienteListProps {
-  ingredientes: Ingrediente[];
-  onEliminar: (id: string) => void;
+  onEliminar?: (id: string) => void;
 }
 
-export default function IngredienteList({ ingredientes, onEliminar }: IngredienteListProps) {
+export default function IngredienteList({ onEliminar }: IngredienteListProps) {
+  const [ingredientes, setIngredientes] = useState<IngredienteFetch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Cargar ingredientes desde la API
+  useEffect(() => {
+    const fetchIngredientes = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/ingredientes`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Error al cargar ingredientes');
+        }
+
+        setIngredientes(data.data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIngredientes();
+  }, []);
+
   const handleEliminar = (id: string) => {
     if (confirm('¿Estás seguro que quieres eliminar este ingrediente?')) {
-      onEliminar(id);
+      if (onEliminar) {
+        onEliminar(id);
+      }
       alert('✅ Ingrediente eliminado');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-8 text-center">
+        <p className="text-gray-400">Cargando ingredientes...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-8 text-center">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    );
+  }
 
   if (ingredientes.length === 0) {
     return (
@@ -31,7 +92,10 @@ export default function IngredienteList({ ingredientes, onEliminar }: Ingredient
     );
   }
 
-  const totalValor = ingredientes.reduce((sum, ing) => sum + (ing.cantidad * ing.precio_unitario), 0);
+  // Calcular valor total: cantidad * precioBase
+  const totalValor = ingredientes.reduce((sum, ing) => {
+    return sum + ing.inventario.cantidad * ing.precioBase;
+  }, 0);
 
   return (
     <div className="bg-gray-800 rounded-lg p-8">
@@ -42,22 +106,35 @@ export default function IngredienteList({ ingredientes, onEliminar }: Ingredient
           <thead>
             <tr className="bg-gray-700 border-b border-gray-600">
               <th className="px-4 py-2 text-left text-gray-200">Nombre</th>
+              <th className="px-4 py-2 text-left text-gray-200">Categoría</th>
               <th className="px-4 py-2 text-left text-gray-200">Cantidad</th>
-              <th className="px-4 py-2 text-left text-gray-200">Precio Unitario</th>
-              <th className="px-4 py-2 text-left text-gray-200">Valor Total</th>
+              <th className="px-4 py-2 text-left text-gray-200">Precio Base</th>
+              <th className="px-4 py-2 text-left text-gray-200">Precio Extra</th>
+              <th className="px-4 py-2 text-center text-gray-200">Disponible</th>
               <th className="px-4 py-2 text-center text-gray-200">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {ingredientes.map(ingrediente => (
-              <tr key={ingrediente.id} className="border-b border-gray-600 hover:bg-gray-700 transition">
-                <td className="px-4 py-3 text-white font-semibold">{ingrediente.nombre}</td>
-                <td className="px-4 py-3 text-gray-300">
-                  {ingrediente.cantidad} {ingrediente.unidad}
+            {ingredientes.map((ingrediente) => (
+              <tr
+                key={ingrediente._id}
+                className="border-b border-gray-600 hover:bg-gray-700 transition"
+              >
+                <td className="px-4 py-3 text-white font-semibold">
+                  {ingrediente.nombre}
                 </td>
-                <td className="px-4 py-3 text-amber-400">${ingrediente.precio_unitario.toFixed(2)}</td>
-                <td className="px-4 py-3 text-green-400 font-semibold">
-                  ${(ingrediente.cantidad * ingrediente.precio_unitario).toFixed(2)}
+                <td className="px-4 py-3 text-gray-300">{ingrediente.categoria}</td>
+                <td className="px-4 py-3 text-gray-300">
+                  {ingrediente.inventario.cantidad} {ingrediente.inventario.unidad}
+                </td>
+                <td className="px-4 py-3 text-amber-400">
+                  ${ingrediente.precioBase.toFixed(2)}
+                </td>
+                <td className="px-4 py-3 text-green-400">
+                  ${ingrediente.precioExtra.toFixed(2)}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {ingrediente.disponible ? '✅' : '❌'}
                 </td>
                 <td className="px-4 py-3 text-center space-x-2">
                   <button
@@ -67,7 +144,7 @@ export default function IngredienteList({ ingredientes, onEliminar }: Ingredient
                     ✏️ Editar
                   </button>
                   <button
-                    onClick={() => handleEliminar(ingrediente.id)}
+                    onClick={() => handleEliminar(ingrediente._id)}
                     className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm"
                   >
                     🗑️ Eliminar
@@ -80,8 +157,14 @@ export default function IngredienteList({ ingredientes, onEliminar }: Ingredient
       </div>
 
       <div className="mt-6 text-gray-300 text-sm space-y-2">
-        <p>Total de ingredientes: <span className="font-bold text-amber-400">{ingredientes.length}</span></p>
-        <p>Valor total en stock: <span className="font-bold text-green-400">${totalValor.toFixed(2)}</span></p>
+        <p>
+          Total de ingredientes:{' '}
+          <span className="font-bold text-amber-400">{ingredientes.length}</span>
+        </p>
+        <p>
+          Valor total en stock:{' '}
+          <span className="font-bold text-green-400">${totalValor.toFixed(2)}</span>
+        </p>
       </div>
     </div>
   );

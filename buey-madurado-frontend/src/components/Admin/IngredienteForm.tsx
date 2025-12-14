@@ -7,8 +7,8 @@ interface Ingrediente {
   nombre: string;
   categoria: string;
   descripcion: string;
-  precioBase: string;
-  precioExtra: string;
+  precioBase: number;
+  precioExtra: number;
   imagen: string;
   inventario: {
     cantidad: number;
@@ -21,17 +21,22 @@ interface Ingrediente {
 
 interface IngredienteFormProps {
   ingrediente?: Ingrediente | null;
-  onGuardar: (ingrediente: any) => void;
+  onGuardar: (ingrediente: Ingrediente) => void;
   onCancelar: () => void;
 }
 
-export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: IngredienteFormProps) {
+export default function IngredienteForm({
+  ingrediente,
+  onGuardar,
+  onCancelar,
+}: IngredienteFormProps) {
+
   const [form, setForm] = useState<Ingrediente>({
     nombre: '',
     categoria: 'carne',
     descripcion: '',
-    precioBase: '',
-    precioExtra: '',
+    precioBase: 0,
+    precioExtra: 0,
     imagen: '',
     inventario: {
       cantidad: 100,
@@ -45,9 +50,26 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const categorias = ['carne', 'queso', 'salsa', 'vegetal', 'topping', 'pan', 'otros'];
+  const categorias = [
+    'carne',
+    'queso',
+    'salsa',
+    'vegetal',
+    'topping',
+    'pan',
+    'otros',
+  ];
   const unidades = ['g', 'ml', 'unidad', 'porcion'];
-  const alergenos = ['gluten', 'lácteos', 'frutos secos', 'maní', 'huevo', 'pescado', 'marisco', 'soja'];
+  const alergenos = [
+    'gluten',
+    'lácteos',
+    'frutos secos',
+    'maní',
+    'huevo',
+    'pescado',
+    'marisco',
+    'soja',
+  ];
 
   useEffect(() => {
     if (ingrediente) {
@@ -55,33 +77,41 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
     }
   }, [ingrediente]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value, type } = e.target as HTMLInputElement;
     const checked = (e.target as HTMLInputElement).checked;
 
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof Ingrediente] as Record<string, any>,
-          [child]: type === 'number' ? Number(value) : value
-        }
+          ...(prev[parent as keyof Ingrediente] as Record<string, any>),
+          [child]:
+            type === 'number' ? Number(value) : value,
+        },
       }));
     } else {
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
-        [name]: type === 'checkbox' ? checked : (type === 'number' ? Number(value) : value)
+        [name]:
+          type === 'checkbox'
+            ? checked
+            : type === 'number'
+              ? Number(value)
+              : value,
       }));
     }
   };
 
   const handleAlergenos = (alergen: string) => {
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       alergenicos: prev.alergenicos.includes(alergen)
-        ? prev.alergenicos.filter(a => a !== alergen)
-        : [...prev.alergenicos, alergen]
+        ? prev.alergenicos.filter((a) => a !== alergen)
+        : [...prev.alergenicos, alergen],
     }));
   };
 
@@ -91,29 +121,68 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
     setError('');
 
     try {
-      if (!form.nombre || !form.precioBase || !form.precioExtra) {
+      if (!form.nombre || form.precioBase === undefined || form.precioExtra === undefined) {
         throw new Error('Por favor llena los campos obligatorios');
       }
 
-      const nuevoIngrediente = {
-        _id: ingrediente?._id || Date.now().toString(),
-        ...form,
-        precioBase: parseFloat(form.precioBase),
-        precioExtra: parseFloat(form.precioExtra),
+      // ✅ Obtener token
+      const token = localStorage.getItem('authToken');
+
+      if (!token) {
+        throw new Error('No hay sesión iniciada');
+      }
+
+      // ✅ Preparar datos para enviar a la API
+      const datosIngrediente = {
+        nombre: form.nombre,
+        categoria: form.categoria,
+        descripcion: form.descripcion,
+        precioBase: Number(form.precioBase),
+        precioExtra: Number(form.precioExtra),
+        imagen: form.imagen,
         inventario: {
-          ...form.inventario,
-          cantidad: Number(form.inventario.cantidad)
-        }
+          cantidad: Number(form.inventario.cantidad),
+          unidad: form.inventario.unidad,
+        },
+        alergenicos: form.alergenicos,
+        disponible: form.disponible,
+        activo: form.activo,
       };
 
-      onGuardar(nuevoIngrediente);
+      // ✅ Si es edición (tiene _id), hacer PUT. Si no, hacer POST
+      const metodo = ingrediente ? 'PUT' : 'POST';
+      const url = ingrediente
+        ? `/api/ingredientes/${ingrediente._id}`
+        : '/api/ingredientes';
+
+      const res = await fetch(url, {
+        method: metodo,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(datosIngrediente),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.error || `Error ${res.status}: ${res.statusText}`
+        );
+      }
+
+      console.log('✅ Ingrediente guardado:', data.data);
+      onGuardar(data.data);
+
+      // Limpiar formulario si es nuevo ingrediente
       if (!ingrediente) {
         setForm({
           nombre: '',
           categoria: 'carne',
           descripcion: '',
-          precioBase: '',
-          precioExtra: '',
+          precioBase: 0,
+          precioExtra: 0,
           imagen: '',
           inventario: { cantidad: 100, unidad: 'g' },
           alergenicos: [],
@@ -122,7 +191,9 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
         });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error:', errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -137,7 +208,7 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
 
       {error && (
         <div className="bg-red-900/30 text-red-300 p-3 rounded mb-4 border border-red-500 text-sm">
-          {error}
+          ❌ {error}
         </div>
       )}
 
@@ -169,7 +240,7 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
               onChange={handleChange}
               className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-amber-400"
             >
-              {categorias.map(cat => (
+              {categorias.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </option>
@@ -249,7 +320,9 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
 
         {/* INVENTARIO */}
         <div className="bg-gray-700 p-4 rounded">
-          <h3 className="text-sm font-semibold text-amber-400 mb-3">📦 Inventario</h3>
+          <h3 className="text-sm font-semibold text-amber-400 mb-3">
+            📦 Inventario
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -275,9 +348,15 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
                 onChange={handleChange}
                 className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:border-amber-400"
               >
-                {unidades.map(u => (
+                {unidades.map((u) => (
                   <option key={u} value={u}>
-                    {u === 'unidad' ? 'Unidades' : u === 'ml' ? 'Mililitros (ml)' : u === 'g' ? 'Gramos (g)' : 'Porciones'}
+                    {u === 'unidad'
+                      ? 'Unidades'
+                      : u === 'ml'
+                        ? 'Mililitros (ml)'
+                        : u === 'g'
+                          ? 'Gramos (g)'
+                          : 'Porciones'}
                   </option>
                 ))}
               </select>
@@ -287,17 +366,24 @@ export default function IngredienteForm({ ingrediente, onGuardar, onCancelar }: 
 
         {/* ALÉRGENOS */}
         <div className="bg-gray-700 p-4 rounded">
-          <h3 className="text-sm font-semibold text-amber-400 mb-3">⚠️ Alérgenos</h3>
+          <h3 className="text-sm font-semibold text-amber-400 mb-3">
+            ⚠️ Alérgenos
+          </h3>
           <div className="grid grid-cols-2 gap-2">
-            {alergenos.map(alergen => (
-              <label key={alergen} className="flex items-center gap-2 cursor-pointer">
+            {alergenos.map((alergen) => (
+              <label
+                key={alergen}
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <input
                   type="checkbox"
                   checked={form.alergenicos.includes(alergen)}
                   onChange={() => handleAlergenos(alergen)}
                   className="w-4 h-4"
                 />
-                <span className="text-sm text-gray-300 capitalize">{alergen}</span>
+                <span className="text-sm text-gray-300 capitalize">
+                  {alergen}
+                </span>
               </label>
             ))}
           </div>

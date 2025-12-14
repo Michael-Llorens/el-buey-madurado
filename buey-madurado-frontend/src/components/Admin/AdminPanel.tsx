@@ -134,12 +134,7 @@ export default function AdminPanel() {
           >
             ← Volver
           </button>
-          <IngredienteList 
-            ingredientes={ingredientes}
-            onEliminar={(id) => {
-              setIngredientes(ingredientes.filter(i => i.id !== id));
-            }}
-          />
+          <IngredienteList/>
         </div>
       )}
     </div>

@@ -1,20 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ButtonGrid from '@/components/Admin/ButtonGrid';
 import ProductoForm from '@/components/Admin/ProductoForm';
 import IngredienteForm from '@/components/Admin/IngredienteForm';
 import ProductCardGrid from '@/components/Admin/ProductCardGrid';
 import IngredientCardGrid from '@/components/Admin/IngredientCardGrid';
 
-type Modo = 
-  | 'home' 
-  | 'add-product' 
-  | 'add-ingredient' 
-  | 'list-products' 
+type Modo =
+  | 'home'
+  | 'add-product'
+  | 'add-ingredient'
+  | 'list-products'
   | 'list-ingredients';
 
 export default function StockPanel() {
+  const router = useRouter(); // ← NUEVO
   const [modo, setModo] = useState<Modo>('home');
   const [productos, setProductos] = useState<any[]>([]);
   const [ingredientes, setIngredientes] = useState<any[]>([]);
@@ -23,11 +25,9 @@ export default function StockPanel() {
 
   const handleGuardarProducto = (producto: any) => {
     if (productoEditar) {
-      // Editar
       setProductos(productos.map(p => p.id === producto.id ? producto : p));
       setProductoEditar(null);
     } else {
-      // Crear
       setProductos([...productos, { ...producto, id: Date.now().toString() }]);
     }
     setModo('list-products');
@@ -35,14 +35,15 @@ export default function StockPanel() {
 
   const handleGuardarIngrediente = (ingrediente: any) => {
     if (ingredienteEditar) {
-      // Editar
       setIngredientes(ingredientes.map(i => i.id === ingrediente.id ? ingrediente : i));
       setIngredienteEditar(null);
     } else {
-      // Crear
       setIngredientes([...ingredientes, { ...ingrediente, id: Date.now().toString() }]);
     }
-    setModo('list-ingredients');
+
+    // ANTES: setModo('list-ingredients');
+    // AHORA: ir a la página de lista de ingredientes
+    router.push('/admin/productos');
   };
 
   const handleEditarProducto = (producto: any) => {
@@ -75,12 +76,10 @@ export default function StockPanel() {
 
   return (
     <div className="space-y-8">
-      {/* 4 BOTONES RESPONSIVE */}
       {modo === 'home' && (
         <ButtonGrid setModo={setModo} />
       )}
 
-      {/* FORMULARIO DINÁMICO */}
       {(modo === 'add-product' || modo === 'add-ingredient') && (
         <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
           {modo === 'add-product' && (
@@ -100,7 +99,6 @@ export default function StockPanel() {
         </div>
       )}
 
-      {/* LISTA DE PRODUCTOS */}
       {modo === 'list-products' && (
         <div>
           <h2 className="text-2xl font-bold text-amber-400 mb-6">📦 Productos</h2>
@@ -118,12 +116,10 @@ export default function StockPanel() {
         </div>
       )}
 
-      {/* LISTA DE INGREDIENTES */}
       {modo === 'list-ingredients' && (
         <div>
           <h2 className="text-2xl font-bold text-amber-400 mb-6">🥘 Ingredientes</h2>
           <IngredientCardGrid
-            ingredientes={ingredientes}
             onEditar={handleEditarIngrediente}
             onEliminar={handleEliminarIngrediente}
           />
