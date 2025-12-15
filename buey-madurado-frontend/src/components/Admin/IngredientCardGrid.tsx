@@ -52,7 +52,7 @@ export default function IngredientCardGrid({
         console.log('Token encontrado:', token.substring(0, 20) + '...');
 
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/ingredientes`,
+          `api/ingredientes`,
           {
             method: 'GET',
             headers: {
