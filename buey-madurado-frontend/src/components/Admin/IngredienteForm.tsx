@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Ingrediente {
   _id?: string;
@@ -30,6 +31,7 @@ export default function IngredienteForm({
   onGuardar,
   onCancelar,
 }: IngredienteFormProps) {
+  const router = useRouter(); // ← NUEVO
 
   const [form, setForm] = useState<Ingrediente>({
     nombre: '',
@@ -125,14 +127,12 @@ export default function IngredienteForm({
         throw new Error('Por favor llena los campos obligatorios');
       }
 
-      // ✅ Obtener token
       const token = localStorage.getItem('authToken');
 
       if (!token) {
         throw new Error('No hay sesión iniciada');
       }
 
-      // ✅ Preparar datos para enviar a la API
       const datosIngrediente = {
         nombre: form.nombre,
         categoria: form.categoria,
@@ -149,7 +149,6 @@ export default function IngredienteForm({
         activo: form.activo,
       };
 
-      // ✅ Si es edición (tiene _id), hacer PUT. Si no, hacer POST
       const metodo = ingrediente ? 'PUT' : 'POST';
       const url = ingrediente
         ? `/api/ingredientes/${ingrediente._id}`
@@ -174,6 +173,11 @@ export default function IngredienteForm({
 
       console.log('✅ Ingrediente guardado:', data.data);
       onGuardar(data.data);
+
+      // ✅ Si es EDICIÓN, refresca los datos
+      if (ingrediente) {
+        window.location.reload();
+      }
 
       // Limpiar formulario si es nuevo ingrediente
       if (!ingrediente) {

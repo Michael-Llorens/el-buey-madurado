@@ -41,9 +41,9 @@ export default function StockPanel() {
       setIngredientes([...ingredientes, { ...ingrediente, id: Date.now().toString() }]);
     }
 
-    // ANTES: setModo('list-ingredients');
-    // AHORA: ir a la página de lista de ingredientes
     router.push('/admin/productos');
+
+    // router.refresh();
   };
 
   const handleEditarProducto = (producto: any) => {

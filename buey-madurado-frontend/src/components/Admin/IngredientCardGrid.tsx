@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface IngredienteFetch {
   _id: string;
@@ -25,10 +26,12 @@ export default function IngredientCardGrid({
   onEditar,
   onEliminar,
 }: IngredientCardGridProps) {
+  const router = useRouter();
   const [ingredientes, setIngredientes] = useState<IngredienteFetch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false); // ← NUEVO
+  const [mounted, setMounted] = useState(false);
+  const [eliminando, setEliminando] = useState<string | null>(null); // ← NUEVO
 
   // Marcar cuando el componente está montado en el cliente
   useEffect(() => {
@@ -51,7 +54,6 @@ export default function IngredientCardGrid({
 
         console.log('Token encontrado:', token.substring(0, 20) + '...');
 
-        // ✅ URL ABSOLUTA (comenzar con /)
         const res = await fetch('/api/ingredientes', {
           method: 'GET',
           headers: {
@@ -84,13 +86,58 @@ export default function IngredientCardGrid({
     fetchIngredientes();
   }, [mounted]);
 
-  const handleEliminar = (id: string) => {
-    if (confirm('¿Estás seguro que quieres eliminar este ingrediente?')) {
-      if (onEliminar) {
-        onEliminar(id);
+  const handleEliminar = async (id: string) => {
+    if (confirm('¿Estás seguro que quieres eliminar este ingrediente? Esta acción no se puede deshacer.')) {
+      setEliminando(id); // ← NUEVO - Mostrar loading
+
+      try {
+        const token = localStorage.getItem('authToken');
+
+        if (!token) {
+          alert('❌ No hay sesión iniciada');
+          setEliminando(null);
+          return;
+        }
+
+        console.log('🗑️ Enviando DELETE para ID:', id);
+
+        const res = await fetch(`/api/ingredientes/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json();
+        console.log('📦 Respuesta DELETE:', data);
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || `Error ${res.status}`);
+        }
+
+        console.log('✅ Ingrediente eliminado exitosamente');
+
+        // Eliminar de la lista local
+        setIngredientes(ingredientes.filter((ing) => ing._id !== id));
+
+        // Ejecutar callback si existe
+        if (onEliminar) {
+          onEliminar(id);
+        }
+
+        alert('✅ Ingrediente eliminado exitosamente');
+
+        // Refresca la página después de 1 segundo
+        setTimeout(() => {
+          router.refresh();
+        }, 1000);
+      } catch (error: any) {
+        console.error('❌ Error al eliminar:', error);
+        alert(`❌ Error: ${error.message}`);
+      } finally {
+        setEliminando(null); // ← NUEVO
       }
-      setIngredientes(ingredientes.filter((ing) => ing._id !== id));
-      alert('✅ Ingrediente eliminado');
     }
   };
 
@@ -127,6 +174,7 @@ export default function IngredientCardGrid({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {ingredientes.map((ingrediente) => {
+        const isDeleting = eliminando === ingrediente._id;
 
         return (
           <div
@@ -187,15 +235,17 @@ export default function IngredientCardGrid({
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={() => handleEditar(ingrediente)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold transition"
+                  disabled={isDeleting}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-2 rounded font-semibold transition"
                 >
                   ✏️ Editar
                 </button>
                 <button
                   onClick={() => handleEliminar(ingrediente._id)}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-semibold transition"
+                  disabled={isDeleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-2 rounded font-semibold transition"
                 >
-                  🗑️ Eliminar
+                  {isDeleting ? '⏳ Eliminando...' : '🗑️ Eliminar'}
                 </button>
               </div>
             </div>

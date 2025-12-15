@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/app/api/lib/conectBD';
 import Ingrediente from '@/app/api/models/Ingredientes';
 import { Types } from 'mongoose';
+import { validarToken, extraerTokenDelHeader } from '@/lib/auth';
 
 // GET - OBTENER UN INGREDIENTE POR ID
 export async function GET(
@@ -10,12 +11,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
+
     await connectDB();
 
     if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, error: 'ID inválido' },
+        { ok: false, error: 'ID inválido' },
         { status: 400 }
       );
     }
@@ -24,15 +25,15 @@ export async function GET(
 
     if (!ingrediente) {
       return NextResponse.json(
-        { success: false, error: 'Ingrediente no encontrado' },
+        { ok: false, error: 'Ingrediente no encontrado' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, data: ingrediente });
+    return NextResponse.json({ ok: true, data: ingrediente });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error.message },
+      { ok: false, error: error.message },
       { status: 500 }
     );
   }
@@ -40,22 +41,40 @@ export async function GET(
 
 // PUT - EDITAR UN INGREDIENTE
 export async function PUT(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    
+
+    const authHeader = req.headers.get('authorization');
+    const token = extraerTokenDelHeader(authHeader);
+
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: 'No token provided' },
+        { status: 401 }
+      );
+    }
+
+    const payload = validarToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
 
     if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, error: 'ID inválido' },
+        { ok: false, error: 'ID inválido' },
         { status: 400 }
       );
     }
 
-    const body = await _req.json();
+    const body = await req.json();
     const ingredienteActualizado = await Ingrediente.findByIdAndUpdate(
       id,
       body,
@@ -64,62 +83,82 @@ export async function PUT(
 
     if (!ingredienteActualizado) {
       return NextResponse.json(
-        { success: false, error: 'Ingrediente no encontrado' },
+        { ok: false, error: 'Ingrediente no encontrado' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
-      success: true,
+      ok: true,
       message: 'Ingrediente actualizado exitosamente',
       data: ingredienteActualizado,
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error.message },
+      { ok: false, error: error.message },
       { status: 500 }
     );
   }
 }
 
-// DELETE - DESACTIVAR INGREDIENTE (SOFT DELETE)
+// DELETE - ELIMINAR INGREDIENTE DE LA BASE DE DATOS
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    
+
+    console.log('🗑️ DELETE request recibido para ID:', id);
+
+    const authHeader = req.headers.get('authorization');
+    const token = extraerTokenDelHeader(authHeader);
+
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: 'No token provided' },
+        { status: 401 }
+      );
+    }
+
+    const payload = validarToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { ok: false, error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
 
     if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
-        { success: false, error: 'ID inválido' },
+        { ok: false, error: 'ID inválido' },
         { status: 400 }
       );
     }
 
-    const ingredienteDesactivado = await Ingrediente.findByIdAndUpdate(
-      id,
-      { activo: false },
-      { new: true }
-    );
+    // ✅ CAMBIO: Usar findByIdAndDelete en lugar de findByIdAndUpdate
+    const ingredienteEliminado = await Ingrediente.findByIdAndDelete(id);
 
-    if (!ingredienteDesactivado) {
+    console.log('📦 Resultado:', ingredienteEliminado ? 'Eliminado' : 'No encontrado');
+
+    if (!ingredienteEliminado) {
       return NextResponse.json(
-        { success: false, error: 'Ingrediente no encontrado' },
+        { ok: false, error: 'Ingrediente no encontrado' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({
-      success: true,
-      message: 'Ingrediente desactivado exitosamente',
-      data: ingredienteDesactivado,
+      ok: true,
+      message: 'Ingrediente eliminado exitosamente',
+      data: ingredienteEliminado,
     });
   } catch (error: any) {
+    console.error('❌ Error en DELETE:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { ok: false, error: error.message },
       { status: 500 }
     );
   }
