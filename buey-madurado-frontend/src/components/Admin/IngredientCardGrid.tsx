@@ -37,7 +37,7 @@ export default function IngredientCardGrid({
 
   // Cargar ingredientes desde la API (SOLO en el cliente)
   useEffect(() => {
-    if (!mounted) return; // ← Esperar a que esté montado
+    if (!mounted) return;
 
     const fetchIngredientes = async () => {
       try {
@@ -51,21 +51,17 @@ export default function IngredientCardGrid({
 
         console.log('Token encontrado:', token.substring(0, 20) + '...');
 
-        const res = await fetch(
-          `api/ingredientes`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`, // ← CON Bearer
-            },
-          }
-        );
+        // ✅ URL ABSOLUTA (comenzar con /)
+        const res = await fetch('/api/ingredientes', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         console.log('Response status:', res.status);
-
         const data = await res.json();
-
         console.log('Response data:', data);
 
         if (!res.ok) {
@@ -86,7 +82,7 @@ export default function IngredientCardGrid({
     };
 
     fetchIngredientes();
-  }, [mounted]); // ← Dependencia en mounted
+  }, [mounted]);
 
   const handleEliminar = (id: string) => {
     if (confirm('¿Estás seguro que quieres eliminar este ingrediente?')) {
