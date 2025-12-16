@@ -4,15 +4,13 @@ import Ingrediente from '@/app/api/models/Ingredientes';
 import { Types } from 'mongoose';
 import { validarToken, extraerTokenDelHeader } from '@/lib/auth';
 
-// Updated: 16/12/2025
-
 // GET - OBTENER UN INGREDIENTE POR ID
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }   // ✅ sin Promise
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;                 // ✅ sin await
 
     await connectDB();
 
@@ -44,10 +42,10 @@ export async function GET(
 // PUT - EDITAR UN INGREDIENTE
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;          
 
     const authHeader = req.headers.get('authorization');
     const token = extraerTokenDelHeader(authHeader);
@@ -106,10 +104,10 @@ export async function PUT(
 // DELETE - ELIMINAR INGREDIENTE DE LA BASE DE DATOS
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }  
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;          
 
     console.log('🗑️ DELETE request recibido para ID:', id);
 
@@ -140,7 +138,6 @@ export async function DELETE(
       );
     }
 
-    // ✅ CAMBIO: Usar findByIdAndDelete
     const ingredienteEliminado = await Ingrediente.findByIdAndDelete(id);
 
     console.log('📦 Resultado:', ingredienteEliminado ? 'Eliminado' : 'No encontrado');
