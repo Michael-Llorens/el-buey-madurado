@@ -138,7 +138,7 @@ export async function DELETE(
       );
     }
 
-    // ✅ CAMBIO: Usar findByIdAndDelete en lugar de findByIdAndUpdate
+    // ✅ CAMBIO: Usar findByIdAndDelete
     const ingredienteEliminado = await Ingrediente.findByIdAndDelete(id);
 
     console.log('📦 Resultado:', ingredienteEliminado ? 'Eliminado' : 'No encontrado');

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 
 interface Ingrediente {
   _id?: string;
@@ -31,7 +30,6 @@ export default function IngredienteForm({
   onGuardar,
   onCancelar,
 }: IngredienteFormProps) {
-  const router = useRouter(); // ← NUEVO
 
   const [form, setForm] = useState<Ingrediente>({
     nombre: '',
