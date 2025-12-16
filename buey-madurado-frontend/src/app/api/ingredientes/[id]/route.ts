@@ -4,13 +4,15 @@ import Ingrediente from '@/app/api/models/Ingredientes';
 import { Types } from 'mongoose';
 import { validarToken, extraerTokenDelHeader } from '@/lib/auth';
 
+// ✅ CORRECTO PARA NEXT.JS 16 - Updated: 16/12/2025
+
 // GET - OBTENER UN INGREDIENTE POR ID
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }   // ✅ sin Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;                 // ✅ sin await
+    const { id } = await params;
 
     await connectDB();
 
@@ -32,6 +34,7 @@ export async function GET(
 
     return NextResponse.json({ ok: true, data: ingrediente });
   } catch (error: any) {
+    console.error('❌ Error en GET:', error);
     return NextResponse.json(
       { ok: false, error: error.message },
       { status: 500 }
@@ -42,10 +45,10 @@ export async function GET(
 // PUT - EDITAR UN INGREDIENTE
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;          
+    const { id } = await params;
 
     const authHeader = req.headers.get('authorization');
     const token = extraerTokenDelHeader(authHeader);
@@ -94,6 +97,7 @@ export async function PUT(
       data: ingredienteActualizado,
     });
   } catch (error: any) {
+    console.error('❌ Error en PUT:', error);
     return NextResponse.json(
       { ok: false, error: error.message },
       { status: 500 }
@@ -104,10 +108,10 @@ export async function PUT(
 // DELETE - ELIMINAR INGREDIENTE DE LA BASE DE DATOS
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }  
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;          
+    const { id } = await params;
 
     console.log('🗑️ DELETE request recibido para ID:', id);
 
