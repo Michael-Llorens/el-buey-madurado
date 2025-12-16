@@ -4,6 +4,8 @@ import Ingrediente from '@/app/api/models/Ingredientes';
 import { Types } from 'mongoose';
 import { validarToken, extraerTokenDelHeader } from '@/lib/auth';
 
+// Updated: 16/12/2025
+
 // GET - OBTENER UN INGREDIENTE POR ID
 export async function GET(
   _req: NextRequest,
