@@ -9,7 +9,7 @@ import './carta.css';
 const slides = [
   { key: 'Entrantes', titulo: 'Entrantes' },
   { key: 'Carnes', titulo: 'Carnes' },
-  { key: 'Sndwich y hamburguesas', titulo: 'Sndwich y hamburguesas' },
+  { key: 'Hamburguesas', titulo: 'Hamburguesas' },
   { key: 'Postres', titulo: 'Postres' },
 ];
 
@@ -26,7 +26,6 @@ export default function CartaPage() {
 
   const cartaSectionRef = useRef<HTMLDivElement>(null);
   const cartaWrapperRef = useRef<HTMLDivElement>(null);
-  const buttonContainerRef = useRef<HTMLDivElement>(null);
 
   // Precargar imágenes
   useEffect(() => {
@@ -54,23 +53,14 @@ export default function CartaPage() {
     });
   }, [imagesLoaded]);
 
-  const handlePrev = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setAnimationDirection('right');
-    setTimeout(() => {
-      setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-      setAnimationDirection(null);
-      setIsAnimating(false);
-    }, 1000);
-  };
+  const handleNavegaCategoria = (index: number) => {
+    if (index === currentSlide || isAnimating) return;
 
-  const handleNext = () => {
-    if (isAnimating) return;
+    setAnimationDirection(index > currentSlide ? 'left' : 'right');
     setIsAnimating(true);
-    setAnimationDirection('left');
+    setCurrentSlide(index);
+
     setTimeout(() => {
-      setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
       setAnimationDirection(null);
       setIsAnimating(false);
     }, 1000);
@@ -196,220 +186,186 @@ export default function CartaPage() {
   );
 
   return (
-    <section className="carta-section" ref={cartaSectionRef}>
-      <div className="carta-container">
-        <div className="carta-header">
-          <h1 className="carta-title">Nuestra Carta</h1>
-          <p className="carta-subtitle">
-            Descubre nuestras especialidades elaboradas con carne madurada y
-            productos de proximidad.
-          </p>
-        </div>
+    <>
+      {/* NAVBAR FIJA CON BOTONES DE CATEGORÍAS */}
+      <nav className="carta-nav-categorias">
+        {slides.map((slide, index) => (
+          <button
+            key={slide.key}
+            onClick={() => handleNavegaCategoria(index)}
+            className={`carta-nav-btn ${index === currentSlide ? 'carta-nav-btn-active' : ''
+              }`}
+            aria-label={`Ver categoría ${slide.titulo}`}
+            disabled={isAnimating}
+          >
+            {slide.titulo}
+          </button>
+        ))}
+      </nav>
 
-        <div className="carta-wrapper" ref={cartaWrapperRef}>
-          <div className="carta-page-wrapper">
-            <div className="carta-page carta-page-bottom">
-              {renderCartaContent(
-                nextCategoria,
-                nextTitulo,
-                nextProductosFiltrados
-              )}
-            </div>
+      <section className="carta-section" ref={cartaSectionRef}>
+        <div className="carta-container">
+          <div className="carta-header">
+            <h1 className="carta-title">Nuestra Carta</h1>
+            <p className="carta-subtitle">
+              Descubre nuestras especialidades elaboradas con carne madurada y
+              productos de proximidad.
+            </p>
+          </div>
 
-            <div
-              className={`carta-page carta-page-top ${
-                isAnimating && animationDirection === 'left'
+          <div className="carta-wrapper" ref={cartaWrapperRef}>
+            <div className="carta-page-wrapper">
+              <div className="carta-page carta-page-bottom">
+                {renderCartaContent(
+                  nextCategoria,
+                  nextTitulo,
+                  nextProductosFiltrados
+                )}
+              </div>
+
+              <div
+                className={`carta-page carta-page-top ${isAnimating && animationDirection === 'left'
                   ? 'carta-page-out-left'
                   : isAnimating && animationDirection === 'right'
-                  ? 'carta-page-out-right'
-                  : ''
-              }`}
-            >
-              {renderCartaContent(
-                activeCategoria,
-                activoTitulo,
-                productosFiltrados
-              )}
-            </div>
-            {/* BOTONES FIJOS RESPONSIVOS - ENTRE PRODUCTOS Y BORDE */}
-            <div className="carta-buttons-fixed-container" ref={buttonContainerRef}>
-              <button
-                onClick={handlePrev}
-                className="carta-button carta-button-prev"
-                aria-label="Categoría anterior"
-                disabled={isAnimating}
+                    ? 'carta-page-out-right'
+                    : ''
+                  }`}
               >
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 32 32"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 8L10 16L20 24" />
-                </svg>
-              </button>
+                {renderCartaContent(
+                  activeCategoria,
+                  activoTitulo,
+                  productosFiltrados
+                )}
+              </div>
+            </div>
+          </div>
 
+          <div className="carta-indicators">
+            {slides.map((_, index) => (
               <button
-                onClick={handleNext}
-                className="carta-button carta-button-next"
-                aria-label="Categoría siguiente"
+                key={index}
+                onClick={() => {
+                  if (!isAnimating) handleNavegaCategoria(index);
+                }}
+                className={`carta-indicator ${index === currentSlide ? 'carta-indicator-active' : ''
+                  }`}
                 disabled={isAnimating}
-              >
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 32 32"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 8L22 16L12 24" />
-                </svg>
-              </button>
-            </div>
+              ></button>
+            ))}
           </div>
         </div>
 
-        <div className="carta-indicators">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                if (!isAnimating) setCurrentSlide(index);
-              }}
-              className={`carta-indicator ${
-                index === currentSlide ? 'carta-indicator-active' : ''
-              }`}
-              disabled={isAnimating}
-            ></button>
-          ))}
-        </div>
-      </div>
-
-      {/* MODAL */}
-      {productoSeleccionado && (
-        <div
-          className="carta-modal-overlay"
-          onClick={handleCerrarProducto}
-        >
+        {/* MODAL */}
+        {productoSeleccionado && (
           <div
-            className="carta-modal"
-            onClick={(e) => e.stopPropagation()}
+            className="carta-modal-overlay"
+            onClick={handleCerrarProducto}
           >
-            <button
-              onClick={handleCerrarProducto}
-              className="carta-modal-close"
-              aria-label="Cerrar"
+            <div
+              className="carta-modal"
+              onClick={(e) => e.stopPropagation()}
             >
-              ✕
-            </button>
+              <button
+                onClick={handleCerrarProducto}
+                className="carta-modal-close"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
 
-            <div className="carta-modal-content">
-              <div className="carta-modal-image-wrapper">
-                {menuImages[productoSeleccionado.id as keyof typeof menuImages] ? (
-                  <img
-                    src={
-                      menuImages[
-                        productoSeleccionado.id as keyof typeof menuImages
-                      ]
-                    }
+              <div className="carta-modal-content">
+                <div className="carta-modal-image-wrapper">
+                  <CldImage
+                    src={menuImages[productoSeleccionado.id as keyof typeof menuImages]}
                     alt={productoSeleccionado.nombre}
-                    className="carta-modal-image"
+                    width={400}
+                    height={300}
+                    className="carta-product-image"
                   />
-                ) : (
-                  <div className="carta-modal-image-placeholder">
-                    <span>Sin imagen disponible</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="carta-modal-info">
-                <div>
-                  <h2 className="carta-modal-title">
-                    {productoSeleccionado.nombre}
-                  </h2>
-                  <div className="carta-modal-divider"></div>
                 </div>
 
-                <div>
-                  <div className="carta-modal-price-group">
-                    <span className="carta-modal-label">Precio</span>
-                    <span className="carta-modal-price">
-                      €{productoSeleccionado.precio.toFixed(2)}
-                    </span>
+                <div className="carta-modal-info">
+                  <div>
+                    <h2 className="carta-modal-title">
+                      {productoSeleccionado.nombre}
+                    </h2>
+                    <div className="carta-modal-divider"></div>
                   </div>
 
-                  <div className="carta-modal-category-group">
-                    <span className="carta-modal-label">Categoría</span>
-                    <span className="carta-modal-badge">
-                      {productoSeleccionado.categoria}
-                    </span>
+                  <div>
+                    <div className="carta-modal-price-group">
+                      <span className="carta-modal-label">Precio</span>
+                      <span className="carta-modal-price">
+                        €{productoSeleccionado.precio.toFixed(2)}
+                      </span>
+                    </div>
+
+                    <div className="carta-modal-category-group">
+                      <span className="carta-modal-label">Categoría</span>
+                      <span className="carta-modal-badge">
+                        {productoSeleccionado.categoria}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <h3 className="carta-modal-subtitle">Descripción</h3>
-                  <p className="carta-modal-description">
-                    {productoSeleccionado.descripcion}
-                  </p>
-                </div>
+                  <div>
+                    <h3 className="carta-modal-subtitle">Descripción</h3>
+                    <p className="carta-modal-description">
+                      {productoSeleccionado.descripcion}
+                    </p>
+                  </div>
 
-                {(productoSeleccionado.detalle ||
-                  productoSeleccionado.incluye ||
-                  productoSeleccionado.tipo) && (
-                  <div className="carta-modal-details-box">
-                    {productoSeleccionado.detalle && (
-                      <div>
-                        <span className="carta-modal-details-label">
-                          INFORMACIÓN
-                        </span>
-                        <p className="carta-modal-details-text">
-                          {productoSeleccionado.detalle}
-                        </p>
+                  {(productoSeleccionado.detalle ||
+                    productoSeleccionado.incluye ||
+                    productoSeleccionado.tipo) && (
+                      <div className="carta-modal-details-box">
+                        {productoSeleccionado.detalle && (
+                          <div>
+                            <span className="carta-modal-details-label">
+                              INFORMACIÓN
+                            </span>
+                            <p className="carta-modal-details-text">
+                              {productoSeleccionado.detalle}
+                            </p>
+                          </div>
+                        )}
+
+                        {productoSeleccionado.incluye && (
+                          <div>
+                            <span className="carta-modal-details-label">
+                              INCLUYE
+                            </span>
+                            <p className="carta-modal-details-text">
+                              {productoSeleccionado.incluye}
+                            </p>
+                          </div>
+                        )}
+
+                        {productoSeleccionado.tipo && (
+                          <div>
+                            <span className="carta-modal-details-label">
+                              TIPO
+                            </span>
+                            <p className="carta-modal-details-text">
+                              {productoSeleccionado.tipo}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {productoSeleccionado.incluye && (
-                      <div>
-                        <span className="carta-modal-details-label">
-                          INCLUYE
-                        </span>
-                        <p className="carta-modal-details-text">
-                          {productoSeleccionado.incluye}
-                        </p>
-                      </div>
-                    )}
-
-                    {productoSeleccionado.tipo && (
-                      <div>
-                        <span className="carta-modal-details-label">
-                          TIPO
-                        </span>
-                        <p className="carta-modal-details-text">
-                          {productoSeleccionado.tipo}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <button
-                  onClick={handleCerrarProducto}
-                  className="carta-modal-button"
-                >
-                  Cerrar
-                </button>
+                  <button
+                    onClick={handleCerrarProducto}
+                    className="carta-modal-button"
+                  >
+                    Cerrar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </section>
+        )}
+      </section>
+    </>
   );
 }

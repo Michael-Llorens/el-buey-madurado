@@ -1,12 +1,115 @@
-/* ===== SECCIÓN PRINCIPAL ===== */
+/* ===== BARRA DE NAVEGACIÓN DE CATEGORÍAS - FIJA ===== */
+.carta-nav-categorias {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  
+  background: #000;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+  
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.95);
+}
 
+/* BOTÓN DE NAVEGACIÓN - INACTIVO */
+.carta-nav-btn {
+  padding: 0.5rem 1.25rem;
+  border: 2px solid #fbbf24;
+  background: #000;
+  color: #fbbf24;
+  
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  
+  transition: all 0.3s ease;
+  
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  outline: none;
+}
+
+/* BOTÓN DE NAVEGACIÓN - HOVER (INACTIVO) */
+.carta-nav-btn:hover:not(.carta-nav-btn-active):not(:disabled) {
+  border-color: #fcd34d;
+  color: #fcd34d;
+  background: rgba(251, 191, 36, 0.1);
+  transform: translateY(-2px);
+}
+
+/* BOTÓN DE NAVEGACIÓN - ACTIVO (SELECCIONADO) */
+.carta-nav-btn-active {
+  background: #fbbf24;
+  color: #000;
+  border-color: #fbbf24;
+  
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+  font-weight: 700;
+}
+
+/* BOTÓN DE NAVEGACIÓN - HOVER (ACTIVO) */
+.carta-nav-btn-active:hover {
+  background: #fcd34d;
+  border-color: #fcd34d;
+  box-shadow: 0 0 20px rgba(252, 211, 77, 0.5);
+}
+
+/* BOTONES DESHABILITADOS */
+.carta-nav-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* RESPONSIVE - Mobile (2x2 grid simétrico) */
+@media (max-width: 640px) {
+  .carta-nav-categorias {
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .carta-nav-btn {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.7rem;
+    border-width: 1.5px;
+    flex: 0 1 calc(50% - 0.35rem);
+    text-align: center;
+  }
+}
+
+/* RESPONSIVE - Tablet */
+@media (min-width: 768px) {
+  .carta-nav-categorias {
+    gap: 1.5rem;
+    padding: 1rem 2rem;
+  }
+  
+  .carta-nav-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    flex: unset;
+  }
+}
+
+/* ===== SECCIÓN PRINCIPAL - SIN ESPACIOS INNECESARIOS ===== */
 .carta-section {
   min-height: 100vh;
-  padding-top: 4rem;
+  padding-top: 80px;
   padding-bottom: 4rem;
   background: linear-gradient(to bottom, #000, #311a00, #000);
   overflow-y: auto;
   scrollbar-width: none;
+  margin-top: 0;
 }
 
 .carta-section::-webkit-scrollbar {
@@ -15,20 +118,19 @@
 
 @media (min-width: 640px) {
   .carta-section {
-    padding-top: 5rem;
+    padding-top: 100px;
     padding-bottom: 3rem;
   }
 }
 
 @media (min-width: 768px) {
   .carta-section {
-    padding-top: 6rem;
+    padding-top: 120px;
     padding-bottom: 4rem;
   }
 }
 
 /* ===== CONTENEDOR ===== */
-
 .carta-container {
   max-width: 100rem;
   margin: 0 auto;
@@ -36,7 +138,6 @@
 }
 
 /* ===== ENCABEZADO ===== */
-
 .carta-header {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -96,7 +197,6 @@
 }
 
 /* ===== WRAPPER PRINCIPAL ===== */
-
 .carta-wrapper {
   display: flex;
   align-items: stretch;
@@ -135,119 +235,7 @@
   }
 }
 
-/* ===== BOTONES - FLECHAS DENTRO DE LA CARTA ===== */
-
-.carta-button {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: transparent;
-  color: #b45309;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: none;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: none;
-  overflow: visible;
-  padding: 0;
-  z-index: 35;
-}
-
-/* Botón izquierda - DENTRO DE LA CARTA PEGADO AL BORDE IZQUIERDO */
-
-.carta-button-prev {
-  left: 1rem;
-}
-
-/* Botón derecha - DENTRO DE LA CARTA PEGADO AL BORDE DERECHO */
-
-.carta-button-next {
-  right: 1rem;
-}
-
-@media (min-width: 640px) {
-  .carta-button {
-    width: 3rem;
-    height: 3rem;
-  }
-
-  .carta-button-prev {
-    left: 1.5rem;
-  }
-
-  .carta-button-next {
-    right: 1.5rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .carta-button {
-    width: 3.5rem;
-    height: 3.5rem;
-  }
-
-  .carta-button-prev {
-    left: 2rem;
-  }
-
-  .carta-button-next {
-    right: 2rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .carta-button {
-    width: 4rem;
-    height: 4rem;
-  }
-
-  .carta-button-prev {
-    left: 2.5rem;
-  }
-
-  .carta-button-next {
-    right: 2.5rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .carta-button-prev {
-    left: 3rem;
-  }
-
-  .carta-button-next {
-    right: 3rem;
-  }
-}
-
-.carta-button:hover:not(:disabled) {
-  color: #d97706;
-  transform: translateY(-50%) scale(1.15);
-  filter: drop-shadow(0 0 6px rgba(180, 83, 9, 0.4));
-}
-
-.carta-button:active:not(:disabled) {
-  transform: translateY(-50%) scale(0.95);
-}
-
-.carta-button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.carta-button svg {
-  width: 100%;
-  height: 100%;
-  stroke: currentColor;
-}
-
 /* ===== PÁGINA WRAPPER ===== */
-
 .carta-page-wrapper {
   flex: 1;
   min-width: 0;
@@ -257,7 +245,6 @@
 }
 
 /* ===== PÁGINA ===== */
-
 .carta-page {
   position: relative;
   background: linear-gradient(to bottom right, #fef3c7, #fefce8);
@@ -272,7 +259,6 @@
 }
 
 /* ===== PÁGINA BOTTOM (DEBAJO - SIEMPRE LA SIGUIENTE) ===== */
-
 .carta-page-bottom {
   position: absolute;
   top: 0;
@@ -285,7 +271,6 @@
 }
 
 /* ===== PÁGINA TOP (ARRIBA - LA ACTUAL - SE ANIMA) ===== */
-
 .carta-page-top {
   position: relative;
   z-index: 2;
@@ -319,7 +304,6 @@
 }
 
 /* ===== PÁGINA SIGUIENTE ===== */
-
 .carta-page-incoming {
   position: absolute;
   top: 0;
@@ -331,20 +315,18 @@
 }
 
 /* Cuando está animando, hacerlo visible */
-
 .carta-page-incoming.carta-page-in-from-right,
 .carta-page-incoming.carta-page-in-from-left {
   visibility: visible;
 }
 
 /* ===== ANIMACIONES DE PÁGINA - SALIDA SIMPLE ===== */
-
 @keyframes pageOutLeft {
   0% {
     opacity: 1;
     transform: rotateY(0deg) translateX(0px);
   }
-
+  
   100% {
     opacity: 0;
     transform: rotateY(-25deg) translateX(-100%);
@@ -356,7 +338,7 @@
     opacity: 1;
     transform: rotateY(0deg) translateX(0px);
   }
-
+  
   100% {
     opacity: 0;
     transform: rotateY(25deg) translateX(100%);
@@ -364,19 +346,16 @@
 }
 
 /* La carta se va a la IZQUIERDA (clickeaste derecha) */
-
 .carta-page-out-left {
   animation: pageOutLeft 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
 
 /* La carta se va a la DERECHA (clickeaste izquierda) */
-
 .carta-page-out-right {
   animation: pageOutRight 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
 }
 
 /* ===== DECORACIÓN ESQUINAS ===== */
-
 .carta-corner {
   position: absolute;
   width: 1.5rem;
@@ -430,7 +409,6 @@
 }
 
 /* ===== CONTENIDO ===== */
-
 .carta-content {
   flex: 1;
   display: flex;
@@ -438,7 +416,6 @@
 }
 
 /* ===== ENCABEZADO CATEGORÍA ===== */
-
 .carta-category-header {
   display: flex;
   align-items: center;
@@ -493,7 +470,6 @@
 }
 
 /* ===== GRID DE PRODUCTOS ===== */
-
 .carta-products-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -524,7 +500,6 @@
 }
 
 /* ===== ITEM DE PRODUCTO ===== */
-
 .carta-product-item {
   display: flex;
   flex-direction: column;
@@ -560,7 +535,6 @@
 }
 
 /* ===== IMAGEN PRODUCTO ===== */
-
 .carta-product-image-wrapper {
   width: 100%;
   height: 220px;
@@ -605,7 +579,6 @@
 }
 
 /* ===== INFO PRODUCTO ===== */
-
 .carta-product-info {
   display: flex;
   flex-direction: column;
@@ -661,7 +634,6 @@
 }
 
 /* ===== DETALLES PRODUCTO ===== */
-
 .carta-product-details {
   display: flex;
   flex-direction: column;
@@ -683,7 +655,6 @@
 }
 
 /* ===== VACÍO ===== */
-
 .carta-empty {
   display: flex;
   align-items: center;
@@ -697,7 +668,6 @@
 }
 
 /* ===== PIE DE PÁGINA ===== */
-
 .carta-footer {
   margin-top: 1.5rem;
   padding-top: 1rem;
@@ -726,7 +696,6 @@
 }
 
 /* ===== INDICADORES ===== */
-
 .carta-indicators {
   display: flex;
   justify-content: center;
@@ -785,7 +754,6 @@
 }
 
 /* ===== MODAL ===== */
-
 .carta-modal-overlay {
   position: fixed;
   inset: 0;
@@ -825,7 +793,6 @@
 }
 
 /* ===== BOTÓN CERRAR MODAL ===== */
-
 .carta-modal-close {
   position: absolute;
   top: 0.5rem;
@@ -866,7 +833,6 @@
 }
 
 /* ===== CONTENIDO MODAL ===== */
-
 .carta-modal-content {
   padding: 1rem;
 }
@@ -884,62 +850,15 @@
 }
 
 /* ===== IMAGEN MODAL ===== */
-
-.carta-modal-image-wrapper {
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  height: 200px;
-  background: #000;
-  border: 2px solid #fbbf24;
-}
-
-@media (min-width: 640px) {
-  .carta-modal-image-wrapper {
-    height: 280px;
-    margin-bottom: 1.5rem;
-    border-radius: 1rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .carta-modal-image-wrapper {
-    height: 350px;
-    margin-bottom: 2rem;
-  }
-}
-
 .carta-modal-image {
   width: 100%;
-  height: 100%;
+  max-height: 350px;
   object-fit: cover;
-}
-
-.carta-modal-image-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(to bottom right, #444, #222);
-  color: #999;
-  font-size: 0.875rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 /* ===== INFO MODAL ===== */
-
-.carta-modal-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-@media (min-width: 768px) {
-  .carta-modal-info {
-    gap: 1.5rem;
-  }
-}
-
 .carta-modal-title {
   font-size: 1.75rem;
   font-weight: bold;
@@ -959,38 +878,11 @@
   }
 }
 
-.carta-modal-divider {
-  height: 0.125rem;
-  width: 4rem;
-  background: linear-gradient(to right, #b45309, #fbbf24);
-  border-radius: 9999px;
-}
-
-/* ===== GRUPOS MODAL ===== */
-
-.carta-modal-price-group,
-.carta-modal-category-group {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.carta-modal-label {
-  color: #b45309;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-@media (min-width: 768px) {
-  .carta-modal-label {
-    font-size: 1.125rem;
-  }
-}
-
 .carta-modal-price {
   font-size: 1.5rem;
   font-weight: bold;
   color: #b45309;
+  margin-bottom: 1rem;
 }
 
 @media (min-width: 768px) {
@@ -999,44 +891,12 @@
   }
 }
 
-.carta-modal-badge {
-  padding: 0.5rem 1rem;
-  background-color: #fbbf24;
-  color: #92400e;
-  border-radius: 9999px;
-  font-size: 0.875rem;
-  font-weight: bold;
-  border: 2px solid #b45309;
-}
-
-@media (min-width: 768px) {
-  .carta-modal-badge {
-    font-size: 1rem;
-    padding: 0.75rem 1.25rem;
-  }
-}
-
-/* ===== DESCRIPCIÓN MODAL ===== */
-
-.carta-modal-subtitle {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #92400e;
-  margin-bottom: 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .carta-modal-subtitle {
-    font-size: 1.5rem;
-  }
-}
-
 .carta-modal-description {
   color: #b45309;
   font-size: 1rem;
   line-height: 1.6;
   font-style: italic;
-  margin: 0;
+  margin-bottom: 1rem;
 }
 
 @media (min-width: 768px) {
@@ -1046,8 +906,7 @@
 }
 
 /* ===== DETALLES MODAL ===== */
-
-.carta-modal-details-box {
+.carta-modal-details {
   background: rgba(251, 146, 60, 0.1);
   border: 2px solid #fbbf24;
   border-radius: 0.75rem;
@@ -1055,45 +914,25 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 @media (min-width: 768px) {
-  .carta-modal-details-box {
+  .carta-modal-details {
     border-radius: 1rem;
     padding: 1.5rem;
     gap: 1rem;
   }
 }
 
-.carta-modal-details-label {
-  color: #92400e;
-  font-size: 0.875rem;
-  font-weight: bold;
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-@media (min-width: 768px) {
-  .carta-modal-details-label {
-    font-size: 1rem;
-  }
-}
-
-.carta-modal-details-text {
+.carta-modal-details p {
   color: #b45309;
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
 }
 
-@media (min-width: 768px) {
-  .carta-modal-details-text {
-    font-size: 1.125rem;
-  }
-}
-
 /* ===== BOTÓN MODAL ===== */
-
 .carta-modal-button {
   background: linear-gradient(to right, #fbbf24, #d97706);
   color: #000;
@@ -1104,7 +943,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 0.5rem;
+  width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -1112,7 +951,6 @@
     padding: 1.25rem;
     font-size: 1.125rem;
     border-radius: 0.75rem;
-    margin-top: 1rem;
   }
 }
 
@@ -1126,7 +964,6 @@
 }
 
 /* ===== PREVENT SCROLLBAR SHIFT ===== */
-
 html {
   scrollbar-gutter: stable;
   overflow-y: scroll;
@@ -1139,12 +976,4 @@ body {
 html.modal-open {
   overflow-y: scroll;
   padding-right: 0 !important;
-}
-
-/* ===== SENTINEL PARA VISIBILIDAD DE BOTONES ===== */
-
-.carta-sentinel {
-  height: 0;
-  visibility: hidden;
-  pointer-events: none;
 }

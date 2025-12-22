@@ -20,13 +20,13 @@ const productSchema = new mongoose.Schema({
   // - Solo permite estos valores:
   //   - "Entrantes": Primeros platos, apertivos
   //   - "Carnes": Carnes a la parrilla, asadas
-  //   - "Sándwich y hamburguesas": Sandwiches y hamburguesas
+  //   - "Hamburguesas y Sándwich": Hamburguesas y Sándwich
   //   - "Postres": Postres y dulces
   // - Sirve para organizar la carta por secciones
   // Ejemplo: "Carnes" para Hamburguesa El Buey
   categoria: {
     type: String,
-    enum: ['Entrantes', 'Carnes', 'Sándwich y hamburguesas', 'Postres'],
+    enum: ['Entrantes', 'Carnes', 'Hamburguesas y Sándwich', 'Postres'],
     required: true,        // Obligatorio
   },
 
