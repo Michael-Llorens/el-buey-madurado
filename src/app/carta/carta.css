@@ -1,0 +1,1150 @@
+/* ===== SECCIÓN PRINCIPAL ===== */
+
+.carta-section {
+  min-height: 100vh;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background: linear-gradient(to bottom, #000, #311a00, #000);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.carta-section::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .carta-section {
+    padding-top: 5rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-section {
+    padding-top: 6rem;
+    padding-bottom: 4rem;
+  }
+}
+
+/* ===== CONTENEDOR ===== */
+
+.carta-container {
+  max-width: 100rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== ENCABEZADO ===== */
+
+.carta-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .carta-header {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-header {
+    margin-bottom: 3rem;
+  }
+}
+
+.carta-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #fcd34d;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 640px) {
+  .carta-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-title {
+    font-size: 3rem;
+  }
+}
+
+.carta-subtitle {
+  color: #d1d5db;
+  max-width: 42rem;
+  margin: 0 auto;
+  font-size: 0.875rem;
+  padding: 0 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .carta-subtitle {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-subtitle {
+    font-size: 1.125rem;
+  }
+}
+
+/* ===== WRAPPER PRINCIPAL ===== */
+
+.carta-wrapper {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: 0 0.5rem;
+  margin: 0 auto;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .carta-wrapper {
+    gap: 0;
+    padding: 0 0.75rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-wrapper {
+    gap: 0;
+    padding: 0 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carta-wrapper {
+    gap: 0;
+    padding: 0 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .carta-wrapper {
+    gap: 0;
+    padding: 0 4rem;
+  }
+}
+
+/* ===== BOTONES - FLECHAS DENTRO DE LA CARTA ===== */
+
+.carta-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: transparent;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  overflow: visible;
+  padding: 0;
+  z-index: 35;
+}
+
+/* Botón izquierda - DENTRO DE LA CARTA PEGADO AL BORDE IZQUIERDO */
+
+.carta-button-prev {
+  left: 1rem;
+}
+
+/* Botón derecha - DENTRO DE LA CARTA PEGADO AL BORDE DERECHO */
+
+.carta-button-next {
+  right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .carta-button {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .carta-button-prev {
+    left: 1.5rem;
+  }
+
+  .carta-button-next {
+    right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-button {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .carta-button-prev {
+    left: 2rem;
+  }
+
+  .carta-button-next {
+    right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carta-button {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .carta-button-prev {
+    left: 2.5rem;
+  }
+
+  .carta-button-next {
+    right: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .carta-button-prev {
+    left: 3rem;
+  }
+
+  .carta-button-next {
+    right: 3rem;
+  }
+}
+
+.carta-button:hover:not(:disabled) {
+  color: #d97706;
+  transform: translateY(-50%) scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(180, 83, 9, 0.4));
+}
+
+.carta-button:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.carta-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.carta-button svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+}
+
+/* ===== PÁGINA WRAPPER ===== */
+
+.carta-page-wrapper {
+  flex: 1;
+  min-width: 0;
+  perspective: 1000px;
+  position: relative;
+  max-width: 100%;
+}
+
+/* ===== PÁGINA ===== */
+
+.carta-page {
+  position: relative;
+  background: linear-gradient(to bottom right, #fef3c7, #fefce8);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  padding: 1.5rem;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease;
+  border: 1px solid #fde047;
+}
+
+/* ===== PÁGINA BOTTOM (DEBAJO - SIEMPRE LA SIGUIENTE) ===== */
+
+.carta-page-bottom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+/* ===== PÁGINA TOP (ARRIBA - LA ACTUAL - SE ANIMA) ===== */
+
+.carta-page-top {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .carta-page {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-page {
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .carta-page {
+    padding: 3rem;
+  }
+}
+
+.carta-page:hover {
+  box-shadow: 0 25px 50px rgba(251, 146, 60, 0.3);
+}
+
+/* ===== PÁGINA SIGUIENTE ===== */
+
+.carta-page-incoming {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  will-change: transform, opacity;
+  visibility: hidden;
+}
+
+/* Cuando está animando, hacerlo visible */
+
+.carta-page-incoming.carta-page-in-from-right,
+.carta-page-incoming.carta-page-in-from-left {
+  visibility: visible;
+}
+
+/* ===== ANIMACIONES DE PÁGINA - SALIDA SIMPLE ===== */
+
+@keyframes pageOutLeft {
+  0% {
+    opacity: 1;
+    transform: rotateY(0deg) translateX(0px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotateY(-25deg) translateX(-100%);
+  }
+}
+
+@keyframes pageOutRight {
+  0% {
+    opacity: 1;
+    transform: rotateY(0deg) translateX(0px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotateY(25deg) translateX(100%);
+  }
+}
+
+/* La carta se va a la IZQUIERDA (clickeaste derecha) */
+
+.carta-page-out-left {
+  animation: pageOutLeft 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
+/* La carta se va a la DERECHA (clickeaste izquierda) */
+
+.carta-page-out-right {
+  animation: pageOutRight 1s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+}
+
+/* ===== DECORACIÓN ESQUINAS ===== */
+
+.carta-corner {
+  position: absolute;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-color: #f59e0b;
+  opacity: 0.5;
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .carta-corner {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-corner {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+.carta-corner-top-left {
+  top: 1rem;
+  left: 1rem;
+  border-left: 2px solid;
+  border-top: 2px solid;
+}
+
+.carta-corner-top-right {
+  top: 1rem;
+  right: 1rem;
+  border-right: 2px solid;
+  border-top: 2px solid;
+}
+
+.carta-corner-bottom-left {
+  bottom: 1rem;
+  left: 1rem;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+}
+
+.carta-corner-bottom-right {
+  bottom: 1rem;
+  right: 1rem;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+
+/* ===== CONTENIDO ===== */
+
+.carta-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== ENCABEZADO CATEGORÍA ===== */
+
+.carta-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .carta-category-header {
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+}
+
+.carta-decorative-line {
+  height: 0.125rem;
+  width: 1.5rem;
+  background: linear-gradient(to right, #b45309, #fbbf24);
+  border-radius: 9999px;
+}
+
+@media (min-width: 640px) {
+  .carta-decorative-line {
+    width: 3rem;
+  }
+}
+
+.carta-category-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #92400e;
+}
+
+@media (min-width: 640px) {
+  .carta-category-title {
+    font-size: 1.875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-category-title {
+    font-size: 2.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carta-category-title {
+    font-size: 2.5rem;
+  }
+}
+
+/* ===== GRID DE PRODUCTOS ===== */
+
+.carta-products-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  flex: 1;
+  contain: content;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .carta-products-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carta-products-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .carta-products-grid {
+    gap: 2rem;
+  }
+}
+
+/* ===== ITEM DE PRODUCTO ===== */
+
+.carta-product-item {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 2px dashed rgba(251, 146, 60, 0.4);
+  padding-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  gap: 0.75rem;
+}
+
+.carta-product-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+@media (min-width: 640px) {
+  .carta-product-item {
+    padding-bottom: 1rem;
+    gap: 0.75rem;
+    border-bottom: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-product-item {
+    padding-bottom: 1rem;
+    gap: 0.75rem;
+  }
+}
+
+.carta-product-item:hover {
+  transform: translateY(-2px);
+}
+
+/* ===== IMAGEN PRODUCTO ===== */
+
+.carta-product-image-wrapper {
+  width: 100%;
+  height: 220px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(251, 146, 60, 0.3);
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .carta-product-image-wrapper {
+    height: 240px;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-product-image-wrapper {
+    height: 260px;
+    border-radius: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .carta-product-image-wrapper {
+    height: 280px;
+  }
+}
+
+.carta-product-image-wrapper:hover {
+  border-color: #f59e0b;
+}
+
+.carta-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.carta-product-image-wrapper:hover .carta-product-image {
+  transform: scale(1.05);
+}
+
+/* ===== INFO PRODUCTO ===== */
+
+.carta-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.carta-product-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.carta-product-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #92400e;
+  flex: 1;
+  line-height: 1.3;
+}
+
+@media (min-width: 768px) {
+  .carta-product-name {
+    font-size: 1.125rem;
+  }
+}
+
+.carta-product-price {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #b45309;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .carta-product-price {
+    font-size: 1.25rem;
+  }
+}
+
+.carta-product-description {
+  font-size: 0.875rem;
+  color: #b45309;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .carta-product-description {
+    font-size: 1rem;
+  }
+}
+
+/* ===== DETALLES PRODUCTO ===== */
+
+.carta-product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #b45309;
+}
+
+@media (min-width: 768px) {
+  .carta-product-details {
+    font-size: 0.875rem;
+    gap: 0.5rem;
+  }
+}
+
+.carta-detail-item {
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ===== VACÍO ===== */
+
+.carta-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.carta-empty p {
+  color: #b45309;
+  font-size: 1rem;
+}
+
+/* ===== PIE DE PÁGINA ===== */
+
+.carta-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(251, 146, 60, 0.4);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .carta-footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+  }
+}
+
+.carta-footer-text {
+  font-size: 0.75rem;
+  color: #b45309;
+  font-style: italic;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .carta-footer-text {
+    font-size: 0.875rem;
+  }
+}
+
+/* ===== INDICADORES ===== */
+
+.carta-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .carta-indicators {
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+}
+
+.carta-indicator {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: #92400e;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  width: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .carta-indicator {
+    height: 0.75rem;
+    width: 0.75rem;
+  }
+}
+
+.carta-indicator:hover:not(:disabled) {
+  background-color: #f59e0b;
+}
+
+.carta-indicator:disabled {
+  cursor: not-allowed;
+}
+
+.carta-indicator-active {
+  width: 1.5rem;
+  background: linear-gradient(to right, #b45309, #fbbf24);
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+}
+
+@media (min-width: 640px) {
+  .carta-indicator-active {
+    width: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-indicator-active {
+    width: 2.5rem;
+  }
+}
+
+/* ===== MODAL ===== */
+
+.carta-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .carta-modal-overlay {
+    padding: 1rem;
+  }
+}
+
+.carta-modal {
+  background: linear-gradient(to bottom right, #fef3c7, #fefce8);
+  border: 2px solid #fbbf24;
+  border-radius: 1rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  max-width: 42rem;
+  width: 100%;
+  max-height: 95vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .carta-modal {
+    border-radius: 1.5rem;
+    border-width: 3px;
+    max-height: 90vh;
+  }
+}
+
+/* ===== BOTÓN CERRAR MODAL ===== */
+
+.carta-modal-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 10;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(to bottom right, #fbbf24, #d97706);
+  color: #000;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .carta-modal-close {
+    top: 1rem;
+    right: 1rem;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+  }
+}
+
+.carta-modal-close:hover {
+  background: linear-gradient(to bottom right, #fcd34d, #f59e0b);
+  transform: scale(1.1);
+}
+
+.carta-modal-close:active {
+  transform: scale(0.95);
+}
+
+/* ===== CONTENIDO MODAL ===== */
+
+.carta-modal-content {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .carta-modal-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-modal-content {
+    padding: 2rem 3rem;
+  }
+}
+
+/* ===== IMAGEN MODAL ===== */
+
+.carta-modal-image-wrapper {
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  height: 200px;
+  background: #000;
+  border: 2px solid #fbbf24;
+}
+
+@media (min-width: 640px) {
+  .carta-modal-image-wrapper {
+    height: 280px;
+    margin-bottom: 1.5rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-modal-image-wrapper {
+    height: 350px;
+    margin-bottom: 2rem;
+  }
+}
+
+.carta-modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carta-modal-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom right, #444, #222);
+  color: #999;
+  font-size: 0.875rem;
+}
+
+/* ===== INFO MODAL ===== */
+
+.carta-modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-info {
+    gap: 1.5rem;
+  }
+}
+
+.carta-modal-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #92400e;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .carta-modal-title {
+    font-size: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .carta-modal-title {
+    font-size: 2.25rem;
+  }
+}
+
+.carta-modal-divider {
+  height: 0.125rem;
+  width: 4rem;
+  background: linear-gradient(to right, #b45309, #fbbf24);
+  border-radius: 9999px;
+}
+
+/* ===== GRUPOS MODAL ===== */
+
+.carta-modal-price-group,
+.carta-modal-category-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.carta-modal-label {
+  color: #b45309;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-label {
+    font-size: 1.125rem;
+  }
+}
+
+.carta-modal-price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #b45309;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-price {
+    font-size: 1.875rem;
+  }
+}
+
+.carta-modal-badge {
+  padding: 0.5rem 1rem;
+  background-color: #fbbf24;
+  color: #92400e;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: bold;
+  border: 2px solid #b45309;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-badge {
+    font-size: 1rem;
+    padding: 0.75rem 1.25rem;
+  }
+}
+
+/* ===== DESCRIPCIÓN MODAL ===== */
+
+.carta-modal-subtitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #92400e;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-subtitle {
+    font-size: 1.5rem;
+  }
+}
+
+.carta-modal-description {
+  color: #b45309;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-style: italic;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-description {
+    font-size: 1.125rem;
+  }
+}
+
+/* ===== DETALLES MODAL ===== */
+
+.carta-modal-details-box {
+  background: rgba(251, 146, 60, 0.1);
+  border: 2px solid #fbbf24;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-details-box {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+}
+
+.carta-modal-details-label {
+  color: #92400e;
+  font-size: 0.875rem;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-details-label {
+    font-size: 1rem;
+  }
+}
+
+.carta-modal-details-text {
+  color: #b45309;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-details-text {
+    font-size: 1.125rem;
+  }
+}
+
+/* ===== BOTÓN MODAL ===== */
+
+.carta-modal-button {
+  background: linear-gradient(to right, #fbbf24, #d97706);
+  color: #000;
+  font-weight: bold;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .carta-modal-button {
+    padding: 1.25rem;
+    font-size: 1.125rem;
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+  }
+}
+
+.carta-modal-button:hover {
+  background: linear-gradient(to right, #fcd34d, #f59e0b);
+  transform: scale(1.05);
+}
+
+.carta-modal-button:active {
+  transform: scale(0.95);
+}
+
+/* ===== PREVENT SCROLLBAR SHIFT ===== */
+
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+body {
+  scrollbar-gutter: stable;
+}
+
+html.modal-open {
+  overflow-y: scroll;
+  padding-right: 0 !important;
+}
+
+/* ===== SENTINEL PARA VISIBILIDAD DE BOTONES ===== */
+
+.carta-sentinel {
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
