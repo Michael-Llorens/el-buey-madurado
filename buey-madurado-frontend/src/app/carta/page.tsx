@@ -206,7 +206,6 @@ export default function CartaPage() {
       <section className="carta-section" ref={cartaSectionRef}>
         <div className="carta-container">
           <div className="carta-header">
-            <h1 className="carta-title">Nuestra Carta</h1>
             <p className="carta-subtitle">
               Descubre nuestras especialidades elaboradas con carne madurada y
               productos de proximidad.
