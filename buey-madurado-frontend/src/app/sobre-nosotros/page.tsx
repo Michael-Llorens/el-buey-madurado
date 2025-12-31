@@ -1,18 +1,17 @@
 // src/app/sobre-nosotros/page.tsx
-'use client';
 
 import HeroSectionSobreNosotros from '@/components/SobreNosotros/HeroSectionSobreNosotros';
-import NuestraHistoria from '@/components/SobreNosotros/NuestraHistoria';
-import NuestraFilosofia from '@/components/SobreNosotros/NuestraFilosofia';
+import MuseoCarne from '@/components/SobreNosotros/MuseoCarne';
+import HistoriaYValores from '@/components/SobreNosotros/HistoriaYValores';
 import Equipo from '@/components/SobreNosotros/Esquipo';
 
 export default function SobreNosotrosPage() {
   return (
-    <>
+    <main className="bg-black">
       <HeroSectionSobreNosotros />
-      <NuestraHistoria />
-      <NuestraFilosofia />
+      <MuseoCarne />
+      <HistoriaYValores />
       <Equipo />
-    </>
+    </main>
   );
 }
