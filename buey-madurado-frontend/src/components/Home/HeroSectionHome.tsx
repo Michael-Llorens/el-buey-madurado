@@ -3,7 +3,7 @@
 
 
 import Link from 'next/link';
-import Button from '../Button';
+import Button from '../ui/Button';
 
 
 export default function HeroSectionHome() {
@@ -12,13 +12,15 @@ export default function HeroSectionHome() {
       {/* Video de fondo */}
       <div className="absolute top-0 left-0 w-full h-full z-0">
         <video
-          src="https://res.cloudinary.com/dzktzrrmp/video/upload/v1765027963/202512061410_kldijp.mp4"
           autoPlay
-          loop
           muted
+          loop
           playsInline
-          className="w-full h-full object-cover"
-        />
+          preload="metadata"
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/hero.mp4" type="video/mp4" />
+        </video>
         {/* Overlay oscuro */}
         <div className="absolute inset-0 bg-black/50" />
       </div>
@@ -33,8 +35,7 @@ export default function HeroSectionHome() {
             comida rápida
             <br />
             <span className="text-amber-500">…hablamos de <br />
-            alta cocina a <br />
-            domicilio.</span>
+            alta cocina</span>
           </h1>
 
 
@@ -51,23 +52,13 @@ export default function HeroSectionHome() {
 
 
         {/* Botones abajo */}
-        <div className="flex gap-3 md:gap-4 pb-6 md:pb-8">
+        <div className="flex gap-3 md:gap-4 pb-6 md:pb-8 -translate-y-4">
           <Link href="/carta">
             <Button
-              variant="primary"
+              variant="secondary"
               className="px-6 md:px-8 py-2 md:py-3 text-sm md:text-base font-semibold rounded-full"
             >
-              Ver Carta
-            </Button>
-          </Link>
-
-
-          <Link href="/pedido">
-            <Button
-              variant="primary"
-              className="px-6 md:px-8 py-2 md:py-3 text-sm md:text-base font-semibold rounded-full"
-            >
-              Pedir ahora
+              Nuestra Carta
             </Button>
           </Link>
         </div>

@@ -8,15 +8,15 @@ export default function FooterLegal() {
       <ul className="space-y-2 text-sm">
         <li className="flex justify-center md:justify-start items-center gap-2">
           <FaBalanceScale className="text-amber-500" />
-          <a href="terminos.html" className="hover:text-amber-500 transition">Términos y condiciones</a>
+          <a className="hover:text-amber-500 transition">Términos y condiciones</a>
         </li>
         <li className="flex justify-center md:justify-start items-center gap-2">
           <FaFingerprint className="text-amber-500" />
-          <a href="privacidad.html" className="hover:text-amber-500 transition">Política de privacidad</a>
+          <a className="hover:text-amber-500 transition">Política de privacidad</a>
         </li>
         <li className="flex justify-center md:justify-start items-center gap-2">
           <FaCookie className="text-amber-500" />
-          <a href="cookies.html" className="hover:text-amber-500 transition">Configuración de cookies</a>
+          <a className="hover:text-amber-500 transition">Configuración de cookies</a>
         </li>
       </ul>
     </div>

@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from "@vercel/analytics/react";
 import './globals.css';
 import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import WhatsAppButton from '@/components/ui/ReservasButton';
 
 export const metadata: Metadata = {
   title: 'El Buey Madurado - Carne Madurada Premium',
@@ -31,6 +32,9 @@ export default function RootLayout({
         </main>
         <Footer />
         <WhatsAppButton />
+
+        {/* Vercel Analytics */}
+        <Analytics />
       </body>
     </html>
   );
