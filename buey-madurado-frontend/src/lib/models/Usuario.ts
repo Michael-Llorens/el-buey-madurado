@@ -1,66 +1,48 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import mongoose, { Schema, Document, Model } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-interface IUsuario extends mongoose.Document {
-  nombre: string;
+export interface IUsuario extends Document {
   email: string;
   password: string;
-  rol: "admin" | "camarero" | "cocina";
+  rol: 'admin' | 'camarero' | 'cocinero';
   activo: boolean;
   ultimoLogin?: Date;
-  compararPassword(passwordIngresada: string): Promise<boolean>;
+  comparePassword(passwordIngresado: string): Promise<boolean>;
 }
 
-const usuarioSchema = new mongoose.Schema<IUsuario>(
-  {
-    nombre: {
-      type: String,
-      required: [true, "El nombre es requerido"],
-      trim: true,
-      minlength: [2, "Mínimo 2 caracteres"],
-      maxlength: [50, "Máximo 50 caracteres"],
-    },
-    email: {
-      type: String,
-      required: [true, "El email es requerido"],
-      unique: true,
-      lowercase: true,
-      match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        "Por favor usa un email válido",
-      ],
-      index: true,
-    },
-    password: {
-      type: String,
-      required: [true, "La contraseña es requerida"],
-      minlength: [6, "Mínimo 6 caracteres"],
-      select: false,
-    },
-    rol: {
-      type: String,
-      enum: {
-        values: ["admin", "camarero", "cocina"],
-        message: "Rol inválido",
-      },
-      default: "camarero",
-      index: true,
-    },
-    activo: {
-      type: Boolean,
-      default: true,
-      index: true,
-    },
-    ultimoLogin: Date,
+const UsuarioSchema = new Schema<IUsuario>({
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true,
+    lowercase: true,
+    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-  }
-);
+  password: { 
+    type: String, 
+    required: true,
+    minlength: 6,
+    select: false
+  },
+  rol: { 
+    type: String, 
+    enum: ['admin', 'camarero', 'cocinero'],
+    default: 'camarero' 
+  },
+  activo: { 
+    type: Boolean, 
+    default: true 
+  },
+  ultimoLogin: { type: Date },
+}, { 
+  timestamps: true 
+});
 
-usuarioSchema.pre<IUsuario>("save", async function () {
-  if (!this.isModified("password")) return;
+// Hash password antes de guardar
+UsuarioSchema.pre('save', async function() {
+  if (!this.isModified('password')) {
+    return;
+  }
   
   try {
     const salt = await bcrypt.genSalt(10);
@@ -70,11 +52,15 @@ usuarioSchema.pre<IUsuario>("save", async function () {
   }
 });
 
-
-usuarioSchema.methods.compararPassword = async function (passwordIngresada: string): Promise<boolean> {
-  return await bcrypt.compare(passwordIngresada, this.password);
+// Método para comparar passwords
+UsuarioSchema.methods.comparePassword = async function(
+  this: IUsuario, 
+  passwordIngresado: string
+): Promise<boolean> {
+  return bcrypt.compare(passwordIngresado, this.password);
 };
 
-export const UsuarioModel =
-  mongoose.models.Usuario ||
-  mongoose.model<IUsuario>("Usuario", usuarioSchema);
+const Usuario: Model<IUsuario> = mongoose.models.Usuario || 
+  mongoose.model<IUsuario>('Usuario', UsuarioSchema);
+
+export default Usuario;

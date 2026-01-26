@@ -23,10 +23,14 @@ if (!cached) {
 
 export async function connectDB() {
   if (cached.conn) {
+    console.log("✅ Usando conexión MongoDB existente (cacheada)");
     return cached.conn;
   }
 
   if (!cached.promise) {
+    console.log("🔄 Conectando a MongoDB...");
+    console.log(`📍 URI: ${MONGODB_URI.split("@")[1] || "***"}`); // Mostrar sin credenciales
+    
     const opts = {
       bufferCommands: false,
     };
@@ -34,14 +38,21 @@ export async function connectDB() {
     cached.promise = mongoose
       .connect(MONGODB_URI, opts)
       .then((mongoose) => {
+        console.log("✅ Conectado a MongoDB correctamente");
+        console.log(`📦 Base de datos: ${mongoose.connection.db?.databaseName}`);
         return mongoose;
+      })
+      .catch((error) => {
+        console.error("❌ Error al conectar a MongoDB:", error.message);
+        throw error;
       });
   }
 
   try {
     cached.conn = await cached.promise;
-  } catch (e) {
+  } catch (e: any) {
     cached.promise = null;
+    console.error("❌ Fallo en la conexión a MongoDB:", e.message);
     throw e;
   }
 

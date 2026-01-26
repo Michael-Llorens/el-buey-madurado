@@ -1,5 +1,8 @@
-// Cliente que auto-adjunta Bearer token en todas las requests
+import { ApiResponse } from '@/lib/types';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
+
+// ========== FETCH CON TOKEN ==========
 export async function fetchWithToken(
   url: string,
   options: RequestInit = {}
@@ -19,3 +22,90 @@ export async function fetchWithToken(
     headers
   });
 }
+
+// ========== API REQUEST CON RESPUESTA TIPADA ==========
+export async function apiRequest<T = any>(
+  endpoint: string, 
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  try {
+    const response = await fetchWithToken(`${API_BASE}${endpoint}`, options);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Error de red' }));
+      return { 
+        success: false, 
+        error: error.error || error.message || 'Error desconocido' 
+      };
+    }
+
+    return response.json();
+  } catch (err: any) {
+    return { 
+      success: false, 
+      error: err.message || 'Error de conexión' 
+    };
+  }
+}
+
+// ========== API ESPECÍFICAS POR RECURSO ==========
+export const ingredientesApi = {
+  list: () => apiRequest('/ingredientes'),
+  getById: (id: string) => apiRequest(`/ingredientes/${id}`),
+  create: (data: any) => 
+    apiRequest('/ingredientes', { 
+      method: 'POST', 
+      body: JSON.stringify(data) 
+    }),
+  update: (id: string, data: any) => 
+    apiRequest(`/ingredientes/${id}`, { 
+      method: 'PUT', 
+      body: JSON.stringify(data) 
+    }),
+  delete: (id: string) => 
+    apiRequest(`/ingredientes/${id}`, { method: 'DELETE' }),
+};
+
+export const productosApi = {
+  list: () => apiRequest('/productos'),
+  getById: (id: string) => apiRequest(`/productos/${id}`),
+  create: (data: any) => 
+    apiRequest('/productos', { 
+      method: 'POST', 
+      body: JSON.stringify(data) 
+    }),
+  update: (id: string, data: any) => 
+    apiRequest(`/productos/${id}`, { 
+      method: 'PUT', 
+      body: JSON.stringify(data) 
+    }),
+  delete: (id: string) => 
+    apiRequest(`/productos/${id}`, { method: 'DELETE' }),
+};
+
+export const mesasApi = {
+  list: () => apiRequest('/mesas'),
+  create: (data: any) => apiRequest('/mesas', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => apiRequest(`/mesas/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => apiRequest(`/mesas/${id}`, { method: 'DELETE' }),
+};
+
+export const pedidosApi = {
+  list: () => apiRequest('/pedidos'),
+  create: (data: any) => apiRequest('/pedidos', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id: string, data: any) => apiRequest(`/pedidos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id: string) => apiRequest(`/pedidos/${id}`, { method: 'DELETE' }),
+};
+
+export const authApi = {
+  login: (email: string, password: string) => 
+    apiRequest('/auth/login', { 
+      method: 'POST', 
+      body: JSON.stringify({ email, password }) 
+    }),
+  register: (email: string, password: string, rol: string) => 
+    apiRequest('/auth/register', { 
+      method: 'POST', 
+      body: JSON.stringify({ email, password, rol }) 
+    }),
+};

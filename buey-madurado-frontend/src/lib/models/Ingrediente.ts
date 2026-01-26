@@ -1,38 +1,34 @@
-import mongoose from "mongoose";
-import { Ingrediente } from "@/lib/types";
+import mongoose, { Schema, Document, Model} from 'mongoose';
 
-const ingredienteSchema = new mongoose.Schema<Ingrediente>(
-  {
-    nombre: {
-      type: String,
-      required: [true, "El nombre es requerido"],
-      trim: true,
-      unique: true,
-      index: true,
-      minlength: [2, "Mínimo 2 caracteres"],
-      maxlength: [50, "Máximo 50 caracteres"],
-    },
-    descripcion: {
-      type: String,
-      trim: true,
-      maxlength: [200, "Máximo 200 caracteres"],
-    },
-    activo: {
-      type: Boolean,
-      default: true,
-      index: true,
-    },
-    alergeno: {
-      type: Boolean,
-      default: false,
-    },
+export interface IIngrediente extends Document {
+  nombre: string;
+  categoria: string;
+  precioBase: number;
+  precioExtra: number;
+  inventario: {
+    cantidad: number;
+    unidad: string;
+  };
+  disponible: boolean;
+  activo: boolean;
+}
+
+const IngredienteSchema: Schema = new Schema({
+  nombre: { type: String, required: true },
+  categoria: { type: String, required: true },
+  precioBase: { type: Number, required: true, default: 0 },
+  precioExtra: { type: Number, required: true, default: 0 },
+  inventario: {
+    cantidad: { type: Number, required: true, default: 0 },
+    unidad: { type: String, required: true, default: 'kg' },
   },
-  { 
-    timestamps: true,
-    toJSON: { virtuals: true },
-  }
-);
+  disponible: { type: Boolean, default: true },
+  activo: { type: Boolean, default: true },
+}, {
+  timestamps: true,
+});
 
-export const IngredienteModel =
-  mongoose.models.Ingrediente ||
-  mongoose.model("Ingrediente", ingredienteSchema);
+const Ingrediente: Model<IIngrediente> = mongoose.models.Ingrediente || 
+  mongoose.model<IIngrediente>('Ingrediente', IngredienteSchema);
+
+export default Ingrediente;

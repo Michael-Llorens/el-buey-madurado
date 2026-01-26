@@ -1,4 +1,12 @@
-// ========== USUARIO ==========
+// ========== IMPORTS DE MODELOS Mongoose ==========
+export * from '../models/Ingrediente';
+export * from '../models/Producto';
+export * from '../models/Mesa';
+export * from '../models/Pedido';
+export * from '../models/PedidoExterno';
+export * from '../models/Usuario';
+
+// ========== TUS INTERFACES EXISTENTES (mantenerlos) ==========
 export interface Usuario {
   _id?: string;
   nombre: string;
@@ -11,7 +19,6 @@ export interface Usuario {
   updatedAt?: Date;
 }
 
-// ========== MESAS ==========
 export interface Mesa {
   _id?: string;
   numero: number;
@@ -25,7 +32,6 @@ export interface Mesa {
   updatedAt?: Date;
 }
 
-// ========== PRODUCTOS ==========
 export interface Producto {
   _id?: string;
   nombre: string;
@@ -41,7 +47,6 @@ export interface Producto {
   updatedAt?: Date;
 }
 
-// ========== INGREDIENTES ==========
 export interface Ingrediente {
   _id?: string;
   nombre: string;
@@ -52,7 +57,6 @@ export interface Ingrediente {
   updatedAt?: Date;
 }
 
-// ========== ITEMS DE PEDIDO ==========
 export interface ItemPedido {
   _id?: string;
   productoId: string;
@@ -64,7 +68,6 @@ export interface ItemPedido {
   createdAt?: Date;
 }
 
-// ========== PEDIDOS (POR MESA) ==========
 export interface Pedido {
   _id?: string;
   mesaId: string;
@@ -81,7 +84,6 @@ export interface Pedido {
   updatedAt?: Date;
 }
 
-// ========== PEDIDOS EXTERNOS ==========
 export interface PedidoExterno {
   _id?: string;
   tipo: "recoger" | "domicilio";
@@ -101,7 +103,6 @@ export interface PedidoExterno {
   updatedAt?: Date;
 }
 
-// ========== TICKET COCINA ==========
 export interface KitchenTicket {
   _id?: string;
   numero: string;
@@ -114,7 +115,6 @@ export interface KitchenTicket {
   notas?: string;
 }
 
-// ========== RESPUESTAS API ==========
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -122,7 +122,6 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
-// ========== CONTEXTO AUTENTICACIÓN ==========
 export interface AuthContextType {
   usuario: Usuario | null;
   loading: boolean;
