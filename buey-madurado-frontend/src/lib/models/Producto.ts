@@ -12,7 +12,7 @@ export interface IProducto extends Document {
 
 const ProductoSchema: Schema = new Schema({
   nombre: { type: String, required: true },
-  descripcion: { type: String, required: true },
+  descripcion: { type: String },
   precio: { type: Number, required: true },
   categoria: { type: String, required: true },
   imagen: { type: String },

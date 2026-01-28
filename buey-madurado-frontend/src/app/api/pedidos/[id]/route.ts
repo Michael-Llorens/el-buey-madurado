@@ -6,14 +6,15 @@ import { ApiResponse } from '@/lib/types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   try {
+    const { id } = await params;  // Resolver Promise
     await connectDB();
-    const pedido = await Pedido.findById(params.id)
+    const pedido = await Pedido.findById(id)
       .populate('mesa')
       .populate('productos.producto')
       .lean();
@@ -39,7 +40,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
@@ -52,10 +53,11 @@ export async function PUT(
   }
 
   try {
+    const { id } = await params;  // Resolver Promise
     await connectDB();
     const body = await request.json();
     const pedido = await Pedido.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true, runValidators: true }
     ).lean();
@@ -81,7 +83,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
@@ -94,8 +96,9 @@ export async function DELETE(
   }
 
   try {
+    const { id } = await params;  // Resolver Promise
     await connectDB();
-    const pedido = await Pedido.findByIdAndDelete(params.id).lean();
+    const pedido = await Pedido.findByIdAndDelete(id).lean();
 
     if (!pedido) {
       return NextResponse.json<ApiResponse>({

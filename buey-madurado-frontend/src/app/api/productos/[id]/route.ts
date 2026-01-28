@@ -4,16 +4,21 @@ import Producto from '@/lib/models/Producto';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 
+
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest, 
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // ✅ PROTEGER
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   try {
+    // ✅ AQUÍ: await params primero
+    const { id } = await params;
+
     await connectDB();
-    const producto = await Producto.findById(params.id).lean();
+    const producto = await Producto.findById(id).lean();
 
     if (!producto) {
       return NextResponse.json<ApiResponse>({
@@ -34,10 +39,12 @@ export async function GET(
   }
 }
 
+
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest, 
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
@@ -49,11 +56,15 @@ export async function PUT(
   }
 
   try {
+    // ✅ AQUÍ: await params primero
+    const { id } = await params;
+
     await connectDB();
     const body = await request.json();
+    
     const producto = await Producto.findByIdAndUpdate(
-      params.id,
-      body,
+      id, 
+      body, 
       { new: true, runValidators: true }
     ).lean();
 
@@ -76,10 +87,12 @@ export async function PUT(
   }
 }
 
+
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest, 
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
@@ -91,8 +104,12 @@ export async function DELETE(
   }
 
   try {
+    // ✅ AQUÍ: await params primero
+    const { id } = await params;
+
     await connectDB();
-    const producto = await Producto.findByIdAndDelete(params.id).lean();
+    
+    const producto = await Producto.findByIdAndDelete(id).lean();
 
     if (!producto) {
       return NextResponse.json<ApiResponse>({

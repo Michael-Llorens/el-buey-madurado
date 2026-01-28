@@ -1,27 +1,10 @@
 'use client';
 
-import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-
-interface Ingrediente {
-  _id?: string;
-  nombre: string;
-  categoria: string;
-  descripcion: string;
-  precioBase: number;
-  precioExtra: number;
-  imagen: string;
-  inventario: {
-    cantidad: number;
-    unidad: string;
-  };
-  alergenicos: string[];
-  disponible: boolean;
-  activo: boolean;
-}
+import { useState, useEffect } from 'react';
 
 interface IngredienteFormProps {
-  ingrediente?: Ingrediente | null;
-  onGuardar: (ingrediente: Ingrediente) => void;
+  ingrediente?: any | null;
+  onGuardar: (ingrediente: any) => void;
   onCancelar: () => void;
 }
 
@@ -30,410 +13,378 @@ export default function IngredienteForm({
   onGuardar,
   onCancelar,
 }: IngredienteFormProps) {
-
-  const [form, setForm] = useState<Ingrediente>({
+  const [formData, setFormData] = useState({
     nombre: '',
-    categoria: 'carne',
+    categoria: '',
     descripcion: '',
-    precioBase: 0,
-    precioExtra: 0,
+    precioBase: '',
+    precioExtra: '',
     imagen: '',
     inventario: {
-      cantidad: 100,
-      unidad: 'g',
+      cantidad: '',
+      unidad: 'kg',
     },
-    alergenicos: [],
+    alergenos: [] as string[],
     disponible: true,
     activo: true,
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState('');
+  const [alergeno, setAlergeno] = useState('');
 
-  const categorias = [
-    'carne',
-    'queso',
-    'salsa',
-    'vegetal',
-    'topping',
-    'pan',
-    'otros',
-  ];
-  const unidades = ['g', 'ml', 'unidad', 'porcion'];
-  const alergenos = [
-    'gluten',
-    'lácteos',
-    'frutos secos',
-    'maní',
-    'huevo',
-    'pescado',
-    'marisco',
-    'soja',
-  ];
-
+  // ✅ Al montar o cambiar ingrediente, precargar datos
   useEffect(() => {
     if (ingrediente) {
-      setForm(ingrediente);
+      setFormData({
+        nombre: ingrediente.nombre || '',
+        categoria: ingrediente.categoria || '',
+        descripcion: ingrediente.descripcion || '',
+        precioBase: ingrediente.precioBase || '',
+        precioExtra: ingrediente.precioExtra || '',
+        imagen: ingrediente.imagen || '',
+        inventario: {
+          cantidad: ingrediente.inventario?.cantidad || '',
+          unidad: ingrediente.inventario?.unidad || 'kg',
+        },
+        alergenos: Array.isArray(ingrediente.alergenos) ? [...ingrediente.alergenos] : [], // ✅ Garantizar array
+        disponible: ingrediente.disponible ?? true,
+        activo: ingrediente.activo ?? true,
+      });
+      setPreview(ingrediente.imagen || '');
     }
   }, [ingrediente]);
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target as HTMLInputElement;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setForm((prev) => ({
+    if (name.startsWith('inventario.')) {
+      const field = name.split('.')[1];
+      setFormData(prev => ({
         ...prev,
-        [parent]: {
-          ...(prev[parent as keyof Ingrediente] as Record<string, any>),
-          [child]:
-            type === 'number' ? Number(value) : value,
+        inventario: {
+          ...prev.inventario,
+          [field]: value,
         },
       }));
-    } else {
-      setForm((prev) => ({
+    } else if (type === 'checkbox') {
+      setFormData(prev => ({
         ...prev,
-        [name]:
-          type === 'checkbox'
-            ? checked
-            : type === 'number'
-              ? Number(value)
-              : value,
+        [name]: checked,
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
       }));
     }
   };
 
-  const handleAlergenos = (alergen: string) => {
-    setForm((prev) => ({
+  const handleAddAlergeno = () => {
+    if (alergeno.trim() && !formData.alergenos.includes(alergeno.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        alergenos: [...prev.alergenos, alergeno.trim()],
+      }));
+      setAlergeno('');
+    }
+  };
+
+  const handleRemoveAlergeno = (index: number) => {
+    setFormData(prev => ({
       ...prev,
-      alergenicos: prev.alergenicos.includes(alergen)
-        ? prev.alergenicos.filter((a) => a !== alergen)
-        : [...prev.alergenicos, alergen],
+      alergenos: prev.alergenos.filter((_, i) => i !== index),
     }));
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setPreview(result);
+        setFormData(prev => ({
+          ...prev,
+          imagen: result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError(null);
 
     try {
-      if (!form.nombre || form.precioBase === undefined || form.precioExtra === undefined) {
-        throw new Error('Por favor llena los campos obligatorios');
-      }
-
       const token = localStorage.getItem('authToken');
-
       if (!token) {
         throw new Error('No hay sesión iniciada');
       }
 
-      const datosIngrediente = {
-        nombre: form.nombre,
-        categoria: form.categoria,
-        descripcion: form.descripcion,
-        precioBase: Number(form.precioBase),
-        precioExtra: Number(form.precioExtra),
-        imagen: form.imagen,
+      // Preparar datos
+      const payload = {
+        ...formData,
+        precioBase: parseFloat(formData.precioBase) || 0,
+        precioExtra: parseFloat(formData.precioExtra) || 0,
         inventario: {
-          cantidad: Number(form.inventario.cantidad),
-          unidad: form.inventario.unidad,
+          cantidad: parseFloat(String(formData.inventario.cantidad)) || 0,
+          unidad: formData.inventario.unidad,
         },
-        alergenicos: form.alergenicos,
-        disponible: form.disponible,
-        activo: form.activo,
       };
 
-      const metodo = ingrediente ? 'PUT' : 'POST';
-      const url = ingrediente
+      // Si es edición, usar PUT; si es creación, usar POST
+      const url = ingrediente && ingrediente._id
         ? `/api/ingredientes/${ingrediente._id}`
         : '/api/ingredientes';
 
+      const method = ingrediente && ingrediente._id ? 'PUT' : 'POST';
+
       const res = await fetch(url, {
-        method: metodo,
+        method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(datosIngrediente),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(
-          data.error || `Error ${res.status}: ${res.statusText}`
-        );
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Error al guardar ingrediente');
       }
 
-      console.log('✅ Ingrediente guardado:', data.data);
+      alert(
+        ingrediente && ingrediente._id
+          ? '✅ Ingrediente actualizado exitosamente'
+          : '✅ Ingrediente creado exitosamente'
+      );
+
       onGuardar(data.data);
-
-      // ✅ Si es EDICIÓN, refresca los datos
-      if (ingrediente) {
-        window.location.reload();
-      }
-
-      // Limpiar formulario si es nuevo ingrediente
-      if (!ingrediente) {
-        setForm({
-          nombre: '',
-          categoria: 'carne',
-          descripcion: '',
-          precioBase: 0,
-          precioExtra: 0,
-          imagen: '',
-          inventario: { cantidad: 100, unidad: 'g' },
-          alergenicos: [],
-          disponible: true,
-          activo: true,
-        });
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Error desconocido';
-      console.error('Error:', errorMessage);
-      setError(errorMessage);
+    } catch (err: any) {
+      console.error('Error al guardar:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg">
-      <h2 className="text-2xl font-bold mb-6 text-amber-400">
-        {ingrediente ? '✏️ Editar Ingrediente' : '➕ Agregar Ingrediente'}
-      </h2>
+    <form onSubmit={handleSubmit} className="space-y-6">
 
       {error && (
-        <div className="bg-red-900/30 text-red-300 p-3 rounded mb-4 border border-red-500 text-sm">
+        <div className="bg-red-600 text-white p-4 rounded">
           ❌ {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* NOMBRE Y CATEGORÍA */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Nombre *
-            </label>
-            <input
-              type="text"
-              name="nombre"
-              value={form.nombre}
-              onChange={handleChange}
-              placeholder="Ej: Queso Cheddar"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-amber-400"
-              required
-            />
-          </div>
+      {/* Nombre */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Nombre *</label>
+        <input
+          type="text"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          required
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          placeholder="Ej: Carne de res"
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Categoría *
-            </label>
-            <select
-              name="categoria"
-              value={form.categoria}
-              onChange={handleChange}
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-amber-400"
-            >
-              {categorias.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+      {/* Categoría */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Categoría *</label>
+        <select
+          name="categoria"
+          value={formData.categoria}
+          onChange={handleChange}
+          required
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+        >
+          <option value="">-- Selecciona una categoría --</option>
+          <option value="Carnes">Carnes</option>
+          <option value="Verduras">Verduras</option>
+          <option value="Lácteos">Lácteos</option>
+          <option value="Condimentos">Condimentos</option>
+          <option value="Bebidas">Bebidas</option>
+          <option value="Otros">Otros</option>
+        </select>
+      </div>
 
-        {/* PRECIOS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Precio Base (€) *
-            </label>
-            <input
-              type="number"
-              name="precioBase"
-              value={form.precioBase}
-              onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-amber-400"
-              required
-            />
-            <p className="text-xs text-gray-400 mt-1">Costo interno</p>
-          </div>
+      {/* Descripción */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Descripción</label>
+        <textarea
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={handleChange}
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          rows={3}
+          placeholder="Describe el ingrediente"
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Precio Extra (€) *
-            </label>
-            <input
-              type="number"
-              name="precioExtra"
-              value={form.precioExtra}
-              onChange={handleChange}
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-amber-400"
-              required
-            />
-            <p className="text-xs text-gray-400 mt-1">Precio al cliente</p>
-          </div>
-        </div>
-
-        {/* DESCRIPCIÓN */}
+      {/* Precios */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Descripción
-          </label>
-          <textarea
-            name="descripcion"
-            value={form.descripcion}
-            onChange={handleChange}
-            placeholder="Información del ingrediente..."
-            rows={3}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-amber-400"
-          />
-        </div>
-
-        {/* IMAGEN */}
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            URL Imagen (Cloudinary)
-          </label>
+          <label className="block text-sm font-medium mb-2">Precio Base (€) *</label>
           <input
-            type="url"
-            name="imagen"
-            value={form.imagen}
+            type="number"
+            name="precioBase"
+            value={formData.precioBase}
             onChange={handleChange}
-            placeholder="https://res.cloudinary.com/..."
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-amber-400"
+            required
+            step="0.01"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            placeholder="0.00"
           />
         </div>
-
-        {/* INVENTARIO */}
-        <div className="bg-gray-700 p-4 rounded">
-          <h3 className="text-sm font-semibold text-amber-400 mb-3">
-            📦 Inventario
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Cantidad
-              </label>
-              <input
-                type="number"
-                name="inventario.cantidad"
-                value={form.inventario.cantidad}
-                onChange={handleChange}
-                min="0"
-                className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Unidad
-              </label>
-              <select
-                name="inventario.unidad"
-                value={form.inventario.unidad}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:outline-none focus:border-amber-400"
-              >
-                {unidades.map((u) => (
-                  <option key={u} value={u}>
-                    {u === 'unidad'
-                      ? 'Unidades'
-                      : u === 'ml'
-                        ? 'Mililitros (ml)'
-                        : u === 'g'
-                          ? 'Gramos (g)'
-                          : 'Porciones'}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+        <div>
+          <label className="block text-sm font-medium mb-2">Precio Extra (€)</label>
+          <input
+            type="number"
+            name="precioExtra"
+            value={formData.precioExtra}
+            onChange={handleChange}
+            step="0.01"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            placeholder="0.00"
+          />
         </div>
+      </div>
 
-        {/* ALÉRGENOS */}
-        <div className="bg-gray-700 p-4 rounded">
-          <h3 className="text-sm font-semibold text-amber-400 mb-3">
-            ⚠️ Alérgenos
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            {alergenos.map((alergen) => (
-              <label
-                key={alergen}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={form.alergenicos.includes(alergen)}
-                  onChange={() => handleAlergenos(alergen)}
-                  className="w-4 h-4"
-                />
-                <span className="text-sm text-gray-300 capitalize">
-                  {alergen}
-                </span>
-              </label>
-            ))}
-          </div>
+      {/* Inventario */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">Cantidad *</label>
+          <input
+            type="number"
+            name="inventario.cantidad"
+            value={formData.inventario.cantidad}
+            onChange={handleChange}
+            required
+            step="0.01"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            placeholder="0"
+          />
         </div>
-
-        {/* DISPONIBILIDAD */}
-        <div className="bg-gray-700 p-4 rounded space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              name="disponible"
-              checked={form.disponible}
-              onChange={handleChange}
-              className="w-4 h-4"
-            />
-            <span className="text-sm text-gray-300">Disponible hoy</span>
-          </label>
-
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              name="activo"
-              checked={form.activo}
-              onChange={handleChange}
-              className="w-4 h-4"
-            />
-            <span className="text-sm text-gray-300">Activo en sistema</span>
-          </label>
-        </div>
-
-        {/* BOTONES */}
-        <div className="flex gap-4 mt-6">
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-2 rounded transition"
+        <div>
+          <label className="block text-sm font-medium mb-2">Unidad *</label>
+          <select
+            name="inventario.unidad"
+            value={formData.inventario.unidad}
+            onChange={handleChange}
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
           >
-            ✅ {loading ? 'Guardando...' : ingrediente ? 'Actualizar' : 'Guardar'}
-          </button>
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="l">l</option>
+            <option value="ml">ml</option>
+            <option value="unidades">unidades</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Imagen */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Imagen</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+        />
+        {preview && (
+          <div className="mt-4">
+            <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded" />
+          </div>
+        )}
+      </div>
+
+      {/* Alergenos */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Alergenos</label>
+        <div className="flex gap-2 mb-2">
+          <input
+            type="text"
+            value={alergeno}
+            onChange={(e) => setAlergeno(e.target.value)}
+            placeholder="Ej: Gluten"
+            className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          />
           <button
             type="button"
-            onClick={onCancelar}
-            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded transition"
+            onClick={handleAddAlergeno}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold"
           >
-            ❌ Cancelar
+            Añadir
           </button>
         </div>
-      </form>
-    </div>
+        {formData.alergenos.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {formData.alergenos.map((alerg, idx) => (
+              <div key={idx} className="bg-amber-600 px-3 py-1 rounded text-sm flex items-center gap-2">
+                {alerg}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveAlergeno(idx)}
+                  className="text-white hover:text-red-200 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Disponible y Activo */}
+      <div className="grid grid-cols-2 gap-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            name="disponible"
+            checked={formData.disponible}
+            onChange={handleChange}
+            className="w-4 h-4"
+          />
+          <span>Disponible</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            name="activo"
+            checked={formData.activo}
+            onChange={handleChange}
+            className="w-4 h-4"
+          />
+          <span>Activo</span>
+        </label>
+      </div>
+
+      {/* Botones */}
+      <div className="flex gap-4 pt-6">
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex-1 px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded"
+        >
+          {loading ? 'Guardando...' : ingrediente && ingrediente._id ? 'Actualizar' : 'Crear'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancelar}
+          className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
   );
 }

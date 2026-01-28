@@ -4,17 +4,21 @@ import Ingrediente from '@/lib/models/Ingrediente';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 
+
 export async function GET(
   request: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // ✅ PROTEGER
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   try {
+    // ✅ AQUÍ: await params primero
+    const { id } = await params;
+
     await connectDB();
-    const ingrediente = await Ingrediente.findById(params.id).lean();
+    const ingrediente = await Ingrediente.findById(id).lean();
 
     if (!ingrediente) {
       return NextResponse.json<ApiResponse>({
@@ -35,9 +39,10 @@ export async function GET(
   }
 }
 
+
 export async function PUT(
   request: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
@@ -51,11 +56,14 @@ export async function PUT(
   }
 
   try {
+    // ✅ AQUÍ: await params primero
+    const { id } = await params;
+
     await connectDB();
     const body = await request.json();
     
     const ingrediente = await Ingrediente.findByIdAndUpdate(
-      params.id, 
+      id, 
       body, 
       { new: true, runValidators: true }
     ).lean();
@@ -79,9 +87,10 @@ export async function PUT(
   }
 }
 
+
 export async function DELETE(
   request: NextRequest, 
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
@@ -95,9 +104,12 @@ export async function DELETE(
   }
 
   try {
+    // ✅ AQUÍ: await params primero
+    const { id } = await params;
+
     await connectDB();
     
-    const ingrediente = await Ingrediente.findByIdAndDelete(params.id).lean();
+    const ingrediente = await Ingrediente.findByIdAndDelete(id).lean();
 
     if (!ingrediente) {
       return NextResponse.json<ApiResponse>({

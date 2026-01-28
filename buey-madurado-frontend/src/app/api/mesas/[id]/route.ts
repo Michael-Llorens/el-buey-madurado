@@ -6,14 +6,15 @@ import { ApiResponse } from '@/lib/types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   try {
+    const resolvedParams = await params;  // Resolver la Promise aquí
     await connectDB();
-    const mesa = await Mesa.findById(params.id).lean();
+    const mesa = await Mesa.findById(resolvedParams.id).lean();
 
     if (!mesa) {
       return NextResponse.json<ApiResponse>({
@@ -36,7 +37,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
@@ -49,10 +50,11 @@ export async function PUT(
   }
 
   try {
+    const resolvedParams = await params;  // Resolver la Promise aquí
     await connectDB();
     const body = await request.json();
     const mesa = await Mesa.findByIdAndUpdate(
-      params.id,
+      resolvedParams.id,
       body,
       { new: true, runValidators: true }
     ).lean();
@@ -78,7 +80,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
@@ -91,8 +93,9 @@ export async function DELETE(
   }
 
   try {
+    const resolvedParams = await params;  // Resolver la Promise aquí
     await connectDB();
-    const mesa = await Mesa.findByIdAndDelete(params.id).lean();
+    const mesa = await Mesa.findByIdAndDelete(resolvedParams.id).lean();
 
     if (!mesa) {
       return NextResponse.json<ApiResponse>({
