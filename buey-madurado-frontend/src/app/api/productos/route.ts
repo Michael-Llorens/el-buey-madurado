@@ -8,6 +8,14 @@ export async function GET(request: NextRequest) {
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
+  // 🆕 SOLO ADMIN VE LISTA
+  if (!verificarRol(auth.payload!, ['admin'])) {
+    return NextResponse.json<ApiResponse>({
+      success: false,
+      error: 'Solo administradores ven stock',
+    }, { status: 403 });
+  }
+
   try {
     await connectDB();
     const productos = await Producto.find({ activo: true })

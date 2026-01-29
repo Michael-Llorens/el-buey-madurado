@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth'; // 🆕
 import StockPanel from '@/components/dashboard/StockPanel';
+import UsuariosPanel from './usuarios/page';
 
 type ModuloActivo = 'home' | 'stock' | 'mesas' | 'pedidos' | 'reportes' | 'usuarios' | 'configuracion';
 
 export default function AdminPanel() {
-  const [usuarioActivo] = useState('Admin');
+  const { usuario } = useAuth(); // 🆕 Obtener datos del usuario
   const [moduloActivo, setModuloActivo] = useState<ModuloActivo>('home');
 
   const modulos = [
@@ -16,6 +18,7 @@ export default function AdminPanel() {
       descripcion: 'Gestiona ingredientes y productos',
       icono: '🥘',
       color: 'from-orange-500 to-red-600',
+      rolesPermitidos: ['admin'], // 🆕
     },
     {
       id: 'mesas',
@@ -23,6 +26,7 @@ export default function AdminPanel() {
       descripcion: 'Administra mesas y reservas',
       icono: '🪑',
       color: 'from-blue-500 to-cyan-600',
+      rolesPermitidos: ['camarero', 'cocinero', 'admin'], // 🆕
     },
     {
       id: 'pedidos',
@@ -30,6 +34,7 @@ export default function AdminPanel() {
       descripcion: 'Visualiza y gestiona pedidos',
       icono: '📋',
       color: 'from-green-500 to-emerald-600',
+      rolesPermitidos: ['camarero', 'cocinero', 'admin'], // 🆕
     },
     {
       id: 'reportes',
@@ -37,6 +42,7 @@ export default function AdminPanel() {
       descripcion: 'Análisis de ventas y estadísticas',
       icono: '📊',
       color: 'from-purple-500 to-pink-600',
+      rolesPermitidos: ['admin'], // 🆕
     },
     {
       id: 'usuarios',
@@ -44,6 +50,7 @@ export default function AdminPanel() {
       descripcion: 'Gestión de permisos y roles',
       icono: '👥',
       color: 'from-yellow-500 to-amber-600',
+      rolesPermitidos: ['admin'], // 🆕
     },
     {
       id: 'configuracion',
@@ -51,8 +58,14 @@ export default function AdminPanel() {
       descripcion: 'Ajustes del sistema',
       icono: '⚙️',
       color: 'from-gray-600 to-slate-700',
+      rolesPermitidos: ['admin'], // 🆕
     },
   ];
+
+  // 🆕 Filtrar módulos según rol
+  const modulosFiltrados = modulos.filter(
+    (modulo) => usuario?.rol && modulo.rolesPermitidos.includes(usuario.rol)
+  );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -65,7 +78,17 @@ export default function AdminPanel() {
           </div>
           <div className="text-right">
             <p className="text-sm text-amber-100">Bienvenido,</p>
-            <p className="text-xl font-semibold">{usuarioActivo}</p>
+            <p className="text-xl font-semibold">{usuario?.email || 'Cargando...'}</p>
+            <p className="text-xs text-gray-400 mt-1">Rol: {usuario?.rol || '...'}</p>
+            {/* 🆕 BOTÓN LOGOUT */}
+            <button
+              onClick={() => {
+                localStorage.removeItem('authToken');
+                window.location.href = '/login';
+              }}
+              className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition text-sm">
+              🔓 Logout
+            </button>
           </div>
         </div>
       </div>
@@ -77,7 +100,7 @@ export default function AdminPanel() {
           <>
             {/* Modules Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {modulos.map((modulo) => (
+              {modulosFiltrados.map((modulo: any) => (
                 <div
                   key={modulo.id}
                   onClick={() => setModuloActivo(modulo.id as ModuloActivo)}
@@ -91,9 +114,7 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="flex gap-2 mt-4">
-                    <button
-                      className="flex-1 bg-black bg-opacity-30 hover:bg-opacity-50 text-white py-2 px-4 rounded font-semibold transition text-center text-sm"
-                    >
+                    <button className="flex-1 bg-black bg-opacity-30 hover:bg-opacity-50 text-white py-2 px-4 rounded font-semibold transition text-center text-sm">
                       Abrir →
                     </button>
                   </div>
@@ -208,9 +229,7 @@ export default function AdminPanel() {
                 ← Volver
               </button>
             </div>
-            <div className="bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
-              <p className="text-gray-400 text-lg">🚧 Módulo de Usuarios - En desarrollo</p>
-            </div>
+            <UsuariosPanel />
           </div>
         )}
 

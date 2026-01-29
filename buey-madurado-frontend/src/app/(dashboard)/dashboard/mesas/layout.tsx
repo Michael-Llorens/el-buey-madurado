@@ -1,3 +1,3 @@
 export default function Page() {
-  return <div>Página en construcción</div>;
+  return <div>Página en construcción de mesas</div>;
 }

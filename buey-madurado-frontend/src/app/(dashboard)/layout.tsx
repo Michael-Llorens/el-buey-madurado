@@ -1,9 +1,4 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "El Buey Madurado - Dashboard",
-  description: "Panel de Administración",
-};
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 export default function DashboardLayout({
   children,
@@ -11,8 +6,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full h-screen bg-gray-900 text-white">
-      {children}
-    </div>
+    <ProtectedRoute requiredRol={['admin', 'camarero', 'cocinero']}>
+      <div className="w-full h-screen bg-gray-900 text-white">
+        {children}
+      </div>
+    </ProtectedRoute>
   );
 }
