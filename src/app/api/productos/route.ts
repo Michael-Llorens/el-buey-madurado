@@ -1,113 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/app/api/lib/conectBD';
-import Product from '@/app/api/models/Product';
+import { connectDB } from '@/lib/db';
+import Producto from '@/lib/models/Producto';
+import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
+import { ApiResponse } from '@/lib/types';
 
-// ============================================
-// GET - LISTAR TODOS LOS PRODUCTOS
-// ============================================
-// Endpoints:
-//   GET /api/productos
-//   GET /api/productos?activo=true
-//   GET /api/productos?disponible=true&categoria=Carnes
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
+  const auth = protegerRuta(request);
+  if (!auth.valido) return auth.response!;
+
+  // 🆕 SOLO ADMIN VE LISTA
+  if (!verificarRol(auth.payload!, ['admin'])) {
+    return NextResponse.json<ApiResponse>({
+      success: false,
+      error: 'Solo administradores ven stock',
+    }, { status: 403 });
+  }
+
   try {
     await connectDB();
+    const productos = await Producto.find({ activo: true })
+      .sort({ nombre: 1 })
+      .lean();
 
-    const { searchParams } = new URL(req.url);
-    const activo = searchParams.get('activo');
-    const disponible = searchParams.get('disponible');
-    const categoria = searchParams.get('categoria');
-
-    // Construir filtro
-    const filter: any = {};
-    if (activo !== null) filter.activo = activo === 'true';
-    if (disponible !== null) filter.disponible = disponible === 'true';
-    if (categoria) filter.categoria = categoria;
-
-    // ⭐ IMPORTANTE: POPULATE
-    // Los productos tienen referencias a ingredientes (IDs)
-    // populate() trae la información completa del ingrediente
-    // Así en lugar de solo el ID, trae todo el objeto
-    const productos = await Product.find(filter)
-      .populate('ingredientes.ingrediente')  // Traer datos completos de ingredientes base
-      .populate('ingredientesExtra')         // Traer datos completos de ingredientes extras
-      .sort({ nombre: 1 });
-
-    return NextResponse.json({
+    return NextResponse.json<ApiResponse>({
       success: true,
       data: productos,
-      total: productos.length,
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json<ApiResponse>({
+      success: false,
+      error: error.message,
+    }, { status: 500 });
   }
 }
 
-// ============================================
-// POST - CREAR NUEVO PRODUCTO
-// ============================================
-// Endpoint: POST /api/productos
-// Body:
-// {
-//   "nombre": "Hamburguesa El Buey",
-//   "categoria": "Sándwich y hamburguesas",
-//   "precio": 15.00,
-//   "descripcion": "Descripción del producto",
-//   "ingredientes": [
-//     {
-//       "ingrediente": "507f1f77bcf86cd799439001",
-//       "nombre": "Queso Cheddar",
-//       "cantidad": 60,
-//       "unidad": "g",
-//       "esOpcional": true
-//     }
-//   ],
-//   "ingredientesExtra": ["507f1f77bcf86cd799439010"],
-//   "permitirPersonalizacion": true,
-//   "permitirExtras": true,
-//   "permitirRemover": true
-// }
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
+  const auth = protegerRuta(request);
+  if (!auth.valido) return auth.response!;
+
+  if (!verificarRol(auth.payload!, ['admin', 'cocinero'])) {
+    return NextResponse.json<ApiResponse>({
+      success: false,
+      error: 'No tienes permiso para crear productos',
+    }, { status: 403 });
+  }
+
   try {
     await connectDB();
+    const body = await request.json();
+    const producto = new Producto(body);
+    await producto.save();
 
-    const body = await req.json();
-
-    // Validaciones - campos obligatorios
-    if (!body.nombre || !body.categoria || !body.precio || !body.descripcion) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Faltan campos requeridos: nombre, categoria, precio, descripcion' 
-        },
-        { status: 400 }
-      );
-    }
-
-    // Crear producto
-    const nuevoProducto = new Product(body);
-    await nuevoProducto.save();
-
-    // Poblar ingredientes DESPUÉS de guardar
-    // Esto trae los datos completos de los ingredientes referenciados
-    await nuevoProducto.populate('ingredientes.ingrediente');
-    await nuevoProducto.populate('ingredientesExtra');
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Producto creado exitosamente',
-        data: nuevoProducto,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json<ApiResponse>({
+      success: true,
+      data: producto,
+    }, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json<ApiResponse>({
+      success: false,
+      error: error.message,
+    }, { status: 400 });
   }
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from "framer-motion";
-import carneImg from "../../assets/menu/carne.webp";
 
 type PiezaCarneProps = {
   title: string;
@@ -9,6 +8,7 @@ type PiezaCarneProps = {
   breed: string;
   aging: string;
   description: string;
+  image: string;
   reverse?: boolean;
 };
 
@@ -18,6 +18,7 @@ function PiezaCarne({
   breed,
   aging,
   description,
+  image,
   reverse = false,
 }: PiezaCarneProps) {
   return (
@@ -26,7 +27,7 @@ function PiezaCarne({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className={`grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center`}
+      className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center"
     >
       {/* IMAGEN CON TEXTO */}
       <motion.div
@@ -36,7 +37,7 @@ function PiezaCarne({
         className={`relative ${reverse ? "md:order-2" : ""}`}
       >
         <img
-          src={carneImg.src}
+          src={image}
           alt={title}
           className="w-full aspect-[4/5] md:aspect-[3/4] object-cover rounded-2xl shadow-2xl"
         />
@@ -83,28 +84,31 @@ export default function MuseoCarne() {
     <section className="w-full py-24 md:py-32 px-6">
       <div className="max-w-6xl mx-auto space-y-28 md:space-y-40">
         <PiezaCarne
-          title="Txuleta de vaca vieja"
-          origin="Norte de España"
-          breed="Frisona"
-          aging="45 días"
-          description="Una carne profunda, intensa, con una grasa que se funde lentamente y deja huella."
+          title="Lomo alto"
+          origin="Galicia"
+          breed="Buey gallego"
+          aging="+60 días"
+          description="Corte jugoso y con carácter, perfecto para disfrutar del sabor y la textura en su punto."
+          image="/assets/images/carneSobreNosotros1.jpg"
         />
 
         <PiezaCarne
           reverse
-          title="Entrecot selección"
-          origin="Ganaderías locales"
-          breed="Cruce nacional"
-          aging="30 días"
-          description="Equilibrio perfecto entre ternura y carácter, ideal para el fuego vivo."
+          title="Lomo bajo"
+          origin="Galicia"
+          breed="Vaca rubia gallega"
+          aging="+ 45 días"
+          description="Más fino y equilibrado, con una mordida suave y un sabor redondo que engancha."
+          image="/assets/images/carneSobreNosotros2.jpg"
         />
 
         <PiezaCarne
-          title="Solomillo madurado"
-          origin="Seleccionado en origen"
-          breed="Vaca nacional"
-          aging="25 días"
-          description="Textura fina y sabor limpio, una pieza donde la maduración aporta elegancia."
+          title="Wagyu"
+          origin="Kobe, Japón"
+          breed="Tajima-gyu"
+          aging="Seleccionada"
+          description="Grasa increíblemente fina y sabor intenso: una pieza para probar sin prisas y disfrutar."
+          image="/assets/images/carneSobreNosotros3.png"
         />
       </div>
     </section>

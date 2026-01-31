@@ -1,35 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import Producto from '@/lib/models/Producto';
+import Pedido from '@/lib/models/Pedido';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 
-
 export async function GET(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ✅ PROTEGER
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   try {
-    // ✅ AQUÍ: await params primero
-    const { id } = await params;
-
+    const { id } = await params;  // Resolver Promise
     await connectDB();
-    const producto = await Producto.findById(id).lean();
+    const pedido = await Pedido.findById(id)
+      .populate('mesa')
+      .populate('productos.producto')
+      .lean();
 
-    if (!producto) {
+    if (!pedido) {
       return NextResponse.json<ApiResponse>({
         success: false,
-        error: 'Producto no encontrado',
+        error: 'Pedido no encontrado',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: producto,
+      data: pedido,
     });
   } catch (error: any) {
     return NextResponse.json<ApiResponse>({
@@ -39,45 +38,40 @@ export async function GET(
   }
 }
 
-
 export async function PUT(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
-  if (!verificarRol(auth.payload!, ['admin', 'cocinero'])) {
+  if (!verificarRol(auth.payload!, ['admin', 'camarero', 'cocinero'])) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: 'No tienes permiso para actualizar productos',
+      error: 'No tienes permiso para actualizar pedidos',
     }, { status: 403 });
   }
 
   try {
-    // ✅ AQUÍ: await params primero
-    const { id } = await params;
-
+    const { id } = await params;  // Resolver Promise
     await connectDB();
     const body = await request.json();
-    
-    const producto = await Producto.findByIdAndUpdate(
-      id, 
-      body, 
+    const pedido = await Pedido.findByIdAndUpdate(
+      id,
+      body,
       { new: true, runValidators: true }
     ).lean();
 
-    if (!producto) {
+    if (!pedido) {
       return NextResponse.json<ApiResponse>({
         success: false,
-        error: 'Producto no encontrado',
+        error: 'Pedido no encontrado',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: producto,
+      data: pedido,
     });
   } catch (error: any) {
     return NextResponse.json<ApiResponse>({
@@ -87,40 +81,35 @@ export async function PUT(
   }
 }
 
-
 export async function DELETE(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin'])) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: 'No tienes permiso para eliminar productos',
+      error: 'No tienes permiso para eliminar pedidos',
     }, { status: 403 });
   }
 
   try {
-    // ✅ AQUÍ: await params primero
-    const { id } = await params;
-
+    const { id } = await params;  // Resolver Promise
     await connectDB();
-    
-    const producto = await Producto.findByIdAndDelete(id).lean();
+    const pedido = await Pedido.findByIdAndDelete(id).lean();
 
-    if (!producto) {
+    if (!pedido) {
       return NextResponse.json<ApiResponse>({
         success: false,
-        error: 'Producto no encontrado',
+        error: 'Pedido no encontrado',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: producto,
+      data: pedido,
     });
   } catch (error: any) {
     return NextResponse.json<ApiResponse>({

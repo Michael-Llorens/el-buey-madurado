@@ -1,35 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
-import Producto from '@/lib/models/Producto';
+import Usuario from '@/lib/models/Usuario';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 
-
 export async function GET(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ✅ PROTEGER
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
+  if (!verificarRol(auth.payload!, ['admin'])) {
+    return NextResponse.json<ApiResponse>({
+      success: false,
+      error: 'No autorizado',
+    }, { status: 403 });
+  }
+
   try {
-    // ✅ AQUÍ: await params primero
     const { id } = await params;
-
     await connectDB();
-    const producto = await Producto.findById(id).lean();
+    
+    const usuario = await Usuario.findById(id)
+      .select('-password')
+      .lean();
 
-    if (!producto) {
+    if (!usuario) {
       return NextResponse.json<ApiResponse>({
         success: false,
-        error: 'Producto no encontrado',
+        error: 'Usuario no encontrado',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: producto,
+      data: usuario,
     });
   } catch (error: any) {
     return NextResponse.json<ApiResponse>({
@@ -39,45 +45,42 @@ export async function GET(
   }
 }
 
-
 export async function PUT(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
-  if (!verificarRol(auth.payload!, ['admin', 'cocinero'])) {
+  if (!verificarRol(auth.payload!, ['admin'])) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: 'No tienes permiso para actualizar productos',
+      error: 'No autorizado',
     }, { status: 403 });
   }
 
   try {
-    // ✅ AQUÍ: await params primero
     const { id } = await params;
-
     await connectDB();
-    const body = await request.json();
     
-    const producto = await Producto.findByIdAndUpdate(
-      id, 
-      body, 
-      { new: true, runValidators: true }
-    ).lean();
+    const body = await request.json();
+    const { password, ...updateData } = body; // No actualizar password aquí
 
-    if (!producto) {
+    const usuario = await Usuario.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).select('-password').lean();
+
+    if (!usuario) {
       return NextResponse.json<ApiResponse>({
         success: false,
-        error: 'Producto no encontrado',
+        error: 'Usuario no encontrado',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: producto,
+      data: usuario,
     });
   } catch (error: any) {
     return NextResponse.json<ApiResponse>({
@@ -87,40 +90,36 @@ export async function PUT(
   }
 }
 
-
 export async function DELETE(
-  request: NextRequest, 
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ✅ PROTEGER - Solo admin
   const auth = protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin'])) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: 'No tienes permiso para eliminar productos',
+      error: 'No autorizado',
     }, { status: 403 });
   }
 
   try {
-    // ✅ AQUÍ: await params primero
     const { id } = await params;
-
     await connectDB();
     
-    const producto = await Producto.findByIdAndDelete(id).lean();
+    const usuario = await Usuario.findByIdAndDelete(id);
 
-    if (!producto) {
+    if (!usuario) {
       return NextResponse.json<ApiResponse>({
         success: false,
-        error: 'Producto no encontrado',
+        error: 'Usuario no encontrado',
       }, { status: 404 });
     }
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: producto,
+      data: { id: usuario._id },
     });
   } catch (error: any) {
     return NextResponse.json<ApiResponse>({
