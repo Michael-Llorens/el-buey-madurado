@@ -1,29 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Pedido from '@/lib/models/Pedido';
-import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
+import Mesa from '@/lib/models/Mesa';
+import Producto from '@/lib/models/Producto';
+import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import mongoose from 'mongoose';
 
+// ===========================
+// GET - Obtener un pedido específico
+// ===========================
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> } // ✅ CORREGIDO: params es Promise en Next.js 15+
 ) {
-  const auth = protegerRuta(request);
-  if (!auth.valido) return auth.response!;
-
   try {
-    const { id } = await params;  // Resolver Promise
     await connectDB();
+    await protegerRuta(req);
+
+    const { id } = await context.params; // ✅ AWAIT params
+
+    if (!id) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'ID de pedido requerido',
+        },
+        { status: 400 }
+      );
+    }
+
     const pedido = await Pedido.findById(id)
-      .populate('mesa')
-      .populate('productos.producto')
-      .lean();
+      .populate('mesa', 'numero capacidad estado')
+      .populate('productos.producto', 'nombre precio imagen descripcion')
+      .populate('camarero', 'nombre email');
 
     if (!pedido) {
-      return NextResponse.json<ApiResponse>({
-        success: false,
-        error: 'Pedido no encontrado',
-      }, { status: 404 });
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'Pedido no encontrado',
+        },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json<ApiResponse>({
@@ -31,90 +50,189 @@ export async function GET(
       data: pedido,
     });
   } catch (error: any) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: error.message,
-    }, { status: 500 });
+    console.error('❌ Error en GET /api/pedidos/[id]:', error);
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
   }
 }
 
+// ===========================
+// PUT - Actualizar pedido
+// ===========================
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> } // ✅ CORREGIDO
 ) {
-  const auth = protegerRuta(request);
-  if (!auth.valido) return auth.response!;
-
-  if (!verificarRol(auth.payload!, ['admin', 'camarero', 'cocinero'])) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: 'No tienes permiso para actualizar pedidos',
-    }, { status: 403 });
-  }
-
   try {
-    const { id } = await params;  // Resolver Promise
     await connectDB();
-    const body = await request.json();
-    const pedido = await Pedido.findByIdAndUpdate(
-      id,
-      body,
-      { new: true, runValidators: true }
-    ).lean();
+    await protegerRuta(req);
+
+    const body = await req.json();
+    const { id } = await context.params; // ✅ AWAIT params
+
+    if (!id) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'ID de pedido requerido',
+        },
+        { status: 400 }
+      );
+    }
+
+    const pedido = await Pedido.findById(id);
 
     if (!pedido) {
-      return NextResponse.json<ApiResponse>({
-        success: false,
-        error: 'Pedido no encontrado',
-      }, { status: 404 });
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'Pedido no encontrado',
+        },
+        { status: 404 }
+      );
     }
+
+    // Si se actualizan productos, recalcular precios
+    if (body.productos) {
+      const productosConPrecios = await Promise.all(
+        body.productos.map(async (item: any) => {
+          const producto = await Producto.findById(item.producto);
+          if (!producto) {
+            throw new Error(`Producto ${item.producto} no encontrado`);
+          }
+
+          const precioUnitario = item.precioUnitario || producto.precio;
+          const subtotal = precioUnitario * item.cantidad;
+
+          return {
+            producto: new mongoose.Types.ObjectId(item.producto),
+            cantidad: item.cantidad,
+            precioUnitario: precioUnitario,
+            subtotal: subtotal,
+            notas: item.notas || '',
+            personalizaciones: item.personalizaciones || {}
+          };
+        })
+      );
+
+      pedido.productos = productosConPrecios;
+    }
+
+    // Actualizar otros campos
+    if (body.estado) pedido.estado = body.estado;
+    if (body.cliente !== undefined) pedido.cliente = body.cliente;
+    if (body.notas !== undefined) pedido.notas = body.notas;
+    if (body.descuento !== undefined) pedido.descuento = body.descuento;
+    if (body.metodoPago) pedido.metodoPago = body.metodoPago;
+
+    // Recalcular totales
+    pedido.calcularTotales();
+
+    await pedido.save();
+
+    // ✅ Liberar mesa según tipo y estado
+    if (body.estado === 'pagado' && pedido.tipo === 'local' && pedido.mesa) {
+      await Mesa.findByIdAndUpdate(pedido.mesa, {
+        estado: 'libre',
+        pedidoActual: null
+      });
+    }
+
+    if ((body.estado === 'entregado' || body.estado === 'cancelado') && pedido.tipo === 'local' && pedido.mesa) {
+      await Mesa.findByIdAndUpdate(pedido.mesa, {
+        estado: 'libre',
+        pedidoActual: null
+      });
+    }
+
+    const pedidoActualizado = await Pedido.findById(id)
+      .populate('mesa', 'numero capacidad')
+      .populate('productos.producto', 'nombre precio imagen')
+      .populate('camarero', 'nombre email');
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: pedido,
+      data: pedidoActualizado,
+      message: 'Pedido actualizado exitosamente',
     });
   } catch (error: any) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: error.message,
-    }, { status: 400 });
+    console.error('❌ Error en PUT /api/pedidos/[id]:', error);
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
   }
 }
 
+// ===========================
+// DELETE - Cancelar pedido
+// ===========================
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> } // ✅ CORREGIDO
 ) {
-  const auth = protegerRuta(request);
-  if (!auth.valido) return auth.response!;
-
-  if (!verificarRol(auth.payload!, ['admin'])) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: 'No tienes permiso para eliminar pedidos',
-    }, { status: 403 });
-  }
-
   try {
-    const { id } = await params;  // Resolver Promise
     await connectDB();
-    const pedido = await Pedido.findByIdAndDelete(id).lean();
+    await protegerRuta(req);
+
+    const { id } = await context.params; // ✅ AWAIT params
+
+    console.log('🗑️ Intentando cancelar pedido:', id); // Debug
+
+    if (!id) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'ID de pedido requerido',
+        },
+        { status: 400 }
+      );
+    }
+
+    const pedido = await Pedido.findById(id);
 
     if (!pedido) {
-      return NextResponse.json<ApiResponse>({
-        success: false,
-        error: 'Pedido no encontrado',
-      }, { status: 404 });
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          error: 'Pedido no encontrado',
+        },
+        { status: 404 }
+      );
+    }
+
+    // Marcar como cancelado en lugar de eliminar
+    pedido.estado = 'cancelado';
+    await pedido.save();
+
+    // ✅ Liberar mesa si es pedido local
+    if (pedido.tipo === 'local' && pedido.mesa) {
+      await Mesa.findByIdAndUpdate(pedido.mesa, {
+        estado: 'libre',
+        pedidoActual: null
+      });
     }
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: pedido,
+      message: 'Pedido cancelado exitosamente',
     });
   } catch (error: any) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: error.message,
-    }, { status: 500 });
+    console.error('❌ Error en DELETE /api/pedidos/[id]:', error);
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
   }
 }

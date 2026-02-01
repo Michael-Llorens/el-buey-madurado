@@ -1,56 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Mesa from '@/lib/models/Mesa';
-import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
+import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 
-export async function GET(request: NextRequest) {
-  const auth = protegerRuta(request);
-  if (!auth.valido) return auth.response!;
-
+// ===========================
+// GET - Listar todas las mesas
+// ===========================
+export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    const mesas = await Mesa.find({ activo: true })
-      .sort({ numero: 1 })
-      .lean();
+    await protegerRuta(req);
+
+    const mesas = await Mesa.find()
+      .sort({ numero: 1 });
 
     return NextResponse.json<ApiResponse>({
       success: true,
       data: mesas,
     });
   } catch (error: any) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: error.message,
-    }, { status: 500 });
+    console.error('❌ Error en GET /api/mesas:', error);
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(request: NextRequest) {
-  const auth = protegerRuta(request);
-  if (!auth.valido) return auth.response!;
-
-  if (!verificarRol(auth.payload!, ['admin'])) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: 'No tienes permiso para crear mesas',
-    }, { status: 403 });
-  }
-
+// ===========================
+// POST - Crear nueva mesa
+// ===========================
+export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const body = await request.json();
-    const mesa = new Mesa(body);
-    await mesa.save();
+    await protegerRuta(req);
 
-    return NextResponse.json<ApiResponse>({
-      success: true,
-      data: mesa,
-    }, { status: 201 });
+    const body = await req.json();
+
+    console.log('📦 Body recibido:', JSON.stringify(body, null, 2));
+
+    const nuevaMesa = new Mesa(body);
+    await nuevaMesa.save();
+
+    console.log('✅ Mesa creada:', nuevaMesa);
+
+    return NextResponse.json<ApiResponse>(
+      {
+        success: true,
+        data: nuevaMesa,
+        message: 'Mesa creada exitosamente',
+      },
+      { status: 201 }
+    );
   } catch (error: any) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: error.message,
-    }, { status: 400 });
+    console.error('❌ Error en POST /api/mesas:', error);
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
   }
 }

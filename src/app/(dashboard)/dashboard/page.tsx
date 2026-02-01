@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth'; // 🆕
+import { useAuth } from '@/hooks/useAuth';
 import StockPanel from '@/components/dashboard/StockPanel';
 import UsuariosPanel from './usuarios/page';
+import MesasPanel from './mesas/page';
+import PedidosPanel from './pedidos/page';
 
 type ModuloActivo = 'home' | 'stock' | 'mesas' | 'pedidos' | 'reportes' | 'usuarios' | 'configuracion';
 
 export default function AdminPanel() {
-  const { usuario } = useAuth(); // 🆕 Obtener datos del usuario
+  const { usuario } = useAuth();
   const [moduloActivo, setModuloActivo] = useState<ModuloActivo>('home');
 
   const modulos = [
@@ -18,7 +20,7 @@ export default function AdminPanel() {
       descripcion: 'Gestiona ingredientes y productos',
       icono: '🥘',
       color: 'from-orange-500 to-red-600',
-      rolesPermitidos: ['admin'], // 🆕
+      rolesPermitidos: ['admin'],
     },
     {
       id: 'mesas',
@@ -26,7 +28,7 @@ export default function AdminPanel() {
       descripcion: 'Administra mesas y reservas',
       icono: '🪑',
       color: 'from-blue-500 to-cyan-600',
-      rolesPermitidos: ['camarero', 'cocinero', 'admin'], // 🆕
+      rolesPermitidos: ['camarero', 'cocinero', 'admin'],
     },
     {
       id: 'pedidos',
@@ -34,7 +36,7 @@ export default function AdminPanel() {
       descripcion: 'Visualiza y gestiona pedidos',
       icono: '📋',
       color: 'from-green-500 to-emerald-600',
-      rolesPermitidos: ['camarero', 'cocinero', 'admin'], // 🆕
+      rolesPermitidos: ['camarero', 'cocinero', 'admin'],
     },
     {
       id: 'reportes',
@@ -42,7 +44,7 @@ export default function AdminPanel() {
       descripcion: 'Análisis de ventas y estadísticas',
       icono: '📊',
       color: 'from-purple-500 to-pink-600',
-      rolesPermitidos: ['admin'], // 🆕
+      rolesPermitidos: ['admin'],
     },
     {
       id: 'usuarios',
@@ -50,7 +52,7 @@ export default function AdminPanel() {
       descripcion: 'Gestión de permisos y roles',
       icono: '👥',
       color: 'from-yellow-500 to-amber-600',
-      rolesPermitidos: ['admin'], // 🆕
+      rolesPermitidos: ['admin'],
     },
     {
       id: 'configuracion',
@@ -58,11 +60,11 @@ export default function AdminPanel() {
       descripcion: 'Ajustes del sistema',
       icono: '⚙️',
       color: 'from-gray-600 to-slate-700',
-      rolesPermitidos: ['admin'], // 🆕
+      rolesPermitidos: ['admin'],
     },
   ];
 
-  // 🆕 Filtrar módulos según rol
+  // Filtrar módulos según rol
   const modulosFiltrados = modulos.filter(
     (modulo) => usuario?.rol && modulo.rolesPermitidos.includes(usuario.rol)
   );
@@ -80,13 +82,13 @@ export default function AdminPanel() {
             <p className="text-sm text-amber-100">Bienvenido,</p>
             <p className="text-xl font-semibold">{usuario?.email || 'Cargando...'}</p>
             <p className="text-xs text-gray-400 mt-1">Rol: {usuario?.rol || '...'}</p>
-            {/* 🆕 BOTÓN LOGOUT */}
             <button
               onClick={() => {
                 localStorage.removeItem('authToken');
                 window.location.href = '/login';
               }}
-              className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition text-sm">
+              className="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition text-sm"
+            >
               🔓 Logout
             </button>
           </div>
@@ -175,9 +177,8 @@ export default function AdminPanel() {
                 ← Volver
               </button>
             </div>
-            <div className="bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
-              <p className="text-gray-400 text-lg">🚧 Módulo de Mesas - En desarrollo</p>
-            </div>
+            {/* ✅ REEMPLAZAR PLACEHOLDER CON COMPONENTE REAL */}
+            <MesasPanel />
           </div>
         )}
 
@@ -193,9 +194,8 @@ export default function AdminPanel() {
                 ← Volver
               </button>
             </div>
-            <div className="bg-gray-800 rounded-lg p-8 border border-gray-700 text-center">
-              <p className="text-gray-400 text-lg">🚧 Módulo de Pedidos - En desarrollo</p>
-            </div>
+            {/* ✅ REEMPLAZAR PLACEHOLDER */}
+            <PedidosPanel />
           </div>
         )}
 
