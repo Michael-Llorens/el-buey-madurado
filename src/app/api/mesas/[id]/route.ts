@@ -9,14 +9,14 @@ import { ApiResponse } from '@/lib/types';
 // ===========================
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ← CAMBIO Next.js 16
 ) {
   try {
     await connectDB();
     await protegerRuta(req);
 
     const body = await req.json();
-    const { id } = params;
+    const { id } = await params;  // ← CAMBIO Next.js 16
 
     if (!id) {
       return NextResponse.json<ApiResponse>(
@@ -66,13 +66,13 @@ export async function PUT(
 // ===========================
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }  // ← CAMBIO Next.js 16
 ) {
   try {
     await connectDB();
     await protegerRuta(req);
 
-    const { id } = params;
+    const { id } = await params;  // ← CAMBIO Next.js 16
 
     if (!id) {
       return NextResponse.json<ApiResponse>(
