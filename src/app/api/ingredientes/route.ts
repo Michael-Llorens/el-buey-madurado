@@ -4,65 +4,56 @@ import Ingrediente from '@/lib/models/Ingrediente';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 
+// GET /api/ingredientes  -> lista
 export async function GET(request: NextRequest) {
-  // ✅ PROTEGER - Cualquier usuario autenticado
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
-
-    // 🆕 SOLO ADMIN VE LISTA
-  if (!verificarRol(auth.payload!, ['admin'])) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: 'Solo administradores ven stock',
-    }, { status: 403 });
-  }
 
   try {
     await connectDB();
-    
-    const ingredientes = await Ingrediente.find({ activo: true })
-      .sort({ nombre: 1 })
-      .lean();
+
+    const ingredientes = await Ingrediente.find({}).lean();
 
     return NextResponse.json<ApiResponse>({
       success: true,
       data: ingredientes,
     });
   } catch (error: any) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: error.message,
-    }, { status: 500 });
+    console.error('❌ Error en GET /api/ingredientes:', error);
+    return NextResponse.json<ApiResponse>(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
   }
 }
 
+// POST /api/ingredientes -> crear
 export async function POST(request: NextRequest) {
-  // ✅ PROTEGER - Solo admin y cocinero
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin', 'cocinero'])) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: 'No tienes permiso para crear ingredientes',
-    }, { status: 403 });
+    return NextResponse.json<ApiResponse>(
+      { success: false, error: 'No tienes permiso para crear ingredientes' },
+      { status: 403 }
+    );
   }
 
   try {
     await connectDB();
-    const body = await request.json();
-    
-    const ingrediente = new Ingrediente(body);
-    await ingrediente.save();
 
-    return NextResponse.json<ApiResponse>({
-      success: true,
-      data: ingrediente,
-    }, { status: 201 });
+    const body = await request.json();
+    const ingredienteCreado = await Ingrediente.create(body);
+
+    return NextResponse.json<ApiResponse>(
+      { success: true, data: ingredienteCreado },
+      { status: 201 }
+    );
   } catch (error: any) {
-    return NextResponse.json<ApiResponse>({
-      success: false,
-      error: error.message,
-    }, { status: 400 });
+    console.error('❌ Error en POST /api/ingredientes:', error);
+    return NextResponse.json<ApiResponse>(
+      { success: false, error: error.message },
+      { status: 400 }
+    );
   }
 }

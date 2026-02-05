@@ -64,7 +64,6 @@ export default function ProductoForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState('');
-  const [ingredienteExtra, setIngredienteExtra] = useState('');
   
   // Estados para ingredientes
   const [ingredientesDisponibles, setIngredientesDisponibles] = useState<Ingrediente[]>([]);
@@ -228,26 +227,6 @@ export default function ProductoForm({
     setFormData(prev => ({
       ...prev,
       ingredientes: prev.ingredientes.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleAddIngredienteExtra = () => {
-    if (
-      ingredienteExtra.trim() &&
-      !formData.ingredientesExtra.includes(ingredienteExtra.trim())
-    ) {
-      setFormData(prev => ({
-        ...prev,
-        ingredientesExtra: [...prev.ingredientesExtra, ingredienteExtra.trim()],
-      }));
-      setIngredienteExtra('');
-    }
-  };
-
-  const handleRemoveIngredienteExtra = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      ingredientesExtra: prev.ingredientesExtra.filter((_, i) => i !== index),
     }));
   };
 
@@ -534,48 +513,6 @@ export default function ProductoForm({
               alt="Preview"
               className="w-32 h-32 object-cover rounded"
             />
-          </div>
-        )}
-      </div>
-
-      {/* Ingredientes Extra */}
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Ingredientes Extra Disponibles
-        </label>
-        <div className="flex gap-2 mb-2">
-          <input
-            type="text"
-            value={ingredienteExtra}
-            onChange={e => setIngredienteExtra(e.target.value)}
-            placeholder="Ej: Queso extra"
-            className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={handleAddIngredienteExtra}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold"
-          >
-            Añadir
-          </button>
-        </div>
-        {formData.ingredientesExtra.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {formData.ingredientesExtra.map((ing, idx) => (
-              <div
-                key={idx}
-                className="bg-amber-600 px-3 py-1 rounded text-sm flex items-center gap-2"
-              >
-                {ing}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveIngredienteExtra(idx)}
-                  className="text-white hover:text-red-200 font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
           </div>
         )}
       </div>

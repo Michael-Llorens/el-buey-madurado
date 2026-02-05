@@ -79,9 +79,6 @@ export default function AdminPanel() {
             <p className="text-amber-100 mt-2">Panel de Administración</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-amber-100">Bienvenido,</p>
-            <p className="text-xl font-semibold">{usuario?.email || 'Cargando...'}</p>
-            <p className="text-xs text-gray-400 mt-1">Rol: {usuario?.rol || '...'}</p>
             <button
               onClick={() => {
                 localStorage.removeItem('authToken');
@@ -91,6 +88,8 @@ export default function AdminPanel() {
             >
               🔓 Logout
             </button>
+            <p className="text-xl font-semibold">{usuario?.email || 'Cargando...'}</p>
+            <p className="text-xm text-gray-200 mt-1">Rol: {usuario?.rol || '...'}</p>
           </div>
         </div>
       </div>

@@ -142,7 +142,8 @@ const PedidoSchema: Schema = new Schema({
   },
   camarero: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Usuario'
+    ref: 'Usuario',
+    alias: 'creadoPor'
   },
   repartidor: {
     type: mongoose.Schema.Types.ObjectId,

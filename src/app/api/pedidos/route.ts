@@ -8,13 +8,25 @@ import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import mongoose from 'mongoose';
 
+function normalizarPedido(doc: any) {
+  const obj = doc?.toObject ? doc.toObject() : doc;
+  if (!obj) return obj;
+
+  // ✅ el front espera creadoPor, pero en BD se llama camarero
+  if (!obj.creadoPor && obj.camarero) obj.creadoPor = obj.camarero;
+
+  return obj;
+}
+
 // ===========================
 // GET - Listar todos los pedidos
 // ===========================
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    await protegerRuta(req);
+
+    const auth: any = await protegerRuta(req);
+    if (!auth?.valido) return auth?.response!;
 
     // Forzar registro de modelos
     void Mesa;
@@ -24,31 +36,27 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const estado = searchParams.get('estado');
     const mesaId = searchParams.get('mesa');
-    const tipo = searchParams.get('tipo'); // ✅ NUEVO
+    const tipo = searchParams.get('tipo');
 
-    // Filtros opcionales
     const filtros: any = {};
     if (estado) filtros.estado = estado;
     if (mesaId) filtros.mesa = mesaId;
-    if (tipo) filtros.tipo = tipo; // ✅ NUEVO
+    if (tipo) filtros.tipo = tipo;
 
     const pedidos = await Pedido.find(filtros)
       .populate('mesa', 'numero capacidad estado')
       .populate('productos.producto', 'nombre precio imagen')
-      .populate('camarero', 'nombre email')
+      .populate('camarero', 'nombre email rol') // ✅ añade rol
       .sort({ createdAt: -1 });
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: pedidos,
+      data: pedidos.map(normalizarPedido),
     });
   } catch (error: any) {
     console.error('❌ Error en GET /api/pedidos:', error);
     return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: error.message,
-      },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
@@ -60,23 +68,20 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { payload } = await protegerRuta(req);
+
+    const auth: any = await protegerRuta(req);
+    if (!auth?.valido) return auth?.response!;
+    const payload = auth?.payload;
 
     const body = await req.json();
 
-    console.log('📦 Body recibido:', JSON.stringify(body, null, 2));
-
-    // ✅ VALIDACIONES SEGÚN TIPO
     const tipo = body.tipo || 'local';
 
     // 1️⃣ VALIDAR PEDIDO LOCAL
     if (tipo === 'local') {
       if (!body.mesa) {
         return NextResponse.json<ApiResponse>(
-          {
-            success: false,
-            error: 'Mesa requerida para pedidos en local',
-          },
+          { success: false, error: 'Mesa requerida para pedidos en local' },
           { status: 400 }
         );
       }
@@ -84,20 +89,14 @@ export async function POST(req: NextRequest) {
       const mesa = await Mesa.findById(body.mesa);
       if (!mesa) {
         return NextResponse.json<ApiResponse>(
-          {
-            success: false,
-            error: 'Mesa no encontrada',
-          },
+          { success: false, error: 'Mesa no encontrada' },
           { status: 404 }
         );
       }
 
       if (mesa.estado === 'ocupada') {
         return NextResponse.json<ApiResponse>(
-          {
-            success: false,
-            error: 'La mesa ya está ocupada',
-          },
+          { success: false, error: 'La mesa ya está ocupada' },
           { status: 400 }
         );
       }
@@ -116,20 +115,20 @@ export async function POST(req: NextRequest) {
       }
 
       const { calle, numero, ciudad, codigoPostal, telefono } = body.direccionEntrega;
-      
+
       if (!calle || !numero || !ciudad || !codigoPostal || !telefono) {
         return NextResponse.json<ApiResponse>(
           {
             success: false,
-            error: 'La dirección debe incluir: calle, número, ciudad, código postal y teléfono',
+            error:
+              'La dirección debe incluir: calle, número, ciudad, código postal y teléfono',
           },
           { status: 400 }
         );
       }
 
-      // Establecer gasto de envío si no viene definido
-      if (!body.gastoEnvio && body.gastoEnvio !== 0) {
-        body.gastoEnvio = 3.50; // Default: 3.50€
+      if (body.gastoEnvio === undefined || body.gastoEnvio === null) {
+        body.gastoEnvio = 3.5;
       }
     }
 
@@ -137,10 +136,7 @@ export async function POST(req: NextRequest) {
     if (tipo === 'recoger') {
       if (!body.telefono) {
         return NextResponse.json<ApiResponse>(
-          {
-            success: false,
-            error: 'Teléfono requerido para pedidos para recoger',
-          },
+          { success: false, error: 'Teléfono requerido para pedidos para recoger' },
           { status: 400 }
         );
       }
@@ -148,12 +144,9 @@ export async function POST(req: NextRequest) {
 
     // ✅ VALIDAR PRODUCTOS Y OBTENER PRECIOS
     const productosConPrecios = await Promise.all(
-      body.productos.map(async (item: any) => {
+      (body.productos || []).map(async (item: any) => {
         const producto = await Producto.findById(item.producto);
-        if (!producto) {
-          throw new Error(`Producto ${item.producto} no encontrado`);
-        }
-
+        if (!producto) throw new Error(`Producto ${item.producto} no encontrado`);
         if (!producto.disponible) {
           throw new Error(`Producto "${producto.nombre}" no disponible`);
         }
@@ -164,64 +157,66 @@ export async function POST(req: NextRequest) {
         return {
           producto: new mongoose.Types.ObjectId(item.producto),
           cantidad: item.cantidad,
-          precioUnitario: precioUnitario,
-          subtotal: subtotal,
+          precioUnitario,
+          subtotal,
           notas: item.notas || '',
-          personalizaciones: item.personalizaciones || {}
+          personalizaciones: item.personalizaciones || {},
         };
       })
     );
 
-    // ✅ CREAR PEDIDO
+    const userId =
+      payload?.userId || payload?.id || payload?._id || payload?.uid || null;
+
     const nuevoPedido = new Pedido({
-      tipo: tipo,
+      tipo,
       mesa: tipo === 'local' && body.mesa ? new mongoose.Types.ObjectId(body.mesa) : undefined,
       direccionEntrega: tipo === 'domicilio' ? body.direccionEntrega : undefined,
       productos: productosConPrecios,
-      camarero: payload?.userId ? new mongoose.Types.ObjectId(payload.userId) : undefined,
+
+      // ✅ seguimos guardando en "camarero" (BD), pero lo mostraremos como "creadoPor"
+      camarero: userId ? new mongoose.Types.ObjectId(userId) : undefined,
+
       cliente: body.cliente || '',
       telefono: body.telefono || '',
       notas: body.notas || '',
       descuento: body.descuento || 0,
-      gastoEnvio: tipo === 'domicilio' ? (body.gastoEnvio || 3.50) : 0
+      gastoEnvio: tipo === 'domicilio' ? (body.gastoEnvio ?? 3.5) : 0,
     });
 
-    // ✅ CALCULAR TOTALES AUTOMÁTICAMENTE
     nuevoPedido.calcularTotales();
-
     await nuevoPedido.save();
 
-    // ✅ ACTUALIZAR ESTADO DE LA MESA (solo si es pedido local)
     if (tipo === 'local' && body.mesa) {
       await Mesa.findByIdAndUpdate(body.mesa, {
         estado: 'ocupada',
-        pedidoActual: nuevoPedido._id
+        pedidoActual: nuevoPedido._id,
       });
     }
 
-    console.log('✅ Pedido creado:', nuevoPedido);
-
-    // ✅ POPULATE PARA RESPUESTA
     const pedidoCompleto = await Pedido.findById(nuevoPedido._id)
       .populate('mesa', 'numero capacidad')
       .populate('productos.producto', 'nombre precio imagen')
-      .populate('camarero', 'nombre email');
+      .populate('camarero', 'nombre email rol'); // ✅ añade rol
 
     return NextResponse.json<ApiResponse>(
       {
         success: true,
-        data: pedidoCompleto,
-        message: `Pedido ${tipo === 'local' ? 'en local' : tipo === 'recoger' ? 'para recoger' : 'a domicilio'} creado exitosamente`,
+        data: normalizarPedido(pedidoCompleto),
+        message: `Pedido ${
+          tipo === 'local'
+            ? 'en local'
+            : tipo === 'recoger'
+              ? 'para recoger'
+              : 'a domicilio'
+        } creado exitosamente`,
       },
       { status: 201 }
     );
   } catch (error: any) {
     console.error('❌ Error en POST /api/pedidos:', error);
     return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        error: error.message,
-      },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
