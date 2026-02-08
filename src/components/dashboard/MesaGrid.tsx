@@ -7,6 +7,8 @@ interface MesaGridProps {
   onEditar: (mesa: any) => void;
   onEliminar: (id: string) => void;
   onCambiarEstado: (id: string, nuevoEstado: 'libre' | 'ocupada' | 'reservada') => void;
+  onActualizarComensales: (id: string, comensales: number) => void | Promise<void>;
+  onHacerPedido: (mesaId: string) => void;                         
   eliminandoId: string | null;
 }
 
@@ -15,6 +17,7 @@ export default function MesaGrid({
   onEditar,
   onEliminar,
   onCambiarEstado,
+  onHacerPedido,
   eliminandoId,
 }: MesaGridProps) {
   return (
@@ -26,6 +29,7 @@ export default function MesaGrid({
           onEditar={onEditar}
           onEliminar={onEliminar}
           onCambiarEstado={onCambiarEstado}
+          onHacerPedido={onHacerPedido}
           eliminandoId={eliminandoId}
         />
       ))}

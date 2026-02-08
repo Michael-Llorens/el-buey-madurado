@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     await protegerRuta(req);
 
     const mesas = await Mesa.find()
-      .sort({ numero: 1 });
+      .sort({ nombre: 1 });
 
     return NextResponse.json<ApiResponse>({
       success: true,

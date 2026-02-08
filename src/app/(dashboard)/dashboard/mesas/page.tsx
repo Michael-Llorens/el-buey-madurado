@@ -2,19 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import MesaForm from '@/components/dashboard/MesaForm';
-import MesaGrid from '@/components/dashboard/MesaGird';
+import MesaGrid from '@/components/dashboard/MesaGrid';
 
 type Modo = 'view' | 'add' | 'edit';
 
+type Mesa = {
+  _id: string;
+  nombre: string;
+  capacidad: number;
+  comensalesActuales: number;
+  estado: 'libre' | 'ocupada' | 'reservada';
+  activa: boolean;
+};
+
 export default function MesasPanel() {
   const [modo, setModo] = useState<Modo>('view');
-  const [mesas, setMesas] = useState<any[]>([]);
-  const [mesaEditar, setMesaEditar] = useState<any>(null);
+  const [mesas, setMesas] = useState<Mesa[]>([]);
+  const [mesaEditar, setMesaEditar] = useState<Mesa | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
 
-  // Cargar mesas
   const cargarMesas = async () => {
     setLoading(true);
     setError(null);
@@ -34,14 +42,12 @@ export default function MesasPanel() {
       });
 
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al cargar mesas');
-      }
+      if (!res.ok || !data.success) throw new Error(data.error || 'Error al cargar mesas');
 
       setMesas(data.data || []);
-    } catch (error: any) {
-      console.error('Error cargando mesas:', error);
-      setError(error.message);
+    } catch (err: any) {
+      console.error('Error cargando mesas:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -51,7 +57,6 @@ export default function MesasPanel() {
     cargarMesas();
   }, []);
 
-  // Crear 15 mesas iniciales
   const crearMesasIniciales = async () => {
     if (!confirm('¿Crear 15 mesas de 4 comensales cada una?')) return;
 
@@ -78,38 +83,26 @@ export default function MesasPanel() {
       } else {
         throw new Error(data.error || 'Error al crear mesas');
       }
-    } catch (error: any) {
-      console.error('Error al crear mesas:', error);
-      alert(`❌ Error: ${error.message}`);
+    } catch (err: any) {
+      console.error('Error al crear mesas:', err);
+      alert(`❌ Error: ${err.message}`);
     }
   };
 
-  // Guardar (crear/editar)
   const handleGuardar = async () => {
-    try {
-      await cargarMesas();
-      setMesaEditar(null);
-      setModo('view');
-    } catch (error: any) {
-      console.error('Error al guardar:', error);
-      alert(`❌ Error: ${error.message}`);
-    }
+    await cargarMesas();
+    setMesaEditar(null);
+    setModo('view');
   };
 
-  // Editar
-  const handleEditar = (mesa: any) => {
+  const handleEditar = (mesa: Mesa) => {
     setMesaEditar(mesa);
     setModo('edit');
   };
 
-  // Eliminar
   const handleEliminar = async (id: string) => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta mesa?')) return;
-
-    if (eliminandoId === id) {
-      console.warn('Ya se está eliminando esta mesa');
-      return;
-    }
+    if (eliminandoId === id) return;
 
     try {
       setEliminandoId(id);
@@ -136,19 +129,15 @@ export default function MesasPanel() {
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
-    } catch (error: any) {
-      console.error('Error al eliminar:', error);
-      alert(`❌ Error: ${error.message}`);
+    } catch (err: any) {
+      console.error('Error al eliminar:', err);
+      alert(`❌ Error: ${err.message}`);
     } finally {
       setEliminandoId(null);
     }
   };
 
-  // Cambiar estado rápido
-  const handleCambiarEstado = async (
-    id: string,
-    nuevoEstado: 'libre' | 'ocupada' | 'reservada'
-  ) => {
+  const handleCambiarEstado = async (id: string, nuevoEstado: Mesa['estado']) => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
@@ -166,40 +155,70 @@ export default function MesasPanel() {
       });
 
       const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Error al cambiar estado');
 
-      if (res.ok && data.success) {
-        await cargarMesas();
-      } else {
-        throw new Error(data.error || 'Error al cambiar estado');
-      }
-    } catch (error: any) {
-      console.error('Error al cambiar estado:', error);
-      alert(`❌ Error: ${error.message}`);
+      await cargarMesas();
+    } catch (err: any) {
+      console.error('Error al cambiar estado:', err);
+      alert(`❌ Error: ${err.message}`);
     }
   };
 
-  // Cancelar
   const handleCancelar = () => {
     setMesaEditar(null);
     setModo('view');
   };
 
-  // Resumen de estados
+  const handleActualizarComensales = async (id: string, comensales: number) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('❌ No hay sesión iniciada');
+        return;
+      }
+
+      const nuevoEstado: 'libre' | 'ocupada' = comensales > 0 ? 'ocupada' : 'libre';
+
+      const res = await fetch(`/api/mesas/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ comensalesActuales: comensales, estado: nuevoEstado }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Error al actualizar comensales');
+
+      await cargarMesas();
+    } catch (err: any) {
+      console.error(err);
+      alert(`❌ Error: ${err.message}`);
+    }
+  };
+
+  const handleHacerPedido = (mesaId: string) => {
+    const mesa = mesas.find((m) => m._id === mesaId);
+    const mesaNombre = mesa?.nombre ?? '';
+    window.location.href = `/dashboard/pedidos?mesaId=${mesaId}&mesaNombre=${encodeURIComponent(
+      mesaNombre
+    )}`;
+  };
+
   const resumen = {
     total: mesas.length,
-    libres: mesas.filter(m => m.estado === 'libre').length,
-    ocupadas: mesas.filter(m => m.estado === 'ocupada').length,
-    reservadas: mesas.filter(m => m.estado === 'reservada').length,
+    libres: mesas.filter((m) => m.estado === 'libre').length,
+    ocupadas: mesas.filter((m) => m.estado === 'ocupada').length,
+    reservadas: mesas.filter((m) => m.estado === 'reservada').length,
   };
 
   return (
     <div className="space-y-6">
-      {/* HEADER + BOTONES */}
       {modo === 'view' && (
         <>
           <div className="flex items-center justify-between border-b border-gray-700 pb-4">
-            <div>
-            </div>
+            <div />
             <div className="flex gap-4">
               {mesas.length === 0 && (
                 <button
@@ -221,7 +240,6 @@ export default function MesasPanel() {
             </div>
           </div>
 
-          {/* RESUMEN */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <p className="text-gray-400 text-sm mb-2">Total Mesas</p>
@@ -243,36 +261,24 @@ export default function MesasPanel() {
         </>
       )}
 
-      {/* FORMULARIO */}
       {(modo === 'add' || modo === 'edit') && (
         <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
           <h2 className="text-2xl font-bold mb-6 text-amber-400">
             {modo === 'add' ? '➕ Nueva Mesa' : '✏️ Editar Mesa'}
           </h2>
-          <MesaForm
-            mesa={mesaEditar}
-            onGuardar={handleGuardar}
-            onCancelar={handleCancelar}
-          />
+          <MesaForm mesa={mesaEditar} onGuardar={handleGuardar} onCancelar={handleCancelar} />
         </div>
       )}
 
-      {/* LISTA DE MESAS */}
       {modo === 'view' && (
         <div>
-          {error && (
-            <div className="bg-red-600 text-white p-4 rounded mb-4">
-              ❌ {error}
-            </div>
-          )}
+          {error && <div className="bg-red-600 text-white p-4 rounded mb-4">❌ {error}</div>}
 
           {loading ? (
             <div className="text-center text-gray-400 py-8">⏳ Cargando mesas...</div>
           ) : mesas.length === 0 ? (
             <div className="bg-gray-800 rounded-lg p-8 text-center">
-              <p className="text-gray-400 mb-4">
-                No hay mesas creadas. ¡Crea las primeras!
-              </p>
+              <p className="text-gray-400 mb-4">No hay mesas creadas. ¡Crea las primeras!</p>
             </div>
           ) : (
             <MesaGrid
@@ -280,6 +286,8 @@ export default function MesasPanel() {
               onEditar={handleEditar}
               onEliminar={handleEliminar}
               onCambiarEstado={handleCambiarEstado}
+              onActualizarComensales={handleActualizarComensales}
+              onHacerPedido={handleHacerPedido}
               eliminandoId={eliminandoId}
             />
           )}
