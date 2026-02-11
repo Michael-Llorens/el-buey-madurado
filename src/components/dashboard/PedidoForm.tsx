@@ -5,6 +5,7 @@ import PersonalizarProductoModal from './PersonalizarProductoModal';
 
 interface Mesa {
   _id: string;
+  nombre: string;
   numero: number;
   capacidad: number;
   estado: string;
@@ -468,7 +469,7 @@ export default function PedidoForm({
             <option value="">-- Selecciona una mesa --</option>
             {mesasDisponibles.map((mesa: Mesa) => (
               <option key={mesa._id} value={mesa._id}>
-                Mesa {mesa.numero} ({mesa.capacidad} personas) - {mesa.estado}
+                {mesa.nombre} · {mesa.capacidad} personas · {mesa.estado === 'libre' ? '🟢 Libre' : mesa.estado === 'ocupada' ? '🔴 Ocupada' : '🟡 Reservada'}
               </option>
             ))}
           </select>

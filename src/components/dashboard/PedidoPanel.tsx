@@ -72,41 +72,62 @@ export default function PedidosPanel() {
         return data.data;
     };
 
-    // Autoabrir pedido en EDIT si viene ?pedidoId=...
     useEffect(() => {
+        const modulo = searchParams.get('modulo');
+        const modoFromUrl = searchParams.get('modo');
         const pedidoIdFromUrl = searchParams.get('pedidoId');
-        if (!pedidoIdFromUrl) return;
+
+        // Si NO viene con modulo=pedidos, no hacer nada
+        if (modulo !== 'pedidos') return;
 
         let cancelled = false;
 
-        (async () => {
-            try {
-                setError(null);
-                setLoadingDetalle(true);
+        // CASO 1: Editar pedido existente (?modulo=pedidos&modo=edit&pedidoId=...)
+        if (modoFromUrl === 'edit' && pedidoIdFromUrl) {
+            (async () => {
+                try {
+                    setError(null);
+                    setLoadingDetalle(true);
 
-                const detalle = await cargarPedidoPorId(pedidoIdFromUrl);
-                if (cancelled) return;
+                    const detalle = await cargarPedidoPorId(pedidoIdFromUrl);
+                    if (cancelled) return;
 
-                setPedidoEditando(detalle);
-                setPedidoDetalle(null);
-                setModo('edit');
+                    setPedidoEditando(detalle);
+                    setPedidoDetalle(null);
+                    setModo('edit');
 
-                // Limpia la URL (sin /dashboard/pedidos)
-                window.history.replaceState(null, '', '/dashboard');
-            } catch (e: any) {
-                if (cancelled) return;
-                setError(e.message);
-                setModo('view');
-            } finally {
-                if (cancelled) return;
-                setLoadingDetalle(false);
-            }
-        })();
+                    // Limpia la URL
+                    window.history.replaceState(null, '', '/dashboard');
+                } catch (e: any) {
+                    if (cancelled) return;
+                    setError(e.message);
+                    setModo('view');
+                } finally {
+                    if (cancelled) return;
+                    setLoadingDetalle(false);
+                }
+            })();
 
-        return () => {
-            cancelled = true;
-        };
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        // CASO 2: Crear nuevo pedido (?modulo=pedidos&modo=add)
+        if (modoFromUrl === 'add') {
+            setError(null);
+            setPedidoEditando(null);
+            setPedidoDetalle(null);
+            setModo('add');
+
+            // Limpia la URL (PedidoForm ya leyó mesaId si existía)
+            window.history.replaceState(null, '', '/dashboard');
+        }
+
+        // ✅ IMPORTANTE: devolver undefined explícitamente para evitar warning
+        return undefined;
     }, [searchParams]);
+
 
     useEffect(() => {
         const modulo = searchParams.get('modulo');
