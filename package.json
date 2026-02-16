@@ -7,7 +7,7 @@
     "dev": "cross-env TURBOPACK=0 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --dir src --dir app",
+    "lint": "next lint --dir src",
     "dev:debug": "next dev",
     "dev:turbo": "next dev --turbo"
   },
