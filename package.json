@@ -7,7 +7,8 @@
     "dev": "cross-env TURBOPACK=0 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --dir src",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
     "dev:debug": "next dev",
     "dev:turbo": "next dev --turbo"
   },
@@ -34,6 +35,8 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.22",
     "cross-env": "^10.1.0",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.6",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
     "typescript": "^5.9.3"
