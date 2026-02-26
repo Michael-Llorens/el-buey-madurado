@@ -5,6 +5,7 @@ import PersonalizarProductoModal from './PersonalizarProductoModal';
 
 interface Mesa {
   _id: string;
+  nombre: string;
   numero: number;
   capacidad: number;
   estado: string;
@@ -58,13 +59,13 @@ type PedidoInicial = {
 };
 
 interface PedidoFormProps {
-  onGuardar: () => void | Promise<void>; // ✅ para permitir handlers async [web:212]
+  onGuardar: () => void | Promise<void>;
   onCancelar: () => void;
 
-  // ✅ NUEVO: edición
   modo?: 'add' | 'edit';
   pedidoId?: string;
   pedidoInicial?: PedidoInicial | null;
+  mesaIdPreseleccionada?: string;
 }
 
 export default function PedidoForm({
@@ -73,6 +74,7 @@ export default function PedidoForm({
   modo = 'add',
   pedidoId,
   pedidoInicial = null,
+  mesaIdPreseleccionada,
 }: PedidoFormProps) {
   const [formData, setFormData] = useState({
     tipo: 'local' as TipoPedido,
@@ -124,6 +126,20 @@ export default function PedidoForm({
 
   // ✅ Precargar si edit
   useEffect(() => {
+    if (modo !== 'add') return;
+
+    if (mesaIdPreseleccionada) {
+      setFormData((prev) => ({
+        ...prev,
+        tipo: 'local',
+        mesa: mesaIdPreseleccionada,
+      }));
+      return;
+    }
+
+  }, [modo, mesaIdPreseleccionada]);
+
+  useEffect(() => {
     if (modo !== 'edit' || !pedidoInicial) return;
 
     setFormData((prev) => ({
@@ -137,14 +153,14 @@ export default function PedidoForm({
       gastoEnvio: typeof pedidoInicial.gastoEnvio === 'number' ? pedidoInicial.gastoEnvio : 3.5,
       direccionEntrega: pedidoInicial.direccionEntrega
         ? {
-            calle: pedidoInicial.direccionEntrega.calle || '',
-            numero: pedidoInicial.direccionEntrega.numero || '',
-            piso: pedidoInicial.direccionEntrega.piso || '',
-            ciudad: pedidoInicial.direccionEntrega.ciudad || 'Xàtiva',
-            codigoPostal: pedidoInicial.direccionEntrega.codigoPostal || '46800',
-            telefono: pedidoInicial.direccionEntrega.telefono || '',
-            notas: pedidoInicial.direccionEntrega.notas || '',
-          }
+          calle: pedidoInicial.direccionEntrega.calle || '',
+          numero: pedidoInicial.direccionEntrega.numero || '',
+          piso: pedidoInicial.direccionEntrega.piso || '',
+          ciudad: pedidoInicial.direccionEntrega.ciudad || 'Xàtiva',
+          codigoPostal: pedidoInicial.direccionEntrega.codigoPostal || '46800',
+          telefono: pedidoInicial.direccionEntrega.telefono || '',
+          notas: pedidoInicial.direccionEntrega.notas || '',
+        }
         : prev.direccionEntrega,
     }));
 
@@ -182,11 +198,13 @@ export default function PedidoForm({
         });
 
         const data = await res.json();
+
         if (data.success) {
           // ✅ en edición: deja la mesa actual aunque esté ocupada
           const mesasOcupables = (data.data as Mesa[]).filter(
             (m) => m.estado === 'libre' || m.estado === 'reservada' || m._id === formData.mesa
           );
+
           setMesasDisponibles(mesasOcupables);
         }
       } catch (e) {
@@ -248,7 +266,7 @@ export default function PedidoForm({
       return;
     }
 
-    const producto = productosDisponibles.find((p) => p._id === productoSeleccionado);
+    const producto = (productosDisponibles as Producto[]).find((p) => p._id === productoSeleccionado);
     if (!producto) return;
 
     setProductoAPersonalizar(producto);
@@ -449,9 +467,9 @@ export default function PedidoForm({
             className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
           >
             <option value="">-- Selecciona una mesa --</option>
-            {mesasDisponibles.map((mesa) => (
+            {mesasDisponibles.map((mesa: Mesa) => (
               <option key={mesa._id} value={mesa._id}>
-                Mesa {mesa.numero} ({mesa.capacidad} personas) - {mesa.estado}
+                {mesa.nombre} · {mesa.capacidad} personas · {mesa.estado === 'libre' ? '🟢 Libre' : mesa.estado === 'ocupada' ? '🔴 Ocupada' : '🟡 Reservada'}
               </option>
             ))}
           </select>

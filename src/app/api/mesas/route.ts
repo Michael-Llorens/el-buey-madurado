@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     await protegerRuta(req);
 
     const mesas = await Mesa.find()
+      .populate('pedidoActual', '_id tipo estado') // 👈 AÑADIDO: trae pedidoActual con id, tipo y estado
       .sort({ nombre: 1 });
 
     return NextResponse.json<ApiResponse>({

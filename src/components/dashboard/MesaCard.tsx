@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 interface MesaCardProps {
   mesa: {
     _id: string;
@@ -10,11 +8,12 @@ interface MesaCardProps {
     comensalesActuales: number;
     estado: 'libre' | 'ocupada' | 'reservada';
     activa: boolean;
+    pedidoActual?: { _id: string; tipo?: string; estado?: string } | null;
   };
   onEditar: (mesa: any) => void;
   onEliminar: (id: string) => void;
   onCambiarEstado: (id: string, nuevoEstado: 'libre' | 'ocupada' | 'reservada') => void;
-  onHacerPedido: (mesaId: string) => void;
+  onHacerPedido: (mesaId: string, pedidoActualId?: string) => void;
   eliminandoId: string | null;
 }
 
@@ -26,53 +25,30 @@ export default function MesaCard({
   onHacerPedido,
   eliminandoId,
 }: MesaCardProps) {
-  const [editandoNombre, setEditandoNombre] = useState(false);
-  const [nombreInput, setNombreInput] = useState(mesa.nombre);
-
-  useEffect(() => {
-    setNombreInput(mesa.nombre);
-  }, [mesa._id, mesa.nombre]);
-
   const getEstadoColor = () => {
     switch (mesa.estado) {
-      case 'libre': return 'bg-green-600';
-      case 'ocupada': return 'bg-red-600';
-      case 'reservada': return 'bg-yellow-600';
-      default: return 'bg-gray-600';
+      case 'libre':
+        return 'bg-green-600';
+      case 'ocupada':
+        return 'bg-red-600';
+      case 'reservada':
+        return 'bg-yellow-600';
+      default:
+        return 'bg-gray-600';
     }
   };
 
   const getEstadoTexto = () => {
     switch (mesa.estado) {
-      case 'libre': return `🟢 Libre (${mesa.comensalesActuales}/${mesa.capacidad})`;
-      case 'ocupada': return `🔴 Ocupada (${mesa.comensalesActuales}/${mesa.capacidad})`;
-      case 'reservada': return '🟡 Reservada';
-      default: return 'Desconocido';
+      case 'libre':
+        return `🟢 Libre (${mesa.comensalesActuales}/${mesa.capacidad})`;
+      case 'ocupada':
+        return `🔴 Ocupada (${mesa.comensalesActuales}/${mesa.capacidad})`;
+      case 'reservada':
+        return '🟡 Reservada';
+      default:
+        return 'Desconocido';
     }
-  };
-
-  const cerrarEdicion = () => {
-    setNombreInput(mesa.nombre);
-    setEditandoNombre(false);
-  };
-
-  const guardarNombre = () => {
-    const nuevoNombre = nombreInput.trim();
-
-    // No permitimos vacío
-    if (!nuevoNombre) {
-      cerrarEdicion();
-      return;
-    }
-
-    // Si no cambia, solo cerramos
-    if (nuevoNombre === mesa.nombre) {
-      setEditandoNombre(false);
-      return;
-    }
-
-    onEditar({ ...mesa, nombre: nuevoNombre });
-    setEditandoNombre(false);
   };
 
   return (
@@ -81,52 +57,13 @@ export default function MesaCard({
         mesa.activa ? 'border-gray-700' : 'border-gray-600 opacity-50'
       } hover:border-amber-500 transition`}
     >
-      {/* Nombre mesa - EDITABLE */}
+      {/* Nombre mesa - SOLO LECTURA */}
       <div className="flex items-center justify-between mb-4">
-        {editandoNombre ? (
-          <div className="flex items-center gap-2 flex-1">
-            <input
-              type="text"
-              value={nombreInput}
-              onChange={(e) => setNombreInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') guardarNombre();
-                if (e.key === 'Escape') cerrarEdicion();
-              }}
-              maxLength={40}
-              autoFocus
-              className="flex-1 px-3 py-2 bg-gray-700 border border-amber-500 rounded text-lg font-bold text-amber-400 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={guardarNombre}
-              className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold text-sm"
-              title="Guardar"
-            >
-              ✓
-            </button>
-            <button
-              type="button"
-              onClick={cerrarEdicion}
-              className="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded text-sm"
-              title="Cancelar"
-            >
-              ✕
-            </button>
-          </div>
-        ) : (
-          <>
-            <h3
-              className="text-3xl font-bold text-amber-400 cursor-pointer hover:text-amber-300"
-              onClick={() => setEditandoNombre(true)}
-              title="Click para editar nombre"
-            >
-              {mesa.nombre}
-            </h3>
-            {!mesa.activa && (
-              <span className="text-xs bg-gray-700 px-2 py-1 rounded">Inactiva</span>
-            )}
-          </>
+        <h3 className="text-3xl font-bold text-amber-400">
+          {mesa.nombre}
+        </h3>
+        {!mesa.activa && (
+          <span className="text-xs bg-gray-700 px-2 py-1 rounded">Inactiva</span>
         )}
       </div>
 
@@ -156,10 +93,10 @@ export default function MesaCard({
         {mesa.estado === 'ocupada' && (
           <button
             type="button"
-            onClick={() => onHacerPedido(mesa._id)}
+            onClick={() => onHacerPedido(mesa._id, mesa.pedidoActual?._id)}
             className="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition shadow-md"
           >
-            🍽️ Hacer Pedido para esta Mesa
+            🍽️ {mesa.pedidoActual ? 'Continuar Pedido' : 'Hacer Pedido para esta Mesa'}
           </button>
         )}
 

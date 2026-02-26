@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import MesaForm from '@/components/dashboard/MesaForm';
 import MesaGrid from '@/components/dashboard/MesaGrid';
 
@@ -16,6 +17,8 @@ type Mesa = {
 };
 
 export default function MesasPanel() {
+  const router = useRouter();
+
   const [modo, setModo] = useState<Modo>('view');
   const [mesas, setMesas] = useState<Mesa[]>([]);
   const [mesaEditar, setMesaEditar] = useState<Mesa | null>(null);
@@ -198,12 +201,43 @@ export default function MesasPanel() {
     }
   };
 
-  const handleHacerPedido = (mesaId: string) => {
-    const mesa = mesas.find((m) => m._id === mesaId);
-    const mesaNombre = mesa?.nombre ?? '';
-    window.location.href = `/dashboard/pedidos?mesaId=${mesaId}&mesaNombre=${encodeURIComponent(
-      mesaNombre
-    )}`;
+  //  Detecta si hay pedido activo y navega con los parámetros correctos
+  const handleHacerPedido = async (mesaId: string, pedidoActualId?: string) => {
+    try {
+      if (pedidoActualId) {
+        // ✅ Ya existe un pedido activo, navegar al panel de pedidos en modo edición
+        router.push(
+          `/dashboard?modulo=pedidos&modo=edit&pedidoId=${encodeURIComponent(pedidoActualId)}`
+        );
+      } else {
+        // ✅ No hay pedido activo, crear uno nuevo
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          alert('❌ No hay sesión iniciada');
+          return;
+        }
+
+        const res = await fetch('/api/pedidos/abrir', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ mesaId }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Error al abrir pedido');
+
+        const pedidoId = data?.data?.pedidoId as string | undefined;
+        if (!pedidoId) throw new Error('El servidor no devolvió pedidoId');
+
+        router.push(`/dashboard?modulo=pedidos&modo=add&mesaId=${encodeURIComponent(mesaId)}`);
+      }
+    } catch (err: any) {
+      console.error('Error al hacer pedido:', err);
+      alert(`❌ Error: ${err.message}`);
+    }
   };
 
   const resumen = {
