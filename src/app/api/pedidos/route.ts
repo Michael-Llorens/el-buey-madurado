@@ -7,16 +7,9 @@ import Usuario from '@/lib/models/Usuario';
 import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import mongoose from 'mongoose';
-
-function normalizarPedido(doc: any) {
-  const obj = doc?.toObject ? doc.toObject() : doc;
-  if (!obj) return obj;
-
-  // ✅ el front espera creadoPor, pero en BD se llama camarero
-  if (!obj.creadoPor && obj.camarero) obj.creadoPor = obj.camarero;
-
-  return obj;
-}
+import { sanitizeBody } from '@/lib/utils/sanitize';
+import { getPaginationParams, buildPaginatedResponse } from '@/lib/utils/pagination';
+import { normalizarPedido, ocuparMesa, validarProductosYObtenerPrecios } from '@/lib/services/pedidoService';
 
 // ===========================
 // GET - Listar todos los pedidos
@@ -43,15 +36,20 @@ export async function GET(req: NextRequest) {
     if (mesaId) filtros.mesa = mesaId;
     if (tipo) filtros.tipo = tipo;
 
+    const { page, limit, sort } = getPaginationParams(req);
+    const total = await Pedido.countDocuments(filtros);
+
     const pedidos = await Pedido.find(filtros)
       .populate('mesa', 'numero capacidad estado')
       .populate('productos.producto', 'nombre precio imagen')
-      .populate('camarero', 'nombre email rol') // ✅ añade rol
-      .sort({ createdAt: -1 });
+      .populate('camarero', 'nombre email rol')
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: pedidos.map(normalizarPedido),
+      data: buildPaginatedResponse(pedidos.map(normalizarPedido), total, { page, limit, sort }),
     });
   } catch (error: any) {
     console.error('❌ Error en GET /api/pedidos:', error);
@@ -73,7 +71,7 @@ export async function POST(req: NextRequest) {
     if (!auth?.valido) return auth?.response!;
     const payload = auth?.payload;
 
-    const body = await req.json();
+    const body = sanitizeBody(await req.json());
 
     const tipo = body.tipo || 'local';
 
@@ -143,27 +141,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ VALIDAR PRODUCTOS Y OBTENER PRECIOS
-    const productosConPrecios = await Promise.all(
-      (body.productos || []).map(async (item: any) => {
-        const producto = await Producto.findById(item.producto);
-        if (!producto) throw new Error(`Producto ${item.producto} no encontrado`);
-        if (!producto.disponible) {
-          throw new Error(`Producto "${producto.nombre}" no disponible`);
-        }
-
-        const precioUnitario = producto.precio;
-        const subtotal = precioUnitario * item.cantidad;
-
-        return {
-          producto: new mongoose.Types.ObjectId(item.producto),
-          cantidad: item.cantidad,
-          precioUnitario,
-          subtotal,
-          notas: item.notas || '',
-          personalizaciones: item.personalizaciones || {},
-        };
-      })
-    );
+    const productosConPrecios = await validarProductosYObtenerPrecios(body.productos);
 
     const userId =
       payload?.userId || payload?.id || payload?._id || payload?.uid || null;
@@ -188,10 +166,7 @@ export async function POST(req: NextRequest) {
     await nuevoPedido.save();
 
     if (tipo === 'local' && body.mesa) {
-      await Mesa.findByIdAndUpdate(body.mesa, {
-        estado: 'ocupada',
-        pedidoActual: nuevoPedido._id,
-      });
+      await ocuparMesa(body.mesa, nuevoPedido._id);
     }
 
     const pedidoCompleto = await Pedido.findById(nuevoPedido._id)

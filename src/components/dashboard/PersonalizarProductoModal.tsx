@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useIngredientes } from '@/lib/hooks/swr';
 
 interface IngredienteGlobal {
   _id: string;
@@ -46,42 +47,11 @@ export default function PersonalizarProductoModal({
   const [removidos, setRemovidos] = useState<string[]>([]);
   const [notas, setNotas] = useState('');
 
-  const [todosIngredientes, setTodosIngredientes] = useState<IngredienteGlobal[]>([]);
-  const [loadingIngredientes, setLoadingIngredientes] = useState(true);
-  const [errorIngredientes, setErrorIngredientes] = useState<string | null>(null);
+  const { ingredientes: rawIngredientes, error: swrErr, isLoading: loadingIngredientes } = useIngredientes();
+  const todosIngredientes = rawIngredientes as IngredienteGlobal[];
+  const errorIngredientes = swrErr?.message ?? null;
 
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState<string>('');
-
-  // 1) Cargar todos los ingredientes globales (BD)
-  useEffect(() => {
-    const cargarIngredientes = async () => {
-      try {
-        setLoadingIngredientes(true);
-        setErrorIngredientes(null);
-
-        const token = localStorage.getItem('authToken');
-
-        const res = await fetch('/api/ingredientes', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data?.success) {
-          throw new Error(data?.error || 'No se pudieron cargar ingredientes');
-        }
-
-        setTodosIngredientes(Array.isArray(data.data) ? data.data : []);
-      } catch (err: any) {
-        setErrorIngredientes(err.message || 'Error cargando ingredientes');
-      } finally {
-        setLoadingIngredientes(false);
-      }
-    };
-
-    cargarIngredientes();
-  }, []);
-
   // 2) Extras disponibles = TODOS ingredientes (globales)
   const extrasDisponibles = useMemo(() => {
     return todosIngredientes

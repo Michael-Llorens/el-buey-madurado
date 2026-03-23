@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { logger } from "@/lib/utils/logger";
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 
@@ -23,13 +24,13 @@ if (!cached) {
 
 export async function connectDB() {
   if (cached.conn) {
-    console.log("✅ Usando conexión MongoDB existente (cacheada)");
+    logger.log("✅ Usando conexión MongoDB existente (cacheada)");
     return cached.conn;
   }
 
   if (!cached.promise) {
-    console.log("🔄 Conectando a MongoDB...");
-    console.log(`📍 URI: ${MONGODB_URI.split("@")[1] || "***"}`); // Mostrar sin credenciales
+    logger.log("🔄 Conectando a MongoDB...");
+    logger.log(`📍 URI: ${MONGODB_URI.split("@")[1] || "***"}`); // Mostrar sin credenciales
     
     const opts = {
       bufferCommands: false,
@@ -38,8 +39,8 @@ export async function connectDB() {
     cached.promise = mongoose
       .connect(MONGODB_URI, opts)
       .then((mongoose) => {
-        console.log("✅ Conectado a MongoDB correctamente");
-        console.log(`📦 Base de datos: ${mongoose.connection.db?.databaseName}`);
+        logger.log("✅ Conectado a MongoDB correctamente");
+        logger.log(`📦 Base de datos: ${mongoose.connection.db?.databaseName}`);
         return mongoose;
       })
       .catch((error) => {

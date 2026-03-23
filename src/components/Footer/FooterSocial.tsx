@@ -1,6 +1,6 @@
 // src/components/Footer/FooterSocial.tsx
 import { FaInstagram } from "react-icons/fa";
-import SocialButton from "./SocialButtom";
+import SocialButton from "./SocialButton";
 import { FaTiktok } from "react-icons/fa";
 
 

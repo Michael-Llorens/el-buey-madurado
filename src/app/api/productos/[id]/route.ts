@@ -3,6 +3,8 @@ import { connectDB } from '@/lib/db';
 import Producto from '@/lib/models/Producto';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { validarObjectId } from '@/lib/utils/validateId';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 
 export async function GET(
@@ -16,6 +18,8 @@ export async function GET(
   try {
     // ✅ AQUÍ: await params primero
     const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     await connectDB();
     const producto = await Producto.findById(id).lean();
@@ -58,10 +62,12 @@ export async function PUT(
   try {
     // ✅ AQUÍ: await params primero
     const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     await connectDB();
-    const body = await request.json();
-    
+    const body = sanitizeBody(await request.json());
+
     const producto = await Producto.findByIdAndUpdate(
       id, 
       body, 
@@ -106,6 +112,8 @@ export async function DELETE(
   try {
     // ✅ AQUÍ: await params primero
     const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     await connectDB();
     

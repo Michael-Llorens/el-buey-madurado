@@ -1,275 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import PedidoForm from '@/components/dashboard/PedidoForm';
 import PedidoCard from '@/components/dashboard/PedidoCard';
-
-type Modo = 'view' | 'add' | 'edit' | 'detail';
+import { usePedidoPanel } from './hooks/usePedidoPanel';
 
 export default function PedidosPanel() {
-    const searchParams = useSearchParams();
-
-    const [modo, setModo] = useState<Modo>('view');
-    const [pedidoEditando, setPedidoEditando] = useState<any | null>(null);
-
-    const [pedidoDetalle, setPedidoDetalle] = useState<any | null>(null);
-    const [loadingDetalle, setLoadingDetalle] = useState(false);
-
-    const [pedidos, setPedidos] = useState<any[]>([]);
-    const [pedidosFiltrados, setPedidosFiltrados] = useState<any[]>([]);
-    const [filtroEstado, setFiltroEstado] = useState<string>('todos');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const cargarPedidos = async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                setError('No hay sesión iniciada');
-                return;
-            }
-
-            const res = await fetch('/api/pedidos', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            const data = await res.json();
-            if (!res.ok || !data.success) throw new Error(data.error || 'Error al cargar pedidos');
-
-            setPedidos(data.data || []);
-            setPedidosFiltrados(data.data || []);
-        } catch (e: any) {
-            console.error('Error cargando pedidos:', e);
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const cargarPedidoPorId = async (id: string) => {
-        const token = localStorage.getItem('authToken');
-        if (!token) throw new Error('No hay sesión iniciada');
-
-        const res = await fetch(`/api/pedidos/${id}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Error al cargar el detalle del pedido');
-
-        return data.data;
-    };
-
-    useEffect(() => {
-        const modulo = searchParams.get('modulo');
-        const modoFromUrl = searchParams.get('modo');
-        const pedidoIdFromUrl = searchParams.get('pedidoId');
-
-        // Si NO viene con modulo=pedidos, no hacer nada
-        if (modulo !== 'pedidos') return;
-
-        let cancelled = false;
-
-        // CASO 1: Editar pedido existente (?modulo=pedidos&modo=edit&pedidoId=...)
-        if (modoFromUrl === 'edit' && pedidoIdFromUrl) {
-            (async () => {
-                try {
-                    setError(null);
-                    setLoadingDetalle(true);
-
-                    const detalle = await cargarPedidoPorId(pedidoIdFromUrl);
-                    if (cancelled) return;
-
-                    setPedidoEditando(detalle);
-                    setPedidoDetalle(null);
-                    setModo('edit');
-
-                    // Limpia la URL
-                    window.history.replaceState(null, '', '/dashboard');
-                } catch (e: any) {
-                    if (cancelled) return;
-                    setError(e.message);
-                    setModo('view');
-                } finally {
-                    if (cancelled) return;
-                    setLoadingDetalle(false);
-                }
-            })();
-
-            return () => {
-                cancelled = true;
-            };
-        }
-
-        // CASO 2: Crear nuevo pedido (?modulo=pedidos&modo=add)
-        if (modoFromUrl === 'add') {
-            setError(null);
-            setPedidoEditando(null);
-            setPedidoDetalle(null);
-            setModo('add');
-
-            // Limpia la URL (PedidoForm ya leyó mesaId si existía)
-            window.history.replaceState(null, '', '/dashboard');
-        }
-
-        // ✅ IMPORTANTE: devolver undefined explícitamente para evitar warning
-        return undefined;
-    }, [searchParams]);
-
-
-    useEffect(() => {
-        const modulo = searchParams.get('modulo');
-        const modoFromUrl = searchParams.get('modo');
-
-        if (modulo === 'pedidos' && modoFromUrl === 'add') {
-            setError(null);
-            setPedidoEditando(null);
-            setPedidoDetalle(null);
-            setModo('add');
-
-            window.history.replaceState(null, '', '/dashboard');
-        }
-    }, [searchParams]);
-
-
-    useEffect(() => {
-        cargarPedidos();
-    }, []);
-
-    useEffect(() => {
-        if (filtroEstado === 'todos') setPedidosFiltrados(pedidos);
-        else setPedidosFiltrados(pedidos.filter((p) => p.estado === filtroEstado));
-    }, [filtroEstado, pedidos]);
-
-    const handleCambiarEstado = async (id: string, nuevoEstado: string) => {
-        try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                alert('❌ No hay sesión iniciada');
-                return;
-            }
-
-            const res = await fetch(`/api/pedidos/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ estado: nuevoEstado }),
-            });
-
-            const data = await res.json();
-
-            if (res.ok && data.success) {
-                await cargarPedidos();
-                if (modo === 'detail' && pedidoDetalle?._id === id) setPedidoDetalle(data.data);
-                if (nuevoEstado === 'pagado') alert('✅ Pedido pagado y mesa liberada');
-            } else {
-                throw new Error(data.error || 'Error al cambiar estado');
-            }
-        } catch (e: any) {
-            console.error('Error al cambiar estado:', e);
-            alert(`❌ Error: ${e.message}`);
-        }
-    };
-
-    const handleEliminar = async (id: string) => {
-        if (!confirm('¿Estás seguro de que quieres cancelar este pedido?')) return;
-
-        try {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
-                alert('❌ No hay sesión iniciada');
-                return;
-            }
-
-            const res = await fetch(`/api/pedidos/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            const data = await res.json();
-
-            if (res.ok && data.success) {
-                await cargarPedidos();
-                if (modo === 'detail' && pedidoDetalle?._id === id) {
-                    setPedidoDetalle(null);
-                    setModo('view');
-                }
-                alert('✅ Pedido cancelado exitosamente');
-            } else {
-                throw new Error(data.error || 'Error al cancelar');
-            }
-        } catch (e: any) {
-            console.error('Error al cancelar:', e);
-            alert(`❌ Error: ${e.message}`);
-        }
-    };
-
-    const handleGuardar = async () => {
-        await cargarPedidos();
-        setPedidoEditando(null);
-        setModo('view');
-    };
-
-    const handleCancelar = () => {
-        setPedidoEditando(null);
-        setPedidoDetalle(null);
-        setModo('view');
-    };
-
-    const handleEditar = (pedido: any) => {
-        setPedidoEditando(pedido);
-        setModo('edit');
-    };
-
-    const handleVerDetalle = async (pedido: any) => {
-        try {
-            setError(null);
-            setLoadingDetalle(true);
-            setModo('detail');
-            setPedidoDetalle(null);
-
-            const detalle = await cargarPedidoPorId(pedido._id);
-            setPedidoDetalle(detalle);
-        } catch (e: any) {
-            console.error('Error cargando detalle:', e);
-            setPedidoDetalle(pedido); // fallback
-            setError(e.message);
-        } finally {
-            setLoadingDetalle(false);
-        }
-    };
-
-    const cerrarDetalle = () => {
-        setPedidoDetalle(null);
-        setModo('view');
-    };
-
-    const stats = {
-        total: pedidos.length,
-        pendientes: pedidos.filter((p) => p.estado === 'pendiente').length,
-        preparando: pedidos.filter((p) => p.estado === 'preparando').length,
-        listos: pedidos.filter((p) => p.estado === 'listo').length,
-        servidos: pedidos.filter((p) => p.estado === 'servido').length,
-        pagados: pedidos.filter((p) => p.estado === 'pagado').length,
-        totalRecaudado: pedidos.filter((p) => p.estado === 'pagado').reduce((sum, p) => sum + p.total, 0),
-    };
+    const {
+        searchParams,
+        modo,
+        setModo,
+        pedidoEditando,
+        pedidoDetalle,
+        loadingDetalle,
+        pedidos,
+        pedidosFiltrados,
+        filtroEstado,
+        setFiltroEstado,
+        loading,
+        error,
+        stats,
+        handleCambiarEstado,
+        handleEliminar,
+        handleGuardar,
+        handleCancelar,
+        handleEditar,
+        handleVerDetalle,
+        cerrarDetalle,
+    } = usePedidoPanel();
 
     return (
         <div className="w-full space-y-6">
@@ -284,7 +41,7 @@ export default function PedidosPanel() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                         <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                             <p className="text-gray-400 text-xs mb-1">Total</p>
                             <p className="text-2xl font-bold text-white">{stats.total}</p>

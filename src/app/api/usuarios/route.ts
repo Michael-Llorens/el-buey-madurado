@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import Usuario from '@/lib/models/Usuario';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 export async function GET(request: NextRequest) {
   const auth = protegerRuta(request);
@@ -49,8 +50,8 @@ export async function POST(request: NextRequest) {
 
   try {
     await connectDB();
-    const body = await request.json();
-    
+    const body = sanitizeBody(await request.json());
+
     const usuario = new Usuario(body);
     await usuario.save();
 

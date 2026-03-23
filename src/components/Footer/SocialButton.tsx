@@ -1,5 +1,5 @@
 import React from "react";
-import "./SocialButtom.css";
+import "./SocialButton.css";
 
 interface SocialButtonProps {
   href: string;

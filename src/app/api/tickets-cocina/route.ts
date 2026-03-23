@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import TicketCocina from '@/lib/models/TicketCocina';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 export async function GET(request: NextRequest) {
   const auth = protegerRuta(request);
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
     const tickets = await TicketCocina.find({ completado: false })
-      .populate('pedido')
+      .populate('pedido', 'tipo estado mesa total createdAt')
       .sort({ createdAt: 1 })
       .lean();
 
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
 
   try {
     await connectDB();
-    const body = await request.json();
+    const body = sanitizeBody(await request.json());
     const ticket = new TicketCocina(body);
     await ticket.save();
 

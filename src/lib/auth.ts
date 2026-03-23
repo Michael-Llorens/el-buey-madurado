@@ -1,7 +1,15 @@
 import jwt from 'jsonwebtoken';
 import { IUsuario } from '@/lib/models/Usuario';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu-secret-super-seguro-aqui';
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET no está definido en las variables de entorno. La aplicación no puede arrancar sin esta variable.');
+  }
+  return secret;
+}
+
+const JWT_SECRET = getJwtSecret();
 const JWT_EXPIRE = '7d'; // Token válido 7 días
 
 export interface TokenPayload {

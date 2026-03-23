@@ -28,7 +28,10 @@ const IngredienteSchema: Schema = new Schema({
   timestamps: true,
 });
 
-const Ingrediente: Model<IIngrediente> = mongoose.models.Ingrediente || 
+IngredienteSchema.index({ nombre: 1 });
+IngredienteSchema.index({ categoria: 1 });
+
+const Ingrediente: Model<IIngrediente> = mongoose.models.Ingrediente ||
   mongoose.model<IIngrediente>('Ingrediente', IngredienteSchema);
 
 export default Ingrediente;

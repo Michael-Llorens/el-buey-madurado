@@ -3,7 +3,7 @@
 import HeroSectionSobreNosotros from '@/components/SobreNosotros/HeroSectionSobreNosotros';
 import MuseoCarne from '@/components/SobreNosotros/MuseoCarne';
 import HistoriaYValores from '@/components/SobreNosotros/HistoriaYValores';
-import Equipo from '@/components/SobreNosotros/Esquipo';
+import Equipo from '@/components/SobreNosotros/Equipo';
 
 export default function SobreNosotrosPage() {
   return (

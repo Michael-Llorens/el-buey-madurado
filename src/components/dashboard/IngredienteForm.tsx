@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface IngredienteFormProps {
   ingrediente?: any | null;
@@ -159,10 +160,10 @@ export default function IngredienteForm({
         throw new Error(data.error || 'Error al guardar ingrediente');
       }
 
-      alert(
+      toast.success(
         ingrediente && ingrediente._id
-          ? '✅ Ingrediente actualizado exitosamente'
-          : '✅ Ingrediente creado exitosamente'
+          ? 'Ingrediente actualizado exitosamente'
+          : 'Ingrediente creado exitosamente'
       );
 
       onGuardar(data.data);
