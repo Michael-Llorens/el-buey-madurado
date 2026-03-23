@@ -3,6 +3,8 @@ import { connectDB } from '@/lib/db';
 import TicketCocina from '@/lib/models/TicketCocina';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { validarObjectId } from '@/lib/utils/validateId';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 export async function GET(
   request: NextRequest,
@@ -12,10 +14,13 @@ export async function GET(
   if (!auth.valido) return auth.response!;
 
   try {
-    const { id } = await params;  // Resolver Promise
+    const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
     const ticket = await TicketCocina.findById(id)
-      .populate('pedido')
+      .populate('pedido', 'tipo estado mesa total createdAt')
       .lean();
 
     if (!ticket) {
@@ -52,9 +57,12 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params;  // Resolver Promise
+    const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
-    const body = await request.json();
+    const body = sanitizeBody(await request.json());
     const ticket = await TicketCocina.findByIdAndUpdate(
       id,
       body,

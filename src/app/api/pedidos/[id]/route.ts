@@ -1,22 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Pedido from '@/lib/models/Pedido';
-import Mesa from '@/lib/models/Mesa';
 import Producto from '@/lib/models/Producto';
 import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { validarObjectId } from '@/lib/utils/validateId';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 import mongoose from 'mongoose';
+import { normalizarPedido, liberarMesa } from '@/lib/services/pedidoService';
 
 type Ctx = { params: Promise<{ id: string }> };
-
-function normalizarPedido(doc: any) {
-  const obj = doc?.toObject ? doc.toObject() : doc;
-  if (!obj) return obj;
-
-  if (!obj.creadoPor && obj.camarero) obj.creadoPor = obj.camarero;
-
-  return obj;
-}
 
 // ===========================
 // GET - Obtener un pedido específico
@@ -29,13 +22,8 @@ export async function GET(req: NextRequest, context: Ctx) {
     if (!auth?.valido) return auth?.response!;
 
     const { id } = await context.params;
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'ID de pedido requerido' },
-        { status: 400 }
-      );
-    }
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     const pedido = await Pedido.findById(id)
       .populate('mesa', 'numero capacidad estado')
@@ -72,15 +60,10 @@ export async function PUT(req: NextRequest, context: Ctx) {
     const auth: any = await protegerRuta(req);
     if (!auth?.valido) return auth?.response!;
 
-    const body = await req.json();
+    const body = sanitizeBody(await req.json());
     const { id } = await context.params;
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'ID de pedido requerido' },
-        { status: 400 }
-      );
-    }
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     const pedido = await Pedido.findById(id);
     if (!pedido) {
@@ -129,7 +112,7 @@ export async function PUT(req: NextRequest, context: Ctx) {
       pedido.tipo === 'local' &&
       pedido.mesa
     ) {
-      await Mesa.findByIdAndUpdate(pedido.mesa, { estado: 'libre', pedidoActual: null });
+      await liberarMesa(pedido.mesa);
     }
 
     const pedidoActualizado = await Pedido.findById(id)
@@ -162,13 +145,8 @@ export async function DELETE(req: NextRequest, context: Ctx) {
     if (!auth?.valido) return auth?.response!;
 
     const { id } = await context.params;
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'ID de pedido requerido' },
-        { status: 400 }
-      );
-    }
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     const pedido = await Pedido.findById(id);
     if (!pedido) {
@@ -182,7 +160,7 @@ export async function DELETE(req: NextRequest, context: Ctx) {
     await pedido.save();
 
     if (pedido.tipo === 'local' && pedido.mesa) {
-      await Mesa.findByIdAndUpdate(pedido.mesa, { estado: 'libre', pedidoActual: null });
+      await liberarMesa(pedido.mesa);
     }
 
     return NextResponse.json<ApiResponse>({

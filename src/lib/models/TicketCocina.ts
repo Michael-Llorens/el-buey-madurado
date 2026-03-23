@@ -60,6 +60,8 @@ const TicketCocinaSchema: Schema = new Schema({
   timestamps: true,
 });
 
+TicketCocinaSchema.index({ estado: 1, completado: 1 });
+
 const TicketCocina: Model<ITicketCocina> = mongoose.models.TicketCocina ||
   mongoose.model<ITicketCocina>('TicketCocina', TicketCocinaSchema);
 

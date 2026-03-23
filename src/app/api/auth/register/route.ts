@@ -1,14 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Usuario from '@/lib/models/Usuario';
-import { generarToken } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
+import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
+import { sanitizeBody } from '@/lib/utils/sanitize';
+import { checkRateLimit } from '@/lib/utils/rateLimiter';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 5 intentos por minuto por IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+    const rateCheck = checkRateLimit(`register:${ip}`);
+    if (rateCheck.limited) {
+      return NextResponse.json<ApiResponse>({
+        success: false,
+        error: 'Demasiados intentos. Inténtalo de nuevo en un minuto.',
+      }, { status: 429 });
+    }
+
+    // Solo un admin autenticado puede registrar usuarios
+    const auth = protegerRuta(request);
+    if (!auth.valido || !auth.payload) {
+      return auth.response!;
+    }
+
+    if (!verificarRol(auth.payload, ['admin'])) {
+      return NextResponse.json<ApiResponse>({
+        success: false,
+        error: 'Solo un administrador puede crear usuarios',
+      }, { status: 403 });
+    }
+
     await connectDB();
-    
-    const { email, password, rol } = await request.json();
+
+    const { email, password, rol } = sanitizeBody(await request.json());
 
     // Validaciones
     if (!email || !password) {
@@ -45,13 +72,9 @@ export async function POST(request: NextRequest) {
 
     await nuevoUsuario.save();
 
-    // Generar token
-    const token = generarToken(nuevoUsuario);
-
     return NextResponse.json<ApiResponse>({
       success: true,
       data: {
-        token,
         usuario: {
           id: nuevoUsuario._id,
           email: nuevoUsuario.email,

@@ -3,6 +3,8 @@ import { connectDB } from '@/lib/db';
 import Mesa from '@/lib/models/Mesa';
 import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { validarObjectId } from '@/lib/utils/validateId';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 // ===========================
 // PUT - Actualizar mesa
@@ -15,15 +17,10 @@ export async function PUT(
     await connectDB();
     await protegerRuta(req);
 
-    const rawBody = await req.json();
+    const rawBody = sanitizeBody(await req.json());
     const { id } = await params;
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'ID de mesa requerido' },
-        { status: 400 }
-      );
-    }
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     const update: any = {};
 
@@ -120,13 +117,8 @@ export async function DELETE(
     await protegerRuta(req);
 
     const { id } = await params;
-
-    if (!id) {
-      return NextResponse.json<ApiResponse>(
-        { success: false, error: 'ID de mesa requerido' },
-        { status: 400 }
-      );
-    }
+    const idError = validarObjectId(id);
+    if (idError) return idError;
 
     const mesaEliminada = await Mesa.findByIdAndDelete(id);
 

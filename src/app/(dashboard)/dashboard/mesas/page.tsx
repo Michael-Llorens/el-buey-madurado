@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import MesaForm from '@/components/dashboard/MesaForm';
 import MesaGrid from '@/components/dashboard/MesaGrid';
+import { useMesas } from '@/lib/hooks/swr';
 
 type Modo = 'view' | 'add' | 'edit';
 
@@ -14,51 +16,17 @@ type Mesa = {
   comensalesActuales: number;
   estado: 'libre' | 'ocupada' | 'reservada';
   activa: boolean;
+  pedidoActual?: { _id: string; tipo?: string; estado?: string } | null;
 };
 
 export default function MesasPanel() {
   const router = useRouter();
+  const { mesas, error: swrError, isLoading: loading, mutate } = useMesas();
+  const error = swrError?.message ?? null;
 
   const [modo, setModo] = useState<Modo>('view');
-  const [mesas, setMesas] = useState<Mesa[]>([]);
   const [mesaEditar, setMesaEditar] = useState<Mesa | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
-
-  const cargarMesas = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setError('No hay sesión iniciada');
-        return;
-      }
-
-      const res = await fetch('/api/mesas', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Error al cargar mesas');
-
-      setMesas(data.data || []);
-    } catch (err: any) {
-      console.error('Error cargando mesas:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    cargarMesas();
-  }, []);
 
   const crearMesasIniciales = async () => {
     if (!confirm('¿Crear 15 mesas de 4 comensales cada una?')) return;
@@ -66,7 +34,7 @@ export default function MesasPanel() {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -81,19 +49,19 @@ export default function MesasPanel() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        alert('✅ 15 mesas creadas exitosamente');
-        await cargarMesas();
+        toast.success('15 mesas creadas exitosamente');
+        await mutate();
       } else {
         throw new Error(data.error || 'Error al crear mesas');
       }
     } catch (err: any) {
       console.error('Error al crear mesas:', err);
-      alert(`❌ Error: ${err.message}`);
+      toast.error(`Error: ${err.message}`);
     }
   };
 
   const handleGuardar = async () => {
-    await cargarMesas();
+    await mutate();
     setMesaEditar(null);
     setModo('view');
   };
@@ -112,7 +80,7 @@ export default function MesasPanel() {
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -127,14 +95,14 @@ export default function MesasPanel() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        await cargarMesas();
-        alert('✅ Mesa eliminada exitosamente');
+        await mutate();
+        toast.success('Mesa eliminada exitosamente');
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
     } catch (err: any) {
       console.error('Error al eliminar:', err);
-      alert(`❌ Error: ${err.message}`);
+      toast.error(`Error: ${err.message}`);
     } finally {
       setEliminandoId(null);
     }
@@ -144,7 +112,7 @@ export default function MesasPanel() {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -160,10 +128,10 @@ export default function MesasPanel() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Error al cambiar estado');
 
-      await cargarMesas();
+      await mutate();
     } catch (err: any) {
       console.error('Error al cambiar estado:', err);
-      alert(`❌ Error: ${err.message}`);
+      toast.error(`Error: ${err.message}`);
     }
   };
 
@@ -176,7 +144,7 @@ export default function MesasPanel() {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -194,10 +162,10 @@ export default function MesasPanel() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Error al actualizar comensales');
 
-      await cargarMesas();
+      await mutate();
     } catch (err: any) {
       console.error(err);
-      alert(`❌ Error: ${err.message}`);
+      toast.error(`Error: ${err.message}`);
     }
   };
 
@@ -213,7 +181,7 @@ export default function MesasPanel() {
         // ✅ No hay pedido activo, crear uno nuevo
         const token = localStorage.getItem('authToken');
         if (!token) {
-          alert('❌ No hay sesión iniciada');
+          toast.error('No hay sesión iniciada');
           return;
         }
 
@@ -236,7 +204,7 @@ export default function MesasPanel() {
       }
     } catch (err: any) {
       console.error('Error al hacer pedido:', err);
-      alert(`❌ Error: ${err.message}`);
+      toast.error(`Error: ${err.message}`);
     }
   };
 
@@ -274,7 +242,7 @@ export default function MesasPanel() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
               <p className="text-gray-400 text-sm mb-2">Total Mesas</p>
               <p className="text-3xl font-bold text-white">{resumen.total}</p>

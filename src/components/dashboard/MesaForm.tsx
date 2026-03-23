@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface MesaFormData {
   nombre: string; 
@@ -122,7 +123,7 @@ export default function MesaForm({ mesa, onGuardar, onCancelar }: MesaFormProps)
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Error al guardar mesa');
 
-      alert(mesa && mesa._id ? '✅ Mesa actualizada exitosamente' : '✅ Mesa creada exitosamente');
+      toast.success(mesa && mesa._id ? 'Mesa actualizada exitosamente' : 'Mesa creada exitosamente');
       onGuardar();
     } catch (err: any) {
       console.error('Error al guardar:', err);

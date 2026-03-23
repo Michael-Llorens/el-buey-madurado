@@ -3,6 +3,8 @@ import { connectDB } from '@/lib/db';
 import Usuario from '@/lib/models/Usuario';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { validarObjectId } from '@/lib/utils/validateId';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 export async function GET(
   request: NextRequest,
@@ -20,6 +22,9 @@ export async function GET(
 
   try {
     const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
     
     const usuario = await Usuario.findById(id)
@@ -61,9 +66,12 @@ export async function PUT(
 
   try {
     const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
     
-    const body = await request.json();
+    const body = sanitizeBody(await request.json());
     const { password, ...updateData } = body; // No actualizar password aquí
 
     const usuario = await Usuario.findByIdAndUpdate(id, updateData, {
@@ -106,6 +114,9 @@ export async function DELETE(
 
   try {
     const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
     
     const usuario = await Usuario.findByIdAndDelete(id);

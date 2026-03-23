@@ -1,5 +1,7 @@
 'use client';
 
+import { toast } from 'sonner';
+
 interface Producto {
   id: string;
   nombre: string;
@@ -19,7 +21,7 @@ export default function ProductoList({ productos, onEliminar }: ProductoListProp
   const handleEliminar = (id: string) => {
     if (confirm('¿Estás seguro que quieres eliminar este producto?')) {
       onEliminar(id);
-      alert('✅ Producto eliminado');
+      toast.success('Producto eliminado');
     }
   };
 
@@ -60,7 +62,7 @@ export default function ProductoList({ productos, onEliminar }: ProductoListProp
                 <td className="px-4 py-3 text-gray-300 text-sm">{producto.descripcion || '-'}</td>
                 <td className="px-4 py-3 text-center space-x-2">
                   <button
-                    onClick={() => alert('🔄 Editar no implementado aún')}
+                    onClick={() => toast.info('Editar no implementado aún')}
                     className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
                   >
                     ✏️ Editar

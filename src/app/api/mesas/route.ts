@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Mesa from '@/lib/models/Mesa';
+import Pedido from '@/lib/models/Pedido';
 import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 
@@ -11,6 +12,8 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
     await protegerRuta(req);
+
+    void Pedido; // asegurar registro del modelo antes del populate
 
     const mesas = await Mesa.find()
       .populate('pedidoActual', '_id tipo estado') // 👈 AÑADIDO: trae pedidoActual con id, tipo y estado
@@ -42,12 +45,8 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    console.log('📦 Body recibido:', JSON.stringify(body, null, 2));
-
     const nuevaMesa = new Mesa(body);
     await nuevaMesa.save();
-
-    console.log('✅ Mesa creada:', nuevaMesa);
 
     return NextResponse.json<ApiResponse>(
       {

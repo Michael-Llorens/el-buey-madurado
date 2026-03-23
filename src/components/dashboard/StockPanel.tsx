@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import ProductoForm from '@/components/dashboard/ProductoForm';
 import IngredienteForm from '@/components/dashboard/IngredienteForm';
 import ProductCardGrid from '@/components/dashboard/ProductCardGrid';
 import IngredientCardGrid from '@/components/dashboard/IngredientCardGrid';
+import { useIngredientes, useProductos } from '@/lib/hooks/swr';
 
 type TabActivo = 'productos' | 'ingredientes';
 type Modo = 'view' | 'add-product' | 'add-ingredient' | 'edit-product' | 'edit-ingredient';
@@ -12,117 +14,37 @@ type Modo = 'view' | 'add-product' | 'add-ingredient' | 'edit-product' | 'edit-i
 export default function StockPanel() {
   const [tabActivo, setTabActivo] = useState<TabActivo>('productos');
   const [modo, setModo] = useState<Modo>('view');
-  
-  const [ingredientes, setIngredientes] = useState<any[]>([]);
-  const [productos, setProductos] = useState<any[]>([]);
-  
+
+  const { ingredientes, error: errIng, isLoading: loadingIng, mutate: mutateIng } = useIngredientes();
+  const { productos, error: errProd, isLoading: loadingProd, mutate: mutateProd } = useProductos();
+  const errorIng = errIng?.message ?? null;
+  const errorProd = errProd?.message ?? null;
+
   const [ingredienteEditar, setIngredienteEditar] = useState<any>(null);
   const [productoEditar, setProductoEditar] = useState<any>(null);
-  
-  const [loadingIng, setLoadingIng] = useState(false);
-  const [loadingProd, setLoadingProd] = useState(false);
-  
-  const [errorIng, setErrorIng] = useState<string | null>(null);
-  const [errorProd, setErrorProd] = useState<string | null>(null);
-  
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
-
-  // 📥 Cargar ingredientes
-  const cargarIngredientes = async () => {
-    setLoadingIng(true);
-    setErrorIng(null);
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setErrorIng('No hay sesión iniciada');
-        return;
-      }
-
-      const res = await fetch('/api/ingredientes', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al cargar ingredientes');
-      }
-
-      setIngredientes(data.data || []);
-    } catch (error: any) {
-      console.error('Error cargando ingredientes:', error);
-      setErrorIng(error.message);
-    } finally {
-      setLoadingIng(false);
-    }
-  };
-
-  // 📥 Cargar productos
-  const cargarProductos = async () => {
-    setLoadingProd(true);
-    setErrorProd(null);
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setErrorProd('No hay sesión iniciada');
-        return;
-      }
-
-      const res = await fetch('/api/productos', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al cargar productos');
-      }
-
-      setProductos(data.data || []);
-    } catch (error: any) {
-      console.error('Error cargando productos:', error);
-      setErrorProd(error.message);
-    } finally {
-      setLoadingProd(false);
-    }
-  };
-
-  // ⏬ Cargar datos al montar y cuando cambia tab
-  useEffect(() => {
-    if (tabActivo === 'ingredientes') {
-      cargarIngredientes();
-    } else {
-      cargarProductos();
-    }
-  }, [tabActivo]);
 
   // ✅ Guardar ingrediente
   const handleGuardarIngrediente = async () => {
     try {
-      await cargarIngredientes();
+      await mutateIng();
       setIngredienteEditar(null);
       setModo('view');
     } catch (error: any) {
       console.error('Error al guardar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     }
   };
 
   // ✅ Guardar producto
   const handleGuardarProducto = async () => {
     try {
-      await cargarProductos();
+      await mutateProd();
       setProductoEditar(null);
       setModo('view');
     } catch (error: any) {
       console.error('Error al guardar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     }
   };
 
@@ -152,7 +74,7 @@ export default function StockPanel() {
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -167,16 +89,16 @@ export default function StockPanel() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        await cargarIngredientes();
-        alert('✅ Ingrediente eliminado exitosamente');
+        await mutateIng();
+        toast.success('Ingrediente eliminado exitosamente');
       } else if (res.status === 404) {
-        await cargarIngredientes();
+        await mutateIng();
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
     } catch (error: any) {
       console.error('Error al eliminar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setEliminandoId(null);
     }
@@ -196,7 +118,7 @@ export default function StockPanel() {
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -211,16 +133,16 @@ export default function StockPanel() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        await cargarProductos();
-        alert('✅ Producto eliminado exitosamente');
+        await mutateProd();
+        toast.success('Producto eliminado exitosamente');
       } else if (res.status === 404) {
-        await cargarProductos();
+        await mutateProd();
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
     } catch (error: any) {
       console.error('Error al eliminar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setEliminandoId(null);
     }
