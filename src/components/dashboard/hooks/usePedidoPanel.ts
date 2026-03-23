@@ -4,11 +4,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { usePedidos, authFetcher } from '@/lib/hooks/swr';
+import { useConfirm } from './useConfirm';
 
 type Modo = 'view' | 'add' | 'edit' | 'detail';
 
 export function usePedidoPanel() {
     const searchParams = useSearchParams();
+    const { confirmar, confirmProps } = useConfirm();
 
     const [modo, setModo] = useState<Modo>('view');
     const [pedidoEditando, setPedidoEditando] = useState<any | null>(null);
@@ -21,6 +23,7 @@ export function usePedidoPanel() {
     const error = swrError?.message ?? mutationError;
 
     const [filtroEstado, setFiltroEstado] = useState<string>('todos');
+    const [filtroTipo, setFiltroTipo] = useState<string>('todos');
 
     const cargarPedidoPorId = async (id: string) => {
         return authFetcher(`/api/pedidos/${id}`);
@@ -99,9 +102,11 @@ export function usePedidoPanel() {
 
 
     const pedidosFiltrados = useMemo(() => {
-        if (filtroEstado === 'todos') return pedidos;
-        return pedidos.filter((p) => p.estado === filtroEstado);
-    }, [filtroEstado, pedidos]);
+        let resultado = pedidos;
+        if (filtroEstado !== 'todos') resultado = resultado.filter((p) => p.estado === filtroEstado);
+        if (filtroTipo !== 'todos') resultado = resultado.filter((p) => p.tipo === filtroTipo);
+        return resultado;
+    }, [filtroEstado, filtroTipo, pedidos]);
 
     const handleCambiarEstado = async (id: string, nuevoEstado: string) => {
         try {
@@ -136,7 +141,8 @@ export function usePedidoPanel() {
     };
 
     const handleEliminar = async (id: string) => {
-        if (!confirm('¿Estás seguro de que quieres cancelar este pedido?')) return;
+        const ok = await confirmar('¿Seguro que quieres cancelar este pedido?', { titulo: 'Cancelar pedido', textoConfirmar: 'Cancelar pedido' });
+        if (!ok) return;
 
         try {
             const token = localStorage.getItem('authToken');
@@ -232,6 +238,8 @@ export function usePedidoPanel() {
         pedidosFiltrados,
         filtroEstado,
         setFiltroEstado,
+        filtroTipo,
+        setFiltroTipo,
         loading,
         error,
         stats,
@@ -242,5 +250,6 @@ export function usePedidoPanel() {
         handleEditar,
         handleVerDetalle,
         cerrarDetalle,
+        confirmProps,
     };
 }

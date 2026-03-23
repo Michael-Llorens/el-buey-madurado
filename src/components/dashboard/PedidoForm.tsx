@@ -114,7 +114,7 @@ export default function PedidoForm({
           value={formData.tipo}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
         >
           <option value="local">🍽️ Local (comer aquí)</option>
           <option value="recoger">🛍️ Para recoger</option>
@@ -131,7 +131,7 @@ export default function PedidoForm({
             value={formData.mesa}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           >
             <option value="">-- Selecciona una mesa --</option>
             {mesasDisponibles.map((mesa: Mesa) => (
@@ -155,7 +155,7 @@ export default function PedidoForm({
             value={formData.cliente}
             onChange={handleChange}
             required={formData.tipo !== 'local'}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           />
         </div>
         <div>
@@ -168,7 +168,7 @@ export default function PedidoForm({
             value={formData.telefono}
             onChange={handleChange}
             required={formData.tipo !== 'local'}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           />
         </div>
       </div>
@@ -179,7 +179,7 @@ export default function PedidoForm({
           <h3 className="text-sm font-semibold text-amber-400 mb-3">📍 Dirección de Entrega</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
+            <div className="md:sm:col-span-2">
               <input
                 type="text"
                 name="calle"
@@ -268,8 +268,8 @@ export default function PedidoForm({
       <div className="bg-gray-700 p-4 rounded space-y-4">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">🍽️ Productos del Pedido</h3>
 
-        <div className="grid grid-cols-12 gap-2">
-          <div className="col-span-5">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+          <div className="sm:col-span-5">
             <select
               value={productoSeleccionado}
               onChange={(e) => setProductoSeleccionado(e.target.value)}
@@ -284,7 +284,7 @@ export default function PedidoForm({
             </select>
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <input
               type="number"
               value={cantidadProducto}
@@ -295,7 +295,7 @@ export default function PedidoForm({
             />
           </div>
 
-          <div className="col-span-3">
+          <div className="sm:col-span-3">
             <input
               type="text"
               value={notasProducto}
@@ -305,7 +305,7 @@ export default function PedidoForm({
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <button
               type="button"
               onClick={handleAbrirPersonalizacion}
@@ -380,7 +380,7 @@ export default function PedidoForm({
             onChange={handleChange}
             step="0.01"
             min="0"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           />
         </div>
 
@@ -394,7 +394,7 @@ export default function PedidoForm({
               onChange={handleChange}
               step="0.01"
               min="0"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             />
           </div>
         )}
@@ -407,7 +407,7 @@ export default function PedidoForm({
           name="notas"
           value={formData.notas}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           rows={3}
         />
       </div>
@@ -436,7 +436,7 @@ export default function PedidoForm({
               <span>-{Number(formData.descuento).toFixed(2)}€</span>
             </div>
           )}
-          <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-600">
+          <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-700">
             <span>TOTAL:</span>
             <span className="text-amber-400">{totales.total}€</span>
           </div>

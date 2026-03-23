@@ -193,7 +193,7 @@ export default function IngredienteForm({
           value={formData.nombre}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="Ej: Carne de res"
         />
       </div>
@@ -206,7 +206,7 @@ export default function IngredienteForm({
           value={formData.categoria}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
         >
           <option value="">-- Selecciona una categoría --</option>
           <option value="Carnes">Carnes</option>
@@ -225,14 +225,14 @@ export default function IngredienteForm({
           name="descripcion"
           value={formData.descripcion}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           rows={3}
           placeholder="Describe el ingrediente"
         />
       </div>
 
       {/* Precios */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-2">Precio Base (€) *</label>
           <input
@@ -242,7 +242,7 @@ export default function IngredienteForm({
             onChange={handleChange}
             required
             step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             placeholder="0.00"
           />
         </div>
@@ -254,14 +254,14 @@ export default function IngredienteForm({
             value={formData.precioExtra}
             onChange={handleChange}
             step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             placeholder="0.00"
           />
         </div>
       </div>
 
       {/* Inventario */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-2">Cantidad *</label>
           <input
@@ -271,7 +271,7 @@ export default function IngredienteForm({
             onChange={handleChange}
             required
             step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             placeholder="0"
           />
         </div>
@@ -281,7 +281,7 @@ export default function IngredienteForm({
             name="inventario.unidad"
             value={formData.inventario.unidad}
             onChange={handleChange}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           >
             <option value="kg">kg</option>
             <option value="g">g</option>
@@ -299,11 +299,11 @@ export default function IngredienteForm({
           type="file"
           accept="image/*"
           onChange={handleImageChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white"
         />
         {preview && (
           <div className="mt-4">
-            <img src={preview} alt="Preview" className="w-32 h-32 object-cover rounded" />
+            <img src={preview} alt="Preview" className="w-24 sm:w-32 h-24 sm:h-32 object-cover rounded" />
           </div>
         )}
       </div>
@@ -317,7 +317,7 @@ export default function IngredienteForm({
             value={alergeno}
             onChange={(e) => setAlergeno(e.target.value)}
             placeholder="Ej: Gluten"
-            className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="flex-1 px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           />
           <button
             type="button"
@@ -346,7 +346,7 @@ export default function IngredienteForm({
       </div>
 
       {/* Disponible y Activo */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"

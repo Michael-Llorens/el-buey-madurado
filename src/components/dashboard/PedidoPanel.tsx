@@ -2,6 +2,7 @@
 
 import PedidoForm from '@/components/dashboard/PedidoForm';
 import PedidoCard from '@/components/dashboard/PedidoCard';
+import ConfirmModal from '@/components/dashboard/ConfirmModal';
 import { usePedidoPanel } from './hooks/usePedidoPanel';
 
 export default function PedidosPanel() {
@@ -16,6 +17,8 @@ export default function PedidosPanel() {
         pedidosFiltrados,
         filtroEstado,
         setFiltroEstado,
+        filtroTipo,
+        setFiltroTipo,
         loading,
         error,
         stats,
@@ -26,116 +29,85 @@ export default function PedidosPanel() {
         handleEditar,
         handleVerDetalle,
         cerrarDetalle,
+        confirmProps,
     } = usePedidoPanel();
 
     return (
-        <div className="w-full space-y-6">
+        <div className="w-full min-w-0 space-y-4 sm:space-y-6">
             {modo === 'view' && (
                 <>
-                    <div className="flex items-center justify-between border-b border-gray-700 pb-4">
-                        <button
-                            onClick={() => setModo('add')}
-                            className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold transition"
-                        >
-                            ➕ Nuevo Pedido
-                        </button>
+                    {/* Boton nuevo pedido — prominente y fijo */}
+                    <button
+                        onClick={() => setModo('add')}
+                        className="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition text-base"
+                    >
+                        + Nuevo Pedido
+                    </button>
+
+                    {/* Stats compactas */}
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        <MiniStat label="Pendientes" value={stats.pendientes} color="text-yellow-400" />
+                        <MiniStat label="Preparando" value={stats.preparando} color="text-blue-400" />
+                        <MiniStat label="Listos" value={stats.listos} color="text-purple-400" />
+                        <MiniStat label="Servidos" value={stats.servidos} color="text-green-400" />
+                        <MiniStat label="Recaudado" value={`${stats.totalRecaudado.toFixed(0)}€`} color="text-amber-400" />
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-                        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                            <p className="text-gray-400 text-xs mb-1">Total</p>
-                            <p className="text-2xl font-bold text-white">{stats.total}</p>
+                    {/* Filtros: estado + tipo */}
+                    <div className="space-y-2">
+                        {/* Por estado */}
+                        <div className="flex gap-1.5 flex-wrap">
+                            {[
+                                { key: 'todos', label: `Todos (${pedidos.length})`, active: 'bg-gray-600' },
+                                { key: 'pendiente', label: `Pendientes (${stats.pendientes})`, active: 'bg-yellow-600' },
+                                { key: 'preparando', label: `Preparando (${stats.preparando})`, active: 'bg-blue-600' },
+                                { key: 'listo', label: `Listos (${stats.listos})`, active: 'bg-purple-600' },
+                                { key: 'servido', label: `Servidos (${stats.servidos})`, active: 'bg-green-600' },
+                                { key: 'pagado', label: `Pagados (${stats.pagados})`, active: 'bg-gray-500' },
+                            ].map((f) => (
+                                <button
+                                    key={f.key}
+                                    onClick={() => setFiltroEstado(f.key)}
+                                    className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
+                                        filtroEstado === f.key
+                                            ? `${f.active} text-white`
+                                            : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
+                                    }`}
+                                >
+                                    {f.label}
+                                </button>
+                            ))}
                         </div>
-                        <div className="bg-yellow-900/30 rounded-lg p-4 border border-yellow-700">
-                            <p className="text-yellow-400 text-xs mb-1">🟡 Pendientes</p>
-                            <p className="text-2xl font-bold text-yellow-400">{stats.pendientes}</p>
+
+                        {/* Por tipo */}
+                        <div className="flex gap-1.5 flex-wrap">
+                            {[
+                                { key: 'todos', label: 'Todos', icon: '' },
+                                { key: 'local', label: 'Local', icon: '🍽️' },
+                                { key: 'recoger', label: 'Recoger', icon: '🛍️' },
+                                { key: 'domicilio', label: 'Domicilio', icon: '🛵' },
+                            ].map((f) => (
+                                <button
+                                    key={f.key}
+                                    onClick={() => setFiltroTipo(f.key)}
+                                    className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
+                                        filtroTipo === f.key
+                                            ? 'bg-amber-600 text-white'
+                                            : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
+                                    }`}
+                                >
+                                    {f.icon} {f.label}
+                                </button>
+                            ))}
                         </div>
-                        <div className="bg-blue-900/30 rounded-lg p-4 border border-blue-700">
-                            <p className="text-blue-400 text-xs mb-1">🔵 Preparando</p>
-                            <p className="text-2xl font-bold text-blue-400">{stats.preparando}</p>
-                        </div>
-                        <div className="bg-purple-900/30 rounded-lg p-4 border border-purple-700">
-                            <p className="text-purple-400 text-xs mb-1">🟣 Listos</p>
-                            <p className="text-2xl font-bold text-purple-400">{stats.listos}</p>
-                        </div>
-                        <div className="bg-green-900/30 rounded-lg p-4 border border-green-700">
-                            <p className="text-green-400 text-xs mb-1">🟢 Servidos</p>
-                            <p className="text-2xl font-bold text-green-400">{stats.servidos}</p>
-                        </div>
-                        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                            <p className="text-gray-400 text-xs mb-1">💰 Recaudado</p>
-                            <p className="text-xl font-bold text-amber-400">{stats.totalRecaudado.toFixed(2)}€</p>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-2 flex-wrap">
-                        <button
-                            onClick={() => setFiltroEstado('todos')}
-                            className={`px-4 py-2 rounded font-semibold transition ${filtroEstado === 'todos'
-                                ? 'bg-amber-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            Todos ({pedidos.length})
-                        </button>
-
-                        <button
-                            onClick={() => setFiltroEstado('pendiente')}
-                            className={`px-4 py-2 rounded font-semibold transition ${filtroEstado === 'pendiente'
-                                ? 'bg-yellow-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            🟡 Pendientes ({stats.pendientes})
-                        </button>
-
-                        <button
-                            onClick={() => setFiltroEstado('preparando')}
-                            className={`px-4 py-2 rounded font-semibold transition ${filtroEstado === 'preparando'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            🔵 Preparando ({stats.preparando})
-                        </button>
-
-                        <button
-                            onClick={() => setFiltroEstado('listo')}
-                            className={`px-4 py-2 rounded font-semibold transition ${filtroEstado === 'listo'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            🟣 Listos ({stats.listos})
-                        </button>
-
-                        <button
-                            onClick={() => setFiltroEstado('servido')}
-                            className={`px-4 py-2 rounded font-semibold transition ${filtroEstado === 'servido'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            🟢 Servidos ({stats.servidos})
-                        </button>
-
-                        <button
-                            onClick={() => setFiltroEstado('pagado')}
-                            className={`px-4 py-2 rounded font-semibold transition ${filtroEstado === 'pagado'
-                                ? 'bg-gray-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                }`}
-                        >
-                            ✅ Pagados ({stats.pagados})
-                        </button>
                     </div>
                 </>
             )}
 
             {modo === 'add' && (
-                <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
+                <div className="bg-gray-800 rounded-lg p-4 sm:p-8 border border-gray-700">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-amber-400">➕ Nuevo Pedido</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold text-amber-400">Nuevo Pedido</h2>
                         <button
                             type="button"
                             onClick={handleCancelar}
@@ -155,9 +127,9 @@ export default function PedidosPanel() {
             )}
 
             {modo === 'edit' && pedidoEditando && (
-                <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
+                <div className="bg-gray-800 rounded-lg p-4 sm:p-8 border border-gray-700">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-amber-400">✏️ Editar Pedido</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold text-amber-400">Editar Pedido</h2>
                         <button
                             type="button"
                             onClick={handleCancelar}
@@ -178,9 +150,9 @@ export default function PedidosPanel() {
             )}
 
             {modo === 'detail' && (
-                <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
+                <div className="bg-gray-800 rounded-lg p-4 sm:p-8 border border-gray-700">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold text-amber-400">📄 Detalle del pedido</h2>
+                        <h2 className="text-xl sm:text-2xl font-bold text-amber-400">Detalle del pedido</h2>
 
                         <div className="flex gap-2">
                             {pedidoDetalle && (
@@ -213,66 +185,30 @@ export default function PedidosPanel() {
                     ) : (
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                    <p className="text-gray-400">ID</p>
-                                    <p className="text-white break-all">{pedidoDetalle._id}</p>
-                                </div>
+                                <DetailField label="Estado" value={pedidoDetalle.estado} bold />
+                                <DetailField label="Tipo" value={pedidoDetalle.tipo === 'local' ? '🍽️ Local' : pedidoDetalle.tipo === 'recoger' ? '🛍️ Recoger' : '🛵 Domicilio'} />
+                                <DetailField label="Fecha" value={pedidoDetalle.createdAt ? new Date(pedidoDetalle.createdAt).toLocaleString('es-ES') : '-'} />
 
-                                <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                    <p className="text-gray-400">Estado</p>
-                                    <p className="text-white font-semibold">{pedidoDetalle.estado}</p>
-                                </div>
-
-                                <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                    <p className="text-gray-400">Tipo</p>
-                                    <p className="text-white font-semibold">{pedidoDetalle.tipo}</p>
-                                </div>
-
-                                <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                    <p className="text-gray-400">Fecha</p>
-                                    <p className="text-white">
-                                        {pedidoDetalle.createdAt ? new Date(pedidoDetalle.createdAt).toLocaleString('es-ES') : '-'}
-                                    </p>
-                                </div>
-
-                                {pedidoDetalle.mesa?.numero && (
-                                    <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                        <p className="text-gray-400">Mesa</p>
-                                        <p className="text-white font-semibold">Mesa {pedidoDetalle.mesa.numero}</p>
-                                    </div>
+                                {(pedidoDetalle.mesa?.nombre || pedidoDetalle.mesa?.numero) && (
+                                    <DetailField label="Mesa" value={`Mesa ${pedidoDetalle.mesa.nombre ?? pedidoDetalle.mesa.numero}`} bold />
                                 )}
 
                                 {pedidoDetalle.creadoPor?.email && (
-                                    <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                        <p className="text-gray-400">Creado por</p>
-                                        <p className="text-white">
-                                            {pedidoDetalle.creadoPor.email}
-                                            {pedidoDetalle.creadoPor.rol ? ` (${pedidoDetalle.creadoPor.rol})` : ''}
-                                            {pedidoDetalle.creadoPor.nombre ? ` - ${pedidoDetalle.creadoPor.nombre}` : ''}
-                                        </p>
-                                    </div>
+                                    <DetailField label="Creado por" value={`${pedidoDetalle.creadoPor.nombre ?? pedidoDetalle.creadoPor.email.split('@')[0]} (${pedidoDetalle.creadoPor.rol ?? 'usuario'})`} />
                                 )}
 
                                 {(pedidoDetalle.cliente || pedidoDetalle.telefono) && (
-                                    <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                        <p className="text-gray-400">Cliente</p>
-                                        <p className="text-white">
-                                            {pedidoDetalle.cliente || '-'}
-                                            {pedidoDetalle.telefono ? ` · 📞 ${pedidoDetalle.telefono}` : ''}
-                                        </p>
-                                    </div>
+                                    <DetailField label="Cliente" value={`${pedidoDetalle.cliente || '-'}${pedidoDetalle.telefono ? ` · ${pedidoDetalle.telefono}` : ''}`} />
                                 )}
 
                                 {pedidoDetalle.direccionEntrega && (
-                                    <div className="bg-gray-900/40 rounded p-4 border border-gray-700 md:col-span-2">
-                                        <p className="text-gray-400">Dirección entrega</p>
+                                    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 md:col-span-2">
+                                        <p className="text-gray-500 text-xs mb-1">Direccion de entrega</p>
                                         <p className="text-white">
-                                            📍 {pedidoDetalle.direccionEntrega.calle} {pedidoDetalle.direccionEntrega.numero}
+                                            {pedidoDetalle.direccionEntrega.calle} {pedidoDetalle.direccionEntrega.numero}
                                             {pedidoDetalle.direccionEntrega.piso ? `, ${pedidoDetalle.direccionEntrega.piso}` : ''}
-                                            {pedidoDetalle.direccionEntrega.ciudad ? ` · ${pedidoDetalle.direccionEntrega.ciudad}` : ''}
-                                            {pedidoDetalle.direccionEntrega.codigoPostal
-                                                ? ` (${pedidoDetalle.direccionEntrega.codigoPostal})`
-                                                : ''}
+                                            {' · '}{pedidoDetalle.direccionEntrega.ciudad}
+                                            {pedidoDetalle.direccionEntrega.codigoPostal ? ` (${pedidoDetalle.direccionEntrega.codigoPostal})` : ''}
                                         </p>
                                     </div>
                                 )}
@@ -289,7 +225,7 @@ export default function PedidosPanel() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className="flex items-start justify-between gap-4 bg-gray-700/50 px-3 py-2 rounded"
+                                                className="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4 bg-gray-700/50 px-3 py-2 rounded"
                                             >
                                                 <div className="text-white">
                                                     <p className="font-semibold">
@@ -421,12 +357,18 @@ export default function PedidosPanel() {
                     {loading ? (
                         <div className="text-center text-gray-400 py-8">⏳ Cargando pedidos...</div>
                     ) : pedidosFiltrados.length === 0 ? (
-                        <div className="bg-gray-800 rounded-lg p-8 text-center">
-                            <p className="text-gray-400 mb-4">
-                                {filtroEstado === 'todos'
-                                    ? 'No hay pedidos registrados. ¡Crea el primero!'
-                                    : `No hay pedidos con estado "${filtroEstado}"`}
+                        <div className="bg-gray-800 rounded-xl p-10 text-center border border-gray-700">
+                            <p className="text-gray-500 text-lg mb-4">
+                                {filtroEstado === 'todos' && filtroTipo === 'todos'
+                                    ? 'No hay pedidos registrados'
+                                    : 'No hay pedidos con estos filtros'}
                             </p>
+                            <button
+                                onClick={() => setModo('add')}
+                                className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
+                            >
+                                + Crear pedido
+                            </button>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -444,6 +386,26 @@ export default function PedidosPanel() {
                     )}
                 </div>
             )}
+
+            <ConfirmModal {...confirmProps} />
+        </div>
+    );
+}
+
+function DetailField({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
+    return (
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <p className="text-gray-500 text-xs mb-1">{label}</p>
+            <p className={`text-white ${bold ? 'font-semibold' : ''}`}>{value}</p>
+        </div>
+    );
+}
+
+function MiniStat({ label, value, color }: { label: string; value: number | string; color: string }) {
+    return (
+        <div className="bg-gray-800 rounded-lg px-2 sm:px-4 py-2 border border-gray-700">
+            <p className="text-gray-500 text-[9px] sm:text-[10px] uppercase tracking-wide truncate">{label}</p>
+            <p className={`text-base sm:text-xl font-bold ${color}`}>{value}</p>
         </div>
     );
 }

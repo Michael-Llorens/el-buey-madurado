@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useUsuarios } from '@/lib/hooks/swr';
+import ConfirmModal from '@/components/dashboard/ConfirmModal';
+import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
 
 type Modo = 'view' | 'add' | 'edit';
 
 export default function UsuariosPanel() {
   const { usuarios, error: swrError, isLoading: loading, mutate } = useUsuarios();
+  const { confirmar, confirmProps } = useConfirm();
   const error = swrError?.message ?? null;
 
   const [modo, setModo] = useState<Modo>('view');
@@ -22,7 +25,8 @@ export default function UsuariosPanel() {
 
   // 🗑️ Eliminar usuario
   const handleEliminar = async (id: string) => {
-    if (!confirm('¿Eliminar este usuario?')) return;
+    const ok = await confirmar('¿Seguro que quieres eliminar este usuario?', { titulo: 'Eliminar usuario', textoConfirmar: 'Eliminar' });
+    if (!ok) return;
 
     try {
       setEliminandoId(id);
@@ -58,7 +62,7 @@ export default function UsuariosPanel() {
               setUsuarioEditar(null);
               setModo('add');
             }}
-            className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition"
+            className="px-4 sm:px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition text-sm sm:text-base min-h-[44px]"
           >
             ➕ Nuevo Usuario
           </button>
@@ -157,14 +161,14 @@ export default function UsuariosPanel() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEditar(usuario)}
-                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition text-sm"
+                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition text-sm"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleEliminar(usuario._id)}
                     disabled={eliminandoId === usuario._id}
-                    className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50 text-sm"
+                    className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50 text-sm"
                   >
                     {eliminandoId === usuario._id ? '...' : 'Eliminar'}
                   </button>
@@ -198,6 +202,8 @@ export default function UsuariosPanel() {
           />
         </div>
       )}
+
+      <ConfirmModal {...confirmProps} />
     </div>
   );
 }
@@ -243,7 +249,7 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
           type="email"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded text-white min-h-[44px]"
           disabled={!!usuario}
         />
       </div>
@@ -255,7 +261,7 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
             type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded text-white min-h-[44px]"
           />
         </div>
       )}
@@ -265,7 +271,7 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
         <select
           value={form.rol}
           onChange={(e) => setForm({ ...form, rol: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded text-white min-h-[44px]"
         >
           <option value="camarero">Camarero</option>
           <option value="cocinero">Cocinero</option>

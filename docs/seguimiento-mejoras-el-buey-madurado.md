@@ -24,16 +24,22 @@ No sustituye al plan de mejoras — lo complementa con el estado real de impleme
 
 | Indicador | Valor |
 |-----------|-------|
-| **Avance global** | **Fases 1-7 completadas + auditoría responsive.** Proyecto production-ready. |
-| **Fase actual** | Todas las fases del plan cerradas. Responsive aplicado a 10 ficheros. 71 unit tests + 8 e2e tests. 25 rutas API. |
+| **Avance global** | **Fases 1-7 completadas + rediseño UX PDA + responsive + auditoría reescrita.** Proyecto production-ready. |
+| **Fase actual** | Dashboard rediseñado como PDA profesional. Sidebar, tarjetas de pedido, confirmaciones modales, responsive completo. 71 unit tests + 8 e2e tests. 25 rutas API. |
 | **Bloqueos actuales** | Ninguno |
 | **Última actualización** | 2026-03-23 |
 
-### Próximos pasos opcionales
-1. **Ampliar tests e2e** — Añadir flujos autenticados (login real → crear pedido → cocina → pagar) cuando haya datos de test en BD.
-2. **Ampliar cobertura unitaria** — `IngredienteForm`, `MesaForm`, `StockPanel`.
-3. **Deuda conocida** — MA-01b-B3 descartado. Hero video sin comprimir (19.5 MB). MI-01 en modo híbrido.
-4. **Mejoras futuras** — Internacionalización, PWA, monitoreo con Sentry, CI/CD con tests e2e en pipeline.
+### Proximos pasos pendientes
+1. **PWA (Progressive Web App)** — Instalar como app nativa en tablet/movil. Ideal para cocina y camareros. next-pwa.
+2. **Exportar reportes a PDF** — Boton en ReportesPanel que genera PDF del resumen de ventas.
+3. **Dashboard home con stats reales** — Ahora abre directo en Pedidos; valorar si recuperar la vista home con KPIs conectados.
+4. **Modulo configuracion** — Placeholder pendiente: cambiar contrasena, IVA, horarios, gastos de envio por defecto.
+5. **Carta interactiva** — Modal de producto comentado en carta publica: completar para que el cliente vea ingredientes, alergenos y foto.
+6. **Ampliar tests e2e** — Flujos autenticados (login → crear pedido → cocina → pagar).
+7. **Ampliar cobertura unitaria** — `IngredienteForm`, `MesaForm`, `StockPanel`.
+8. **Comprimir hero.mp4** — De 19.5 MB a <5 MB con ffmpeg/Cloudinary.
+9. **Notificaciones push** — Service Worker para avisar al cocinero con pestana en segundo plano.
+10. **Internacionalizacion** — Espanol + ingles + valenciano con next-intl.
 
 ---
 
@@ -683,6 +689,97 @@ No sustituye al plan de mejoras — lo complementa con el estado real de impleme
 
 ---
 
+### UX-SIDEBAR — Rediseno dashboard con sidebar profesional
+**Fecha:** 2026-03-23
+**Que se hizo:** Rediseno completo de la navegacion del dashboard. Eliminado el patron de tarjetas + boton "Volver". Implementado sidebar lateral persistente (desktop) y colapsable (mobile con hamburger + overlay). Eliminada la vista Home (el dashboard abre directamente en Pedidos). Logo del restaurante en el sidebar via Cloudinary. User info con avatar, email y rol en la parte inferior del sidebar. Top bar con titulo del modulo activo. Cada modulo tiene un icono de color en el sidebar.
+**Archivos modificados:**
+- `src/components/dashboard/DashboardShell.tsx` — reescrito completamente: sidebar, topbar, layout flex
+- `src/app/(dashboard)/dashboard/page.tsx` — eliminadas tarjetas de navegacion, eliminado componente DashboardHome, estado inicial 'pedidos'
+**Validacion:** 71/71 tests OK, typecheck OK, build OK.
+
+---
+
+### UX-PEDIDOCARD — Rediseno tarjetas de pedido estilo PDA
+**Fecha:** 2026-03-23
+**Que se hizo:** Reescritura completa de PedidoCard como tarjeta de PDA profesional:
+- Borde lateral de color segun estado (en lugar de badge grande)
+- Dot + texto para estado compacto
+- Tiempo con urgencia por color (verde <10min, naranja 10-25min, rojo >25min)
+- Hora de creacion visible junto al tiempo transcurrido
+- Badge de tipo (Local azul, Recoger ambar, Domicilio purpura) con icono
+- Info contextual por tipo: Local muestra mesa, Recoger muestra nombre+telefono, Domicilio muestra direccion
+- Productos sin precios individuales (solo cantidad x nombre, max 5 visibles)
+- Un solo total (sin desglose IVA/subtotal)
+- Camarero con nombre corto
+- Botones de accion compactos con touch targets de 44px+
+**Archivos modificados:**
+- `src/components/dashboard/PedidoCard.tsx` — reescrito completamente
+- `src/app/api/pedidos/route.ts` — populate de mesa incluye `nombre`
+- `src/app/api/pedidos/[id]/route.ts` — populate de mesa incluye `nombre`
+**Validacion:** typecheck OK, build OK.
+
+---
+
+### UX-PDA — Mejoras de usabilidad PDA (6 puntos)
+**Fecha:** 2026-03-23
+**Que se hizo:** 6 mejoras para que el panel de pedidos funcione como una PDA real:
+1. **Filtro por tipo** — Botones Local/Recoger/Domicilio combinables con filtro de estado
+2. **Boton Nuevo Pedido prominente** — Verde, ancho completo en movil
+3. **Stats compactas** — Grid 3x5 en lugar de fila horizontal con scroll
+4. **Badge pendientes en sidebar** — Punto rojo con contador de pedidos pendientes (usa SWR deduplicado)
+5. **Estado vacio amigable** — Mensaje + boton "Crear pedido" cuando no hay resultados
+6. **Vista detalle limpia** — Sin ID MongoDB, nombre mesa correcto, tipo con icono, camarero con nombre corto
+**Archivos modificados:**
+- `src/components/dashboard/hooks/usePedidoPanel.ts` — nuevo estado `filtroTipo`, useMemo combinado
+- `src/components/dashboard/PedidoPanel.tsx` — reescrita seccion de filtros/stats, componentes MiniStat y DetailField
+- `src/components/dashboard/DashboardShell.tsx` — badge de pendientes con usePedidos (SWR deduplicado)
+**Validacion:** 71/71 tests OK, typecheck OK, build OK.
+
+---
+
+### UX-RESPONSIVE-FINAL — Correccion definitiva de responsive
+**Fecha:** 2026-03-23
+**Que se hizo:** Eliminado scroll lateral en todas las pantallas. Causa raiz: el contenedor principal del dashboard (`flex-1`) no tenia `min-w-0 overflow-x-hidden`. Aplicados ~50 fixes en 11 ficheros:
+- **DashboardShell**: `min-w-0 overflow-x-hidden` en wrapper y main, padding `px-3 sm:px-6`
+- **PedidoPanel**: Stats de flex-scroll a `grid grid-cols-3 sm:grid-cols-5`, filtros con `flex-wrap` puro (sin overflow-x-auto), botones `text-xs sm:text-sm`
+- **PedidoForm/ProductoForm**: `grid-cols-12` → `grid-cols-1 sm:grid-cols-12`, todos los `col-span-X` → `sm:col-span-X`
+- **IngredienteForm**: 3 grids `grid-cols-2` → `grid-cols-1 sm:grid-cols-2`, imagenes responsive
+- **StockPanel**: Tabs `flex-col sm:flex-row`, padding responsive, headings responsive
+- **PersonalizarProductoModal**: Headings y botones responsive
+- **MesaCard**: Heading responsive, gaps responsive, texto boton acortado
+- **ProductCardGrid/IngredientCardGrid**: Gaps responsive
+- **Mesas page**: Header buttons con `flex-wrap` + responsive
+- **Touch targets**: Todos los botones de accion a `py-3` o `py-2.5` (44px+ WCAG)
+**Validacion:** 71/71 tests OK, typecheck OK, build OK. Sin scroll lateral a 320px.
+
+---
+
+### UX-CONFIRM — Modal de confirmacion personalizado
+**Fecha:** 2026-03-23
+**Que se hizo:** Reemplazados los 8 `window.confirm()` nativos del dashboard por un modal personalizado con el logo del restaurante. Creado componente reutilizable `ConfirmModal` y hook `useConfirm` que devuelve `Promise<boolean>` como reemplazo async de `confirm()`.
+**Componentes creados:**
+- `src/components/dashboard/ConfirmModal.tsx` — Modal con logo Cloudinary, titulo, mensaje, 2 botones, 3 variantes (danger/warning/info), overlay con backdrop-blur
+- `src/components/dashboard/hooks/useConfirm.ts` — Hook con Promise-based API: `const ok = await confirmar('mensaje')`
+**Archivos modificados (8 confirm eliminados):**
+- `src/components/dashboard/hooks/usePedidoPanel.ts` — cancelar pedido
+- `src/app/(dashboard)/dashboard/mesas/page.tsx` — crear 15 mesas, eliminar mesa
+- `src/app/(dashboard)/dashboard/usuarios/page.tsx` — eliminar usuario
+- `src/components/dashboard/StockPanel.tsx` — eliminar ingrediente, eliminar producto
+- `src/components/dashboard/IngredienteList.tsx` — eliminado confirm redundante
+- `src/components/dashboard/ProductoList.tsx` — eliminado confirm redundante
+- `src/components/dashboard/PedidoPanel.tsx` — renderiza ConfirmModal
+**Validacion:** 71/71 tests OK, typecheck OK, build OK. 0 confirm() restantes en dashboard.
+
+---
+
+### AUDIT-REWRITE — Auditoria tecnica reescrita
+**Fecha:** 2026-03-23
+**Que se hizo:** Reescritura completa de `docs/auditoria-el-buey-madurado.md` para reflejar el estado actual del proyecto (post-mejoras). La auditoria anterior describia el estado del commit 81ff1a6 (pre-mejoras) y listaba como problemas cosas ya resueltas. La nueva auditoria tiene 15 secciones cubriendo: stack completo, arquitectura, modelos, API (25 endpoints), seguridad, SWR, servicios, frontend, testing, DevOps, calidad de codigo, rendimiento, documentacion y metricas.
+**Archivos modificados:**
+- `docs/auditoria-el-buey-madurado.md` — reescrito completamente
+
+---
+
 ## 6. Bloqueos y riesgos abiertos
 
 ### Bloqueos actuales
@@ -741,7 +838,11 @@ _Ninguno._
 | 2026-03-23 | **Fase 7 — Dashboard de reportes completado.** API `/api/reportes` con 5 agregaciones MongoDB. ReportesPanel con tarjetas, tablas y gráfico de barras CSS. Hook `useReportes` con auto-refresh 60s. Reemplazado placeholder "En desarrollo". 25 rutas API. 71/71 tests OK. |
 | 2026-03-23 | **Fase 7 — Panel de cocina completado.** CocinaPanel con vista Kanban (pendiente/preparando/listo), polling 5s, notificación sonora/visual para pedidos nuevos, avance de estado, info de productos con personalizaciones. Nuevo módulo en dashboard para roles cocinero+admin. 71/71 tests OK. |
 | 2026-03-23 | **Fase 7 — Playwright e2e + backup BD completados. FASE 7 CERRADA. TODAS LAS FASES COMPLETADAS.** 8 tests e2e (auth + páginas públicas). Script mongodump para backup. Proyecto production-ready. |
-| 2026-03-23 | **Auditoría + responsive completo.** Revisión integral del proyecto: 1 bug corregido (audio CocinaPanel), 10 ficheros con mejoras responsive (DashboardShell, dashboard, mesas, usuarios, PedidoPanel, ReportesPanel, Reservas, IngredienteList, CocinaPanel). Patrón: tablas→cards en mobile, grids progresivos, texto responsive, padding adaptativo. 71/71 tests OK. |
+| 2026-03-23 | **Auditoría + responsive completo.** Revisión integral del proyecto: 1 bug corregido (audio CocinaPanel), 10 ficheros con mejoras responsive. |
+| 2026-03-23 | **Rediseno UX dashboard completo.** Sidebar profesional reemplaza navegacion por tarjetas. Logo Cloudinary en sidebar. Dashboard abre directo en Pedidos. PedidoCard rediseñado estilo PDA real (estado+urgencia, tipo con icono, info contextual, total unico). 6 mejoras PDA: filtro tipo, boton prominente, stats grid, badge pendientes, estado vacio, detalle limpio. |
+| 2026-03-23 | **Responsive definitivo.** Causa raiz encontrada y corregida (min-w-0 overflow-x-hidden en contenedor). ~50 fixes en 11 ficheros. Touch targets 44px+ en todos los botones. Sin scroll lateral a 320px. |
+| 2026-03-23 | **ConfirmModal.** 8 confirm() nativos reemplazados por modal con logo del restaurante. Hook useConfirm con API Promise-based. 3 variantes (danger/warning/info). |
+| 2026-03-23 | **Auditoria reescrita.** 15 secciones cubriendo estado actual post-mejoras. |
 
 ---
 

@@ -336,7 +336,7 @@ function PedidoCard({
         <button
           onClick={() => onCambiarEstado(pedido._id, siguiente)}
           disabled={cambiandoId === pedido._id}
-          className={`w-full py-2 rounded font-semibold text-sm transition ${
+          className={`w-full py-3 rounded font-semibold text-sm transition ${
             pedido.estado === 'pendiente'
               ? 'bg-blue-600 hover:bg-blue-700 text-white'
               : 'bg-green-600 hover:bg-green-700 text-white'

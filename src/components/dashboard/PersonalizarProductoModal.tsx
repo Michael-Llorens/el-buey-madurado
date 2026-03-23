@@ -114,7 +114,7 @@ export default function PersonalizarProductoModal({
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6">
-          <h2 className="text-2xl font-bold text-amber-400">🍽️ Personalizar {producto.nombre}</h2>
+          <h2 className="text-lg sm:text-2xl font-bold text-amber-400">🍽️ Personalizar {producto.nombre}</h2>
           <p className="text-sm text-gray-400 mt-1">
             Cantidad: {cantidad} • Precio base: {producto.precio.toFixed(2)}€
           </p>
@@ -154,7 +154,7 @@ export default function PersonalizarProductoModal({
                   type="button"
                   onClick={añadirExtraDesdeSelect}
                   disabled={!ingredienteSeleccionado || loadingIngredientes}
-                  className="px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded transition whitespace-nowrap"
+                  className="px-4 sm:px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded transition whitespace-nowrap"
                 >
                   Añadir
                 </button>
@@ -260,14 +260,14 @@ export default function PersonalizarProductoModal({
           <button
             type="button"
             onClick={onCancelar}
-            className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded transition"
+            className="flex-1 px-4 sm:px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded transition"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={handleConfirmar}
-            className="flex-1 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded transition"
+            className="flex-1 px-4 sm:px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded transition"
           >
             ✅ Confirmar ({precioTotal.toFixed(2)}€)
           </button>

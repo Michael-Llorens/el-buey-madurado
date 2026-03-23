@@ -27,12 +27,7 @@ export default function IngredienteList({ onEliminar }: IngredienteListProps) {
   const error = swrError?.message ?? null;
 
   const handleEliminar = (id: string) => {
-    if (confirm('¿Estás seguro que quieres eliminar este ingrediente?')) {
-      if (onEliminar) {
-        onEliminar(id);
-      }
-      toast.success('Ingrediente eliminado');
-    }
+    if (onEliminar) onEliminar(id);
   };
 
   if (loading) {
