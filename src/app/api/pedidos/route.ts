@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     const total = await Pedido.countDocuments(filtros);
 
     const pedidos = await Pedido.find(filtros)
-      .populate('mesa', 'numero capacidad estado')
+      .populate('mesa', 'nombre numero capacidad estado')
       .populate('productos.producto', 'nombre precio imagen')
       .populate('camarero', 'nombre email rol')
       .sort(sort)
@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
     }
 
     const pedidoCompleto = await Pedido.findById(nuevoPedido._id)
-      .populate('mesa', 'numero capacidad')
+      .populate('mesa', 'nombre numero capacidad')
       .populate('productos.producto', 'nombre precio imagen')
       .populate('camarero', 'nombre email rol'); // ✅ añade rol
 

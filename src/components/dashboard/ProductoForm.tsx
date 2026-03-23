@@ -72,7 +72,7 @@ export default function ProductoForm({
           value={formData.nombre}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="Ej: Carne a la Parrilla"
         />
       </div>
@@ -85,7 +85,7 @@ export default function ProductoForm({
           value={formData.categoria}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
         >
           <option value="">-- Selecciona una categoría --</option>
           <option value="Carnes">Carnes</option>
@@ -108,7 +108,7 @@ export default function ProductoForm({
           onChange={handleChange}
           required
           step="0.01"
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="0.00"
         />
       </div>
@@ -120,7 +120,7 @@ export default function ProductoForm({
           name="descripcion"
           value={formData.descripcion}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           rows={3}
           placeholder="Describe el producto"
         />
@@ -138,9 +138,9 @@ export default function ProductoForm({
           </p>
         ) : (
           <>
-            <div className="grid grid-cols-12 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
               {/* Selector de ingrediente */}
-              <div className="col-span-5">
+              <div className="sm:col-span-5">
                 <select
                   value={ingredienteSeleccionado}
                   onChange={e => setIngredienteSeleccionado(e.target.value)}
@@ -158,7 +158,7 @@ export default function ProductoForm({
               </div>
 
               {/* Cantidad */}
-              <div className="col-span-3">
+              <div className="sm:col-span-3">
                 <input
                   type="number"
                   value={cantidadIngrediente}
@@ -171,7 +171,7 @@ export default function ProductoForm({
               </div>
 
               {/* Unidad */}
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <select
                   value={unidadIngrediente}
                   onChange={e => setUnidadIngrediente(e.target.value)}
@@ -186,7 +186,7 @@ export default function ProductoForm({
               </div>
 
               {/* Botón añadir */}
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <button
                   type="button"
                   onClick={handleAddIngrediente}
@@ -231,14 +231,14 @@ export default function ProductoForm({
           type="file"
           accept="image/*"
           onChange={handleImageChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white"
         />
         {preview && (
           <div className="mt-4">
             <img
               src={preview}
               alt="Preview"
-              className="w-32 h-32 object-cover rounded"
+              className="w-24 sm:w-32 h-24 sm:h-32 object-cover rounded"
             />
           </div>
         )}
@@ -282,7 +282,7 @@ export default function ProductoForm({
       </div>
 
       {/* Disponible y Activo */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"

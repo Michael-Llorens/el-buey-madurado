@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import MesaForm from '@/components/dashboard/MesaForm';
 import MesaGrid from '@/components/dashboard/MesaGrid';
+import ConfirmModal from '@/components/dashboard/ConfirmModal';
+import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
 import { useMesas } from '@/lib/hooks/swr';
 
 type Modo = 'view' | 'add' | 'edit';
@@ -22,6 +24,7 @@ type Mesa = {
 export default function MesasPanel() {
   const router = useRouter();
   const { mesas, error: swrError, isLoading: loading, mutate } = useMesas();
+  const { confirmar, confirmProps } = useConfirm();
   const error = swrError?.message ?? null;
 
   const [modo, setModo] = useState<Modo>('view');
@@ -29,7 +32,8 @@ export default function MesasPanel() {
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
 
   const crearMesasIniciales = async () => {
-    if (!confirm('¿Crear 15 mesas de 4 comensales cada una?')) return;
+    const ok = await confirmar('¿Crear 15 mesas de 4 comensales cada una?', { titulo: 'Crear mesas iniciales', textoConfirmar: 'Crear', variante: 'info' });
+    if (!ok) return;
 
     try {
       const token = localStorage.getItem('authToken');
@@ -72,7 +76,8 @@ export default function MesasPanel() {
   };
 
   const handleEliminar = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta mesa?')) return;
+    const ok = await confirmar('¿Seguro que quieres eliminar esta mesa?', { titulo: 'Eliminar mesa', textoConfirmar: 'Eliminar' });
+    if (!ok) return;
     if (eliminandoId === id) return;
 
     try {
@@ -219,13 +224,12 @@ export default function MesasPanel() {
     <div className="space-y-6">
       {modo === 'view' && (
         <>
-          <div className="flex items-center justify-between border-b border-gray-700 pb-4">
-            <div />
-            <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-b border-gray-700 pb-4">
+            <div className="flex gap-2 flex-wrap">
               {mesas.length === 0 && (
                 <button
                   onClick={crearMesasIniciales}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition text-sm sm:text-base"
                 >
                   🚀 Crear 15 Mesas Iniciales
                 </button>
@@ -235,7 +239,7 @@ export default function MesasPanel() {
                   setMesaEditar(null);
                   setModo('add');
                 }}
-                className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold transition"
+                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold transition text-sm sm:text-base"
               >
                 ➕ Nueva Mesa
               </button>
@@ -295,6 +299,8 @@ export default function MesasPanel() {
           )}
         </div>
       )}
+
+      <ConfirmModal {...confirmProps} />
     </div>
   );
 }

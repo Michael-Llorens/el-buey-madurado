@@ -19,16 +19,13 @@ interface ProductoListProps {
 
 export default function ProductoList({ productos, onEliminar }: ProductoListProps) {
   const handleEliminar = (id: string) => {
-    if (confirm('¿Estás seguro que quieres eliminar este producto?')) {
-      onEliminar(id);
-      toast.success('Producto eliminado');
-    }
+    onEliminar(id);
   };
 
   if (productos.length === 0) {
     return (
       <div className="bg-gray-800 rounded-lg p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4 text-amber-400">📦 Productos</h2>
+        <h2 className="text-lg sm:text-2xl font-bold mb-4 text-amber-400">📦 Productos</h2>
         <p className="text-gray-400">No hay productos aún. ¡Crea el primero!</p>
       </div>
     );
@@ -36,7 +33,7 @@ export default function ProductoList({ productos, onEliminar }: ProductoListProp
 
   return (
     <div className="bg-gray-800 rounded-lg p-8">
-      <h2 className="text-2xl font-bold mb-6 text-amber-400">📦 Listado de Productos</h2>
+      <h2 className="text-lg sm:text-2xl font-bold mb-6 text-amber-400">📦 Listado de Productos</h2>
 
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">

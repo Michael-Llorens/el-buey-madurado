@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, context: Ctx) {
     if (idError) return idError;
 
     const pedido = await Pedido.findById(id)
-      .populate('mesa', 'numero capacidad estado')
+      .populate('mesa', 'nombre numero capacidad estado')
       .populate('productos.producto', 'nombre precio imagen descripcion')
       .populate('camarero', 'nombre email rol'); // ✅ añade rol
 
@@ -116,7 +116,7 @@ export async function PUT(req: NextRequest, context: Ctx) {
     }
 
     const pedidoActualizado = await Pedido.findById(id)
-      .populate('mesa', 'numero capacidad')
+      .populate('mesa', 'nombre numero capacidad')
       .populate('productos.producto', 'nombre precio imagen')
       .populate('camarero', 'nombre email rol'); // ✅ añade rol
 

@@ -59,7 +59,7 @@ export default function MesaCard({
     >
       {/* Nombre mesa - SOLO LECTURA */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-3xl font-bold text-amber-400">
+        <h3 className="text-2xl sm:text-3xl font-bold text-amber-400">
           {mesa.nombre}
         </h3>
         {!mesa.activa && (
@@ -68,7 +68,7 @@ export default function MesaCard({
       </div>
 
       {/* Capacidad y Comensales */}
-      <div className="mb-4 grid grid-cols-2 gap-4">
+      <div className="mb-4 grid grid-cols-2 gap-2 sm:gap-4">
         <div>
           <p className="text-gray-200 text-m">Capacidad</p>
           <p className="text-xl font-semibold text-white">👥 {mesa.capacidad}</p>
@@ -94,9 +94,9 @@ export default function MesaCard({
           <button
             type="button"
             onClick={() => onHacerPedido(mesa._id, mesa.pedidoActual?._id)}
-            className="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition shadow-md"
+            className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition shadow-md text-sm sm:text-base"
           >
-            🍽️ {mesa.pedidoActual ? 'Continuar Pedido' : 'Hacer Pedido para esta Mesa'}
+            {mesa.pedidoActual ? 'Continuar Pedido' : 'Nuevo Pedido'}
           </button>
         )}
 
@@ -105,7 +105,7 @@ export default function MesaCard({
             type="button"
             onClick={() => onCambiarEstado(mesa._id, 'libre')}
             disabled={mesa.estado === 'libre'}
-            className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
+            className="flex-1 px-3 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
           >
             🟢 Liberar
           </button>
@@ -113,7 +113,7 @@ export default function MesaCard({
             type="button"
             onClick={() => onCambiarEstado(mesa._id, 'ocupada')}
             disabled={mesa.estado === 'ocupada'}
-            className="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
+            className="flex-1 px-3 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
           >
             🔴 Ocupar
           </button>
@@ -121,7 +121,7 @@ export default function MesaCard({
             type="button"
             onClick={() => onCambiarEstado(mesa._id, 'reservada')}
             disabled={mesa.estado === 'reservada'}
-            className="flex-1 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
+            className="flex-1 px-3 py-2.5 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
           >
             🟡 Reservar
           </button>
@@ -132,7 +132,7 @@ export default function MesaCard({
         <button
           type="button"
           onClick={() => onEditar(mesa)}
-          className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition text-sm"
+          className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition text-sm"
         >
           ✏️ Modificar
         </button>
@@ -140,7 +140,7 @@ export default function MesaCard({
           type="button"
           onClick={() => onEliminar(mesa._id)}
           disabled={eliminandoId === mesa._id}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded font-semibold transition text-sm"
+          className="px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded font-semibold transition text-sm"
         >
           {eliminandoId === mesa._id ? '⏳' : '🗑️'}
         </button>
