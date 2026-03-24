@@ -94,7 +94,7 @@ describe('usePedidoPanel', () => {
 
     const { result } = renderHook(() => usePedidoPanel());
 
-    act(() => result.current.setFiltroEstado('pagado'));
+    act(() => result.current.setFiltroEstado(['pagado']));
 
     await waitFor(() => {
       expect(result.current.pedidosFiltrados).toHaveLength(2);
@@ -102,13 +102,13 @@ describe('usePedidoPanel', () => {
     });
   });
 
-  it('filtro "todos" muestra todos los pedidos', async () => {
+  it('filtro vacío muestra todos los pedidos', async () => {
     mockPedidosData.current = pedidosMock;
 
     const { result } = renderHook(() => usePedidoPanel());
 
-    act(() => result.current.setFiltroEstado('pagado'));
-    act(() => result.current.setFiltroEstado('todos'));
+    act(() => result.current.setFiltroEstado(['pagado']));
+    act(() => result.current.setFiltroEstado([]));
 
     await waitFor(() => {
       expect(result.current.pedidosFiltrados).toHaveLength(6);

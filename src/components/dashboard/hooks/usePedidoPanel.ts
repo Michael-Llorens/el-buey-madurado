@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { usePedidos, authFetcher } from '@/lib/hooks/swr';
@@ -22,8 +22,34 @@ export function usePedidoPanel() {
     const [mutationError, setMutationError] = useState<string | null>(null);
     const error = swrError?.message ?? mutationError;
 
-    const [filtroEstado, setFiltroEstado] = useState<string>('todos');
-    const [filtroTipo, setFiltroTipo] = useState<string>('todos');
+    // Sonido al recibir pedidos nuevos
+    const prevCountRef = useRef<number>(0);
+    useEffect(() => {
+        if (pedidos.length > prevCountRef.current && prevCountRef.current > 0) {
+            try {
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 880;
+                osc.type = 'sine';
+                gain.gain.value = 0.3;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                osc.stop(ctx.currentTime + 0.3);
+                setTimeout(() => ctx.close(), 500);
+            } catch { /* audio no disponible */ }
+            toast.info('Nuevo pedido recibido');
+        }
+        prevCountRef.current = pedidos.length;
+    }, [pedidos.length]);
+
+    const [filtroEstado, setFiltroEstado] = useState<string[]>([]);
+    const [filtroTipo, setFiltroTipo] = useState<string[]>([]);
+    const [busqueda, setBusqueda] = useState<string>('');
+    const [filtroTiempo, setFiltroTiempo] = useState<string>('todos');
+    const [ordenar, setOrdenar] = useState<'recientes' | 'urgencia'>('recientes');
 
     const cargarPedidoPorId = async (id: string) => {
         return authFetcher(`/api/pedidos/${id}`);
@@ -103,10 +129,72 @@ export function usePedidoPanel() {
 
     const pedidosFiltrados = useMemo(() => {
         let resultado = pedidos;
-        if (filtroEstado !== 'todos') resultado = resultado.filter((p) => p.estado === filtroEstado);
-        if (filtroTipo !== 'todos') resultado = resultado.filter((p) => p.tipo === filtroTipo);
+
+        // Filtro por estado (multi-selección)
+        if (filtroEstado.length > 0) resultado = resultado.filter((p) => filtroEstado.includes(p.estado));
+
+        // Filtro por tipo (multi-selección)
+        if (filtroTipo.length > 0) resultado = resultado.filter((p) => filtroTipo.includes(p.tipo));
+
+        // Filtro por tiempo
+        if (filtroTiempo !== 'todos') {
+            const ahora = Date.now();
+            const limites: Record<string, number> = {
+                '30min': 30 * 60_000,
+                '1h': 60 * 60_000,
+                '3h': 3 * 60 * 60_000,
+                'hoy': 0, // caso especial
+            };
+            if (filtroTiempo === 'hoy') {
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
+                resultado = resultado.filter((p) => new Date(p.createdAt).getTime() >= hoy.getTime());
+            } else if (limites[filtroTiempo]) {
+                resultado = resultado.filter((p) => ahora - new Date(p.createdAt).getTime() <= limites[filtroTiempo]);
+            }
+        }
+
+        // Búsqueda libre (mesa, cliente, teléfono, camarero, producto)
+        if (busqueda.trim()) {
+            const q = busqueda.toLowerCase().trim();
+            resultado = resultado.filter((p) => {
+                // Mesa
+                const mesa = (p.mesa as any)?.nombre ?? (p.mesa as any)?.numero ?? '';
+                if (String(mesa).toLowerCase().includes(q)) return true;
+                // Cliente
+                if (p.cliente?.toLowerCase().includes(q)) return true;
+                // Teléfono
+                if (p.telefono?.includes(q)) return true;
+                // Camarero
+                const camarero = p.creadoPor?.nombre ?? p.creadoPor?.email ?? '';
+                if (camarero.toLowerCase().includes(q)) return true;
+                // Productos
+                if (p.productos?.some((item: any) => item.producto?.nombre?.toLowerCase().includes(q))) return true;
+                // Dirección
+                if (p.direccionEntrega?.calle?.toLowerCase().includes(q)) return true;
+                return false;
+            });
+        }
+
+        // Ordenar
+        if (ordenar === 'urgencia') {
+            const PRIORIDAD_ESTADO: Record<string, number> = {
+                pendiente: 0, preparando: 1, listo: 2, en_camino: 3,
+                servido: 4, entregado: 5, pagado: 6, cancelado: 7,
+            };
+            resultado.sort((a, b) => {
+                const pa = PRIORIDAD_ESTADO[a.estado] ?? 99;
+                const pb = PRIORIDAD_ESTADO[b.estado] ?? 99;
+                if (pa !== pb) return pa - pb;
+                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            });
+        } else {
+            // Recientes primero (orden natural)
+            resultado.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }
+
         return resultado;
-    }, [filtroEstado, filtroTipo, pedidos]);
+    }, [filtroEstado, filtroTipo, filtroTiempo, busqueda, ordenar, pedidos]);
 
     const handleCambiarEstado = async (id: string, nuevoEstado: string) => {
         try {
@@ -217,6 +305,19 @@ export function usePedidoPanel() {
         setModo('view');
     };
 
+    // Helpers para toggle multi-selección
+    const toggleFiltroEstado = (valor: string) => {
+        setFiltroEstado((prev) =>
+            prev.includes(valor) ? prev.filter((v) => v !== valor) : [...prev, valor]
+        );
+    };
+
+    const toggleFiltroTipo = (valor: string) => {
+        setFiltroTipo((prev) =>
+            prev.includes(valor) ? prev.filter((v) => v !== valor) : [...prev, valor]
+        );
+    };
+
     const stats = {
         total: pedidos.length,
         pendientes: pedidos.filter((p) => p.estado === 'pendiente').length,
@@ -238,8 +339,16 @@ export function usePedidoPanel() {
         pedidosFiltrados,
         filtroEstado,
         setFiltroEstado,
+        toggleFiltroEstado,
         filtroTipo,
         setFiltroTipo,
+        toggleFiltroTipo,
+        busqueda,
+        setBusqueda,
+        filtroTiempo,
+        setFiltroTiempo,
+        ordenar,
+        setOrdenar,
         loading,
         error,
         stats,

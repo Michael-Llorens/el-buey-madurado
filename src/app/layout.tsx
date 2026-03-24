@@ -5,9 +5,16 @@ import RootLayoutContent from './RootLayoutContent';
 
 export const metadata: Metadata = {
   title: 'El Buey Madurado - Carne Madurada Premium',
-  description: 'Tienda online de carne madurada...',
+  description: 'Sistema de gestión para el restaurante El Buey Madurado. Pedidos, cocina, mesas, stock y reportes.',
+  manifest: '/manifest.webmanifest',
   icons: {
     icon: '/logo-fondo-blanco.ico',
+    apple: '/icons/icon-192.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'El Buey',
   },
 };
 

@@ -190,7 +190,7 @@ export default function StockPanel() {
             🥘 Ingredientes
           </button>
 
-          {/* ➕ BOTÓN NUEVO DINÁMICO */}
+          {/* ➕ BOTÓN NUEVO */}
           <div className="ml-auto">
             <button
               onClick={() => {

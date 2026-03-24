@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import MesaForm from '@/components/dashboard/MesaForm';
 import MesaGrid from '@/components/dashboard/MesaGrid';
+import MesaMapView from '@/components/dashboard/MesaMapView';
 import ConfirmModal from '@/components/dashboard/ConfirmModal';
 import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
 import { useMesas } from '@/lib/hooks/swr';
 
 type Modo = 'view' | 'add' | 'edit';
+type Vista = 'lista' | 'mapa';
 
 type Mesa = {
   _id: string;
@@ -28,6 +30,7 @@ export default function MesasPanel() {
   const error = swrError?.message ?? null;
 
   const [modo, setModo] = useState<Modo>('view');
+  const [vista, setVista] = useState<Vista>('lista');
   const [mesaEditar, setMesaEditar] = useState<Mesa | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
 
@@ -224,7 +227,36 @@ export default function MesasPanel() {
     <div className="space-y-6">
       {modo === 'view' && (
         <>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 border-b border-gray-700 pb-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-gray-700 pb-4">
+            <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+              {/* Toggle vista */}
+              <div className="flex rounded-lg overflow-hidden border border-gray-700">
+                <button
+                  onClick={() => setVista('lista')}
+                  className={`px-3 sm:px-4 py-2.5 text-sm font-medium transition ${
+                    vista === 'lista' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  📋 Lista
+                </button>
+                <button
+                  onClick={() => setVista('mapa')}
+                  className={`px-3 sm:px-4 py-2.5 text-sm font-medium transition ${
+                    vista === 'mapa' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
+                  }`}
+                >
+                  🗺️ Mapa
+                </button>
+              </div>
+
+              {/* Leyenda inline */}
+              <div className="flex items-center gap-3 text-xs text-gray-400">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-green-500" /> {resumen.libres} libres</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> {resumen.ocupadas} ocupadas</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-yellow-500" /> {resumen.reservadas} reservadas</span>
+              </div>
+            </div>
+
             <div className="flex gap-2 flex-wrap">
               {mesas.length === 0 && (
                 <button
@@ -246,24 +278,6 @@ export default function MesasPanel() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-              <p className="text-gray-400 text-sm mb-2">Total Mesas</p>
-              <p className="text-3xl font-bold text-white">{resumen.total}</p>
-            </div>
-            <div className="bg-green-900/30 rounded-lg p-6 border border-green-700">
-              <p className="text-green-400 text-sm mb-2">🟢 Libres</p>
-              <p className="text-3xl font-bold text-green-400">{resumen.libres}</p>
-            </div>
-            <div className="bg-red-900/30 rounded-lg p-6 border border-red-700">
-              <p className="text-red-400 text-sm mb-2">🔴 Ocupadas</p>
-              <p className="text-3xl font-bold text-red-400">{resumen.ocupadas}</p>
-            </div>
-            <div className="bg-yellow-900/30 rounded-lg p-6 border border-yellow-700">
-              <p className="text-yellow-400 text-sm mb-2">🟡 Reservadas</p>
-              <p className="text-3xl font-bold text-yellow-400">{resumen.reservadas}</p>
-            </div>
-          </div>
         </>
       )}
 
@@ -286,6 +300,12 @@ export default function MesasPanel() {
             <div className="bg-gray-800 rounded-lg p-8 text-center">
               <p className="text-gray-400 mb-4">No hay mesas creadas. ¡Crea las primeras!</p>
             </div>
+          ) : vista === 'mapa' ? (
+            <MesaMapView
+              mesas={mesas}
+              onHacerPedido={handleHacerPedido}
+              onCambiarEstado={handleCambiarEstado}
+            />
           ) : (
             <MesaGrid
               mesas={mesas}

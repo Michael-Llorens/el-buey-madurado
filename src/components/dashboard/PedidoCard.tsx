@@ -161,11 +161,12 @@ export default function PedidoCard({
         }
       }}
     >
-      {/* ── Header: estado + tiempo ── */}
+      {/* ── Header: estado + nº pedido + tiempo ── */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <div className="flex items-center gap-2">
           <span className={`w-2.5 h-2.5 rounded-full ${estadoCfg.dot}`} />
           <span className="text-sm font-semibold text-gray-200">{estadoCfg.label}</span>
+          <span className="text-xs text-gray-500 font-mono">#{pedido._id.slice(-4).toUpperCase()}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400">{new Date(pedido.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
