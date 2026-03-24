@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import PedidoForm from '@/components/dashboard/PedidoForm';
 import PedidoCard from '@/components/dashboard/PedidoCard';
 import ConfirmModal from '@/components/dashboard/ConfirmModal';
@@ -17,8 +18,14 @@ export default function PedidosPanel() {
         pedidosFiltrados,
         filtroEstado,
         setFiltroEstado,
+        toggleFiltroEstado,
         filtroTipo,
         setFiltroTipo,
+        toggleFiltroTipo,
+        busqueda,
+        setBusqueda,
+        ordenar,
+        setOrdenar,
         loading,
         error,
         stats,
@@ -32,75 +39,191 @@ export default function PedidosPanel() {
         confirmProps,
     } = usePedidoPanel();
 
+    const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
+    const filtrosRef = useRef<HTMLDivElement>(null);
+
+    // Cerrar dropdown al hacer click fuera
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (filtrosRef.current && !filtrosRef.current.contains(e.target as Node)) {
+                setFiltrosAbiertos(false);
+            }
+        }
+        if (filtrosAbiertos) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [filtrosAbiertos]);
+
+    const filtrosActivos = filtroEstado.length > 0 || filtroTipo.length > 0;
+    const numFiltrosActivos =
+        (filtroEstado.length > 0 ? 1 : 0) +
+        (filtroTipo.length > 0 ? 1 : 0);
+
     return (
         <div className="w-full min-w-0 space-y-4 sm:space-y-6">
             {modo === 'view' && (
                 <>
-                    {/* Boton nuevo pedido — prominente y fijo */}
-                    <button
-                        onClick={() => setModo('add')}
-                        className="w-full sm:w-auto px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition text-base"
-                    >
-                        + Nuevo Pedido
-                    </button>
+                    {/* ── Barra superior: Nuevo + Búsqueda + Filtros ── */}
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
+                        <button
+                            onClick={() => setModo('add')}
+                            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition text-sm whitespace-nowrap shrink-0"
+                        >
+                            + Nuevo Pedido
+                        </button>
 
-                    {/* Stats compactas */}
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                        <MiniStat label="Pendientes" value={stats.pendientes} color="text-yellow-400" />
-                        <MiniStat label="Preparando" value={stats.preparando} color="text-blue-400" />
-                        <MiniStat label="Listos" value={stats.listos} color="text-purple-400" />
-                        <MiniStat label="Servidos" value={stats.servidos} color="text-green-400" />
-                        <MiniStat label="Recaudado" value={`${stats.totalRecaudado.toFixed(0)}€`} color="text-amber-400" />
-                    </div>
-
-                    {/* Filtros: estado + tipo */}
-                    <div className="space-y-2">
-                        {/* Por estado */}
-                        <div className="flex gap-1.5 flex-wrap">
-                            {[
-                                { key: 'todos', label: `Todos (${pedidos.length})`, active: 'bg-gray-600' },
-                                { key: 'pendiente', label: `Pendientes (${stats.pendientes})`, active: 'bg-yellow-600' },
-                                { key: 'preparando', label: `Preparando (${stats.preparando})`, active: 'bg-blue-600' },
-                                { key: 'listo', label: `Listos (${stats.listos})`, active: 'bg-purple-600' },
-                                { key: 'servido', label: `Servidos (${stats.servidos})`, active: 'bg-green-600' },
-                                { key: 'pagado', label: `Pagados (${stats.pagados})`, active: 'bg-gray-500' },
-                            ].map((f) => (
+                        <div className="relative flex-1 min-w-0">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
+                            <input
+                                type="text"
+                                value={busqueda}
+                                onChange={(e) => setBusqueda(e.target.value)}
+                                placeholder="Mesa, cliente, teléfono, producto..."
+                                className="w-full pl-9 pr-9 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none transition"
+                            />
+                            {busqueda && (
                                 <button
-                                    key={f.key}
-                                    onClick={() => setFiltroEstado(f.key)}
-                                    className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
-                                        filtroEstado === f.key
-                                            ? `${f.active} text-white`
-                                            : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
-                                    }`}
+                                    onClick={() => setBusqueda('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-sm"
                                 >
-                                    {f.label}
+                                    ✕
                                 </button>
-                            ))}
+                            )}
                         </div>
 
-                        {/* Por tipo */}
-                        <div className="flex gap-1.5 flex-wrap">
-                            {[
-                                { key: 'todos', label: 'Todos', icon: '' },
-                                { key: 'local', label: 'Local', icon: '🍽️' },
-                                { key: 'recoger', label: 'Recoger', icon: '🛍️' },
-                                { key: 'domicilio', label: 'Domicilio', icon: '🛵' },
-                            ].map((f) => (
-                                <button
-                                    key={f.key}
-                                    onClick={() => setFiltroTipo(f.key)}
-                                    className={`px-2 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition whitespace-nowrap ${
-                                        filtroTipo === f.key
-                                            ? 'bg-amber-600 text-white'
-                                            : 'bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700'
-                                    }`}
-                                >
-                                    {f.icon} {f.label}
-                                </button>
-                            ))}
+                        {/* Botón Filtros con dropdown */}
+                        <div className="relative shrink-0" ref={filtrosRef}>
+                            <button
+                                onClick={() => setFiltrosAbiertos(!filtrosAbiertos)}
+                                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition whitespace-nowrap ${
+                                    filtrosActivos
+                                        ? 'bg-amber-600 text-white'
+                                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700'
+                                }`}
+                            >
+                                <span>⚙</span>
+                                Filtros
+                                {numFiltrosActivos > 0 && (
+                                    <span className="bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                                        {numFiltrosActivos}
+                                    </span>
+                                )}
+                                <span className={`text-xs transition-transform ${filtrosAbiertos ? 'rotate-180' : ''}`}>▼</span>
+                            </button>
+
+                            {filtrosAbiertos && (
+                                <div className="absolute right-0 top-full mt-2 w-[320px] sm:w-[380px] bg-gray-950 border border-gray-600 rounded-xl shadow-2xl z-50 p-4 space-y-4">
+                                    {/* Por estado — multi-selección */}
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 font-semibold">Estado <span className="normal-case text-gray-600">(puedes seleccionar varios)</span></p>
+                                        <div className="flex gap-1.5 flex-wrap">
+                                            {[
+                                                { key: 'pendiente', label: `Pend. (${stats.pendientes})`, active: 'bg-yellow-600' },
+                                                { key: 'preparando', label: `Prep. (${stats.preparando})`, active: 'bg-blue-600' },
+                                                { key: 'listo', label: `Listos (${stats.listos})`, active: 'bg-purple-600' },
+                                                { key: 'servido', label: `Serv. (${stats.servidos})`, active: 'bg-green-600' },
+                                                { key: 'pagado', label: `Pag. (${stats.pagados})`, active: 'bg-emerald-700' },
+                                            ].map((f) => (
+                                                <button
+                                                    key={f.key}
+                                                    onClick={() => toggleFiltroEstado(f.key)}
+                                                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition whitespace-nowrap ${
+                                                        filtroEstado.includes(f.key)
+                                                            ? `${f.active} text-white ring-2 ring-white/30`
+                                                            : filtroEstado.length === 0
+                                                              ? 'bg-gray-700 text-gray-300 hover:text-white hover:bg-gray-600'
+                                                              : 'bg-gray-700 text-gray-500 hover:text-white hover:bg-gray-600'
+                                                    }`}
+                                                >
+                                                    {f.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Por tipo — multi-selección */}
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 font-semibold">Tipo <span className="normal-case text-gray-600">(puedes seleccionar varios)</span></p>
+                                        <div className="flex gap-1.5 flex-wrap">
+                                            {[
+                                                { key: 'local', label: '🍽️ Local' },
+                                                { key: 'recoger', label: '🛍️ Recoger' },
+                                                { key: 'domicilio', label: '🛵 Domicilio' },
+                                            ].map((f) => (
+                                                <button
+                                                    key={f.key}
+                                                    onClick={() => toggleFiltroTipo(f.key)}
+                                                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition whitespace-nowrap ${
+                                                        filtroTipo.includes(f.key)
+                                                            ? 'bg-amber-600 text-white ring-2 ring-white/30'
+                                                            : filtroTipo.length === 0
+                                                              ? 'bg-gray-700 text-gray-300 hover:text-white hover:bg-gray-600'
+                                                              : 'bg-gray-700 text-gray-500 hover:text-white hover:bg-gray-600'
+                                                    }`}
+                                                >
+                                                    {f.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Ordenar */}
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2 font-semibold">Ordenar por</p>
+                                        <div className="flex gap-1.5">
+                                            {[
+                                                { key: 'recientes' as const, label: 'Más recientes' },
+                                                { key: 'urgencia' as const, label: 'Urgencia' },
+                                            ].map((o) => (
+                                                <button
+                                                    key={o.key}
+                                                    onClick={() => setOrdenar(o.key)}
+                                                    className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition whitespace-nowrap ${
+                                                        ordenar === o.key
+                                                            ? 'bg-cyan-600 text-white'
+                                                            : 'bg-gray-700 text-gray-400 hover:text-white hover:bg-gray-600'
+                                                    }`}
+                                                >
+                                                    {o.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Limpiar filtros */}
+                                    {filtrosActivos && (
+                                        <button
+                                            onClick={() => {
+                                                setFiltroEstado([]);
+                                                setFiltroTipo([]);
+                                            }}
+                                            className="w-full text-center text-xs text-amber-400 hover:text-amber-300 py-1.5 border-t border-gray-700 mt-1"
+                                        >
+                                            Limpiar todos los filtros
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
+
+                    {/* ── Indicador de filtros activos ── */}
+                    {(busqueda || filtrosActivos) && (
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <span>
+                                Mostrando {pedidosFiltrados.length} de {pedidos.length} pedidos
+                            </span>
+                            <button
+                                onClick={() => {
+                                    setBusqueda('');
+                                    setFiltroEstado([]);
+                                    setFiltroTipo([]);
+                                }}
+                                className="text-amber-400 hover:text-amber-300 underline"
+                            >
+                                Limpiar todo
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
 
@@ -359,9 +482,11 @@ export default function PedidosPanel() {
                     ) : pedidosFiltrados.length === 0 ? (
                         <div className="bg-gray-800 rounded-xl p-10 text-center border border-gray-700">
                             <p className="text-gray-500 text-lg mb-4">
-                                {filtroEstado === 'todos' && filtroTipo === 'todos'
+                                {filtroEstado.length === 0 && filtroTipo.length === 0 && !busqueda
                                     ? 'No hay pedidos registrados'
-                                    : 'No hay pedidos con estos filtros'}
+                                    : busqueda
+                                      ? `Sin resultados para "${busqueda}"`
+                                      : 'No hay pedidos con estos filtros'}
                             </p>
                             <button
                                 onClick={() => setModo('add')}
@@ -401,11 +526,3 @@ function DetailField({ label, value, bold }: { label: string; value: string; bol
     );
 }
 
-function MiniStat({ label, value, color }: { label: string; value: number | string; color: string }) {
-    return (
-        <div className="bg-gray-800 rounded-lg px-2 sm:px-4 py-2 border border-gray-700">
-            <p className="text-gray-500 text-[9px] sm:text-[10px] uppercase tracking-wide truncate">{label}</p>
-            <p className={`text-base sm:text-xl font-bold ${color}`}>{value}</p>
-        </div>
-    );
-}

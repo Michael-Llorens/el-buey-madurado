@@ -24,10 +24,10 @@ No sustituye al plan de mejoras — lo complementa con el estado real de impleme
 
 | Indicador | Valor |
 |-----------|-------|
-| **Avance global** | **Fases 1-7 completadas + rediseño UX PDA + responsive + auditoría reescrita.** Proyecto production-ready. |
-| **Fase actual** | Dashboard rediseñado como PDA profesional. Sidebar, tarjetas de pedido, confirmaciones modales, responsive completo. 71 unit tests + 8 e2e tests. 25 rutas API. |
+| **Avance global** | **Fases 1-7 completadas + rediseño UX PDA profesional + filtros avanzados + optimizaciones UX.** Proyecto production-ready. |
+| **Fase actual** | Dashboard PDA profesional completo: sidebar, tarjetas estilo PDA, filtros multi-selección en dropdown, búsqueda universal, ordenación por urgencia, número de pedido visible (#XXXX), sonido en pedidos nuevos, confirmaciones modales. 71 unit tests + 8 e2e tests. 25 rutas API. |
 | **Bloqueos actuales** | Ninguno |
-| **Última actualización** | 2026-03-23 |
+| **Última actualización** | 2026-03-24 |
 
 ### Proximos pasos pendientes
 1. **PWA (Progressive Web App)** — Instalar como app nativa en tablet/movil. Ideal para cocina y camareros. next-pwa.
@@ -780,6 +780,55 @@ No sustituye al plan de mejoras — lo complementa con el estado real de impleme
 
 ---
 
+### UX-FILTROS — Búsqueda universal + filtros avanzados en dropdown
+**Fecha:** 2026-03-24
+**Qué se hizo:** Añadido sistema completo de búsqueda y filtrado al panel de pedidos:
+- **Barra de búsqueda universal** — busca simultáneamente en: nombre/número de mesa, nombre del cliente, teléfono, nombre del camarero, nombre de productos, dirección de entrega. Con botón de limpiar (✕).
+- **Dropdown de filtros** — los filtros de estado y tipo se agrupan en un panel desplegable (botón "⚙ Filtros ▼") para no ensuciar la vista principal. Badge con número de filtros activos. Se cierra al hacer click fuera.
+- **Multi-selección** — estado y tipo ahora permiten selección múltiple (toggle). Ejemplo: ver pedidos "Pendientes + Preparando" o "Local + Recoger" a la vez. Botones activos con `ring-2` para distinguirlos visualmente.
+- **Indicador de filtros activos** — muestra "X de Y pedidos" con botón "Limpiar todo" que resetea búsqueda + filtros de golpe.
+- **Mensaje vacío contextual** — distingue entre "no hay pedidos", "sin resultados para X" y "no hay pedidos con estos filtros".
+- **Eliminados stats redundantes** — las MiniStat (pendientes/preparando/listos/servidos/recaudado) se quitaron porque los conteos ya aparecen en los botones de filtro del dropdown.
+- **Eliminado filtro de tiempo** — descartado por no ser útil en servicio real (el indicador de urgencia en cada tarjeta ya cumple esa función).
+**Barra superior compacta:** `[+ Nuevo Pedido] [🔍 Buscar...] [⚙ Filtros ▼]`
+**Archivos modificados:**
+- `src/components/dashboard/hooks/usePedidoPanel.ts` — estados `busqueda`, `filtroEstado` (string→string[]), `filtroTipo` (string→string[]), helpers `toggleFiltroEstado`/`toggleFiltroTipo`, lógica de filtrado combinada en `useMemo`
+- `src/components/dashboard/PedidoPanel.tsx` — barra superior compacta, dropdown con click-outside, multi-selección, eliminados MiniStat y filtro de tiempo
+- `src/components/dashboard/hooks/__tests__/usePedidoPanel.test.tsx` — tests actualizados para API de arrays
+**Validación:** typecheck OK, build OK. Tests actualizados.
+
+---
+
+### UX-ORDEN-URGENCIA — Ordenación por urgencia como opción de filtro
+**Fecha:** 2026-03-24
+**Qué se hizo:** Añadida opción de ordenación en el dropdown de filtros con dos modos:
+- **Más recientes** (por defecto) — pedidos ordenados por fecha de creación, más nuevos primero. Orden natural de trabajo.
+- **Urgencia** — pedidos ordenados por estado (pendiente→preparando→listo→servido→pagado→cancelado) y dentro del mismo estado por antigüedad (más antiguos primero = más urgentes).
+**Por qué recientes por defecto:** en servicio real el camarero trabaja con los pedidos según van llegando. La urgencia es una vista puntual para momentos de mucho volumen.
+**Archivos modificados:**
+- `src/components/dashboard/hooks/usePedidoPanel.ts` — nuevo estado `ordenar` ('recientes'|'urgencia'), `.sort()` condicional en `useMemo`
+- `src/components/dashboard/PedidoPanel.tsx` — sección "Ordenar por" en el dropdown de filtros
+
+---
+
+### UX-NUM-PEDIDO — Número de pedido visible (#XXXX)
+**Fecha:** 2026-03-24
+**Qué se hizo:** Añadido identificador corto de pedido visible en el header de cada tarjeta, junto al estado. Formato: `#` + últimos 4 caracteres del ObjectId en mayúsculas (ej: `#A3F2`). Fuente monospace para diferenciarlo del resto del texto.
+**Por qué:** En un restaurante real, la comunicación entre sala y cocina usa números de pedido ("pedido 47 listo"), no IDs de MongoDB. Los últimos 4 del ObjectId dan ~65.000 combinaciones únicas, suficiente para evitar colisiones en el mismo turno.
+**Archivos modificados:**
+- `src/components/dashboard/PedidoCard.tsx` — `<span>` con `font-mono` + `pedido._id.slice(-4).toUpperCase()`
+
+---
+
+### UX-SONIDO-PEDIDOS — Notificación sonora en panel de pedidos
+**Fecha:** 2026-03-24
+**Qué se hizo:** Añadida detección de pedidos nuevos al hook `usePedidoPanel` con notificación sonora (beep vía Web Audio API) y toast informativo. Misma implementación que ya existía en CocinaPanel. Se activa cuando el conteo de pedidos aumenta (excluyendo la carga inicial).
+**Archivos modificados:**
+- `src/components/dashboard/hooks/usePedidoPanel.ts` — `useRef` para conteo previo, `useEffect` que compara y emite beep + toast
+**Validación:** typecheck OK, build OK.
+
+---
+
 ## 6. Bloqueos y riesgos abiertos
 
 ### Bloqueos actuales
@@ -843,6 +892,10 @@ _Ninguno._
 | 2026-03-23 | **Responsive definitivo.** Causa raiz encontrada y corregida (min-w-0 overflow-x-hidden en contenedor). ~50 fixes en 11 ficheros. Touch targets 44px+ en todos los botones. Sin scroll lateral a 320px. |
 | 2026-03-23 | **ConfirmModal.** 8 confirm() nativos reemplazados por modal con logo del restaurante. Hook useConfirm con API Promise-based. 3 variantes (danger/warning/info). |
 | 2026-03-23 | **Auditoria reescrita.** 15 secciones cubriendo estado actual post-mejoras. |
+| 2026-03-24 | **Búsqueda universal + filtros avanzados.** Barra de búsqueda (mesa, cliente, teléfono, producto, camarero, dirección). Filtros de estado y tipo en dropdown compacto con multi-selección. Eliminados stats redundantes y filtro de tiempo. Indicador de filtros activos + "Limpiar todo". |
+| 2026-03-24 | **Ordenación por urgencia.** Opción en dropdown: "Más recientes" (defecto) vs "Urgencia" (pendientes primero, más antiguos arriba). |
+| 2026-03-24 | **Número de pedido visible.** `#XXXX` (últimos 4 del ID) en cada tarjeta para comunicación sala-cocina. |
+| 2026-03-24 | **Sonido en pedidos nuevos.** Beep + toast "Nuevo pedido recibido" cuando llegan pedidos via polling SWR. |
 
 ---
 
