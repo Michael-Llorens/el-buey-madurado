@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extraerTokenDelHeader, verificarToken, TokenPayload } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
 
-export function protegerRuta(request: NextRequest): { 
-  valido: boolean; 
-  payload?: TokenPayload; 
+export function protegerRuta(request: NextRequest): {
+  valido: boolean;
+  payload?: TokenPayload;
   response?: NextResponse;
 } {
+  // Intentar leer token del header Authorization (compatibilidad localStorage)
+  // Si no hay header, intentar leer de cookie httpOnly (nuevo)
   const authHeader = request.headers.get('authorization');
-  const token = extraerTokenDelHeader(authHeader);
+  const tokenFromHeader = extraerTokenDelHeader(authHeader);
+  const tokenFromCookie = request.cookies.get('auth_token')?.value;
+  const token = tokenFromHeader || tokenFromCookie;
 
   if (!token) {
     return {

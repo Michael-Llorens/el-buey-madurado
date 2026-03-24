@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import ProductoForm from '@/components/dashboard/ProductoForm';
 import IngredienteForm from '@/components/dashboard/IngredienteForm';
 import ProductCardGrid from '@/components/dashboard/ProductCardGrid';
 import IngredientCardGrid from '@/components/dashboard/IngredientCardGrid';
+import ConfirmModal from '@/components/dashboard/ConfirmModal';
+import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
+import { useIngredientes, useProductos } from '@/lib/hooks/swr';
 
 type TabActivo = 'productos' | 'ingredientes';
 type Modo = 'view' | 'add-product' | 'add-ingredient' | 'edit-product' | 'edit-ingredient';
@@ -12,117 +16,38 @@ type Modo = 'view' | 'add-product' | 'add-ingredient' | 'edit-product' | 'edit-i
 export default function StockPanel() {
   const [tabActivo, setTabActivo] = useState<TabActivo>('productos');
   const [modo, setModo] = useState<Modo>('view');
-  
-  const [ingredientes, setIngredientes] = useState<any[]>([]);
-  const [productos, setProductos] = useState<any[]>([]);
-  
+
+  const { ingredientes, error: errIng, isLoading: loadingIng, mutate: mutateIng } = useIngredientes();
+  const { productos, error: errProd, isLoading: loadingProd, mutate: mutateProd } = useProductos();
+  const errorIng = errIng?.message ?? null;
+  const errorProd = errProd?.message ?? null;
+
+  const { confirmar, confirmProps } = useConfirm();
   const [ingredienteEditar, setIngredienteEditar] = useState<any>(null);
   const [productoEditar, setProductoEditar] = useState<any>(null);
-  
-  const [loadingIng, setLoadingIng] = useState(false);
-  const [loadingProd, setLoadingProd] = useState(false);
-  
-  const [errorIng, setErrorIng] = useState<string | null>(null);
-  const [errorProd, setErrorProd] = useState<string | null>(null);
-  
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
-
-  // 📥 Cargar ingredientes
-  const cargarIngredientes = async () => {
-    setLoadingIng(true);
-    setErrorIng(null);
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setErrorIng('No hay sesión iniciada');
-        return;
-      }
-
-      const res = await fetch('/api/ingredientes', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al cargar ingredientes');
-      }
-
-      setIngredientes(data.data || []);
-    } catch (error: any) {
-      console.error('Error cargando ingredientes:', error);
-      setErrorIng(error.message);
-    } finally {
-      setLoadingIng(false);
-    }
-  };
-
-  // 📥 Cargar productos
-  const cargarProductos = async () => {
-    setLoadingProd(true);
-    setErrorProd(null);
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setErrorProd('No hay sesión iniciada');
-        return;
-      }
-
-      const res = await fetch('/api/productos', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al cargar productos');
-      }
-
-      setProductos(data.data || []);
-    } catch (error: any) {
-      console.error('Error cargando productos:', error);
-      setErrorProd(error.message);
-    } finally {
-      setLoadingProd(false);
-    }
-  };
-
-  // ⏬ Cargar datos al montar y cuando cambia tab
-  useEffect(() => {
-    if (tabActivo === 'ingredientes') {
-      cargarIngredientes();
-    } else {
-      cargarProductos();
-    }
-  }, [tabActivo]);
 
   // ✅ Guardar ingrediente
   const handleGuardarIngrediente = async () => {
     try {
-      await cargarIngredientes();
+      await mutateIng();
       setIngredienteEditar(null);
       setModo('view');
     } catch (error: any) {
       console.error('Error al guardar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     }
   };
 
   // ✅ Guardar producto
   const handleGuardarProducto = async () => {
     try {
-      await cargarProductos();
+      await mutateProd();
       setProductoEditar(null);
       setModo('view');
     } catch (error: any) {
       console.error('Error al guardar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     }
   };
 
@@ -140,7 +65,8 @@ export default function StockPanel() {
 
   // 🗑️ Eliminar ingrediente
   const handleEliminarIngrediente = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este ingrediente?')) return;
+    const ok = await confirmar('¿Seguro que quieres eliminar este ingrediente?', { titulo: 'Eliminar ingrediente', textoConfirmar: 'Eliminar' });
+    if (!ok) return;
 
     if (eliminandoId === id) {
       console.warn('Ya se está eliminando este ingrediente');
@@ -152,7 +78,7 @@ export default function StockPanel() {
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -167,16 +93,16 @@ export default function StockPanel() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        await cargarIngredientes();
-        alert('✅ Ingrediente eliminado exitosamente');
+        await mutateIng();
+        toast.success('Ingrediente eliminado exitosamente');
       } else if (res.status === 404) {
-        await cargarIngredientes();
+        await mutateIng();
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
     } catch (error: any) {
       console.error('Error al eliminar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setEliminandoId(null);
     }
@@ -184,7 +110,8 @@ export default function StockPanel() {
 
   // 🗑️ Eliminar producto
   const handleEliminarProducto = async (id: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) return;
+    const ok = await confirmar('¿Seguro que quieres eliminar este producto?', { titulo: 'Eliminar producto', textoConfirmar: 'Eliminar' });
+    if (!ok) return;
 
     if (eliminandoId === id) {
       console.warn('Ya se está eliminando este producto');
@@ -196,7 +123,7 @@ export default function StockPanel() {
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        alert('❌ No hay sesión iniciada');
+        toast.error('No hay sesión iniciada');
         return;
       }
 
@@ -211,16 +138,16 @@ export default function StockPanel() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        await cargarProductos();
-        alert('✅ Producto eliminado exitosamente');
+        await mutateProd();
+        toast.success('Producto eliminado exitosamente');
       } else if (res.status === 404) {
-        await cargarProductos();
+        await mutateProd();
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
     } catch (error: any) {
       console.error('Error al eliminar:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setEliminandoId(null);
     }
@@ -238,11 +165,11 @@ export default function StockPanel() {
     <div className="space-y-6">
       {/* ============ TABS + BOTÓN NUEVO ============ */}
       {modo === 'view' && (
-        <div className="flex gap-4 items-center border-b border-gray-700 pb-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center border-b border-gray-700 pb-4">
           {/* 📦 TAB PRODUCTOS */}
           <button
             onClick={() => setTabActivo('productos')}
-            className={`px-6 py-3 font-semibold transition ${
+            className={`px-4 sm:px-6 py-3 font-semibold transition ${
               tabActivo === 'productos'
                 ? 'bg-amber-600 text-white rounded-t-lg'
                 : 'bg-gray-700 text-gray-300 hover:text-white'
@@ -254,7 +181,7 @@ export default function StockPanel() {
           {/* 🥘 TAB INGREDIENTES */}
           <button
             onClick={() => setTabActivo('ingredientes')}
-            className={`px-6 py-3 font-semibold transition ${
+            className={`px-4 sm:px-6 py-3 font-semibold transition ${
               tabActivo === 'ingredientes'
                 ? 'bg-amber-600 text-white rounded-t-lg'
                 : 'bg-gray-700 text-gray-300 hover:text-white'
@@ -263,7 +190,7 @@ export default function StockPanel() {
             🥘 Ingredientes
           </button>
 
-          {/* ➕ BOTÓN NUEVO DINÁMICO */}
+          {/* ➕ BOTÓN NUEVO */}
           <div className="ml-auto">
             <button
               onClick={() => {
@@ -275,7 +202,7 @@ export default function StockPanel() {
                   setModo('add-ingredient');
                 }
               }}
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition"
+              className="px-4 sm:px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition"
             >
               ➕ Nuevo {tabActivo === 'productos' ? 'Producto' : 'Ingrediente'}
             </button>
@@ -286,7 +213,7 @@ export default function StockPanel() {
       {/* ============ FORMULARIO PRODUCTO ============ */}
       {(modo === 'add-product' || modo === 'edit-product') && (
         <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
-          <h2 className="text-2xl font-bold mb-6 text-amber-400">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-amber-400">
             {modo === 'add-product' ? '➕ Nuevo Producto' : '✏️ Editar Producto'}
           </h2>
           <ProductoForm
@@ -300,7 +227,7 @@ export default function StockPanel() {
       {/* ============ FORMULARIO INGREDIENTE ============ */}
       {(modo === 'add-ingredient' || modo === 'edit-ingredient') && (
         <div className="bg-gray-800 rounded-lg p-8 border border-gray-700">
-          <h2 className="text-2xl font-bold mb-6 text-amber-400">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-amber-400">
             {modo === 'add-ingredient' ? '➕ Nuevo Ingrediente' : '✏️ Editar Ingrediente'}
           </h2>
           <IngredienteForm
@@ -362,6 +289,8 @@ export default function StockPanel() {
           )}
         </div>
       )}
+
+      <ConfirmModal {...confirmProps} />
     </div>
   );
 }

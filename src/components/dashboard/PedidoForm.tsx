@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import PersonalizarProductoModal from './PersonalizarProductoModal';
+import { usePedidoForm } from './hooks/usePedidoForm';
 
 interface Mesa {
   _id: string;
@@ -9,20 +9,6 @@ interface Mesa {
   numero: number;
   capacidad: number;
   estado: string;
-}
-
-interface Producto {
-  _id: string;
-  nombre: string;
-  precio: number;
-  categoria: string;
-  imagen?: string;
-  disponible: boolean;
-  ingredientesExtra?: Array<{ nombre: string; precio: number }>;
-  ingredientes?: Array<{ ingrediente: { nombre: string } }>;
-  permitirExtras?: boolean;
-  permitirRemover?: boolean;
-  permitirPersonalizacion?: boolean;
 }
 
 type TipoPedido = 'local' | 'recoger' | 'domicilio';
@@ -76,360 +62,41 @@ export default function PedidoForm({
   pedidoInicial = null,
   mesaIdPreseleccionada,
 }: PedidoFormProps) {
-  const [formData, setFormData] = useState({
-    tipo: 'local' as TipoPedido,
-    mesa: '',
-    cliente: '',
-    telefono: '',
-    notas: '',
-    descuento: 0,
-    gastoEnvio: 3.5,
-    direccionEntrega: {
-      calle: '',
-      numero: '',
-      piso: '',
-      ciudad: 'Xàtiva',
-      codigoPostal: '46800',
-      telefono: '',
-      notas: '',
-    },
+  const {
+    formData,
+    productosSeleccionados,
+    mesasDisponibles,
+    productosDisponibles,
+    productoSeleccionado,
+    cantidadProducto,
+    notasProducto,
+    modalAbierto,
+    productoAPersonalizar,
+    cantidadTemp,
+    loading,
+    error,
+    totales,
+    setProductoSeleccionado,
+    setCantidadProducto,
+    setNotasProducto,
+    setModalAbierto,
+    setProductoAPersonalizar,
+    handleChange,
+    handleDireccionChange,
+    handleAbrirPersonalizacion,
+    handleConfirmarPersonalizacion,
+    handleRemoveProducto,
+    handleSubmit,
+    getNombreProducto,
+    getPrecioProducto,
+  } = usePedidoForm({
+    modo,
+    pedidoId,
+    pedidoInicial,
+    mesaIdPreseleccionada,
+    onGuardar,
+    onCancelar,
   });
-
-  const [productosSeleccionados, setProductosSeleccionados] = useState<
-    Array<{
-      producto: string;
-      cantidad: number;
-      notas: string;
-      personalizaciones?: {
-        ingredientesExtra?: string[];
-        ingredientesRemovidos?: string[];
-      };
-      // para mantener precio al editar
-      precioPersonalizado?: number; // total línea
-      precioUnitario?: number; // por unidad (para el PUT del backend)
-    }>
-  >([]);
-
-  const [mesasDisponibles, setMesasDisponibles] = useState<Mesa[]>([]);
-  const [productosDisponibles, setProductosDisponibles] = useState<Producto[]>([]);
-
-  const [productoSeleccionado, setProductoSeleccionado] = useState('');
-  const [cantidadProducto, setCantidadProducto] = useState('1');
-  const [notasProducto, setNotasProducto] = useState('');
-
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [productoAPersonalizar, setProductoAPersonalizar] = useState<Producto | null>(null);
-  const [cantidadTemp, setCantidadTemp] = useState(1);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // ✅ Precargar si edit
-  useEffect(() => {
-    if (modo !== 'add') return;
-
-    if (mesaIdPreseleccionada) {
-      setFormData((prev) => ({
-        ...prev,
-        tipo: 'local',
-        mesa: mesaIdPreseleccionada,
-      }));
-      return;
-    }
-
-  }, [modo, mesaIdPreseleccionada]);
-
-  useEffect(() => {
-    if (modo !== 'edit' || !pedidoInicial) return;
-
-    setFormData((prev) => ({
-      ...prev,
-      tipo: pedidoInicial.tipo || 'local',
-      mesa: pedidoInicial.mesa?._id || '',
-      cliente: pedidoInicial.cliente || '',
-      telefono: pedidoInicial.telefono || '',
-      notas: pedidoInicial.notas || '',
-      descuento: typeof pedidoInicial.descuento === 'number' ? pedidoInicial.descuento : 0,
-      gastoEnvio: typeof pedidoInicial.gastoEnvio === 'number' ? pedidoInicial.gastoEnvio : 3.5,
-      direccionEntrega: pedidoInicial.direccionEntrega
-        ? {
-          calle: pedidoInicial.direccionEntrega.calle || '',
-          numero: pedidoInicial.direccionEntrega.numero || '',
-          piso: pedidoInicial.direccionEntrega.piso || '',
-          ciudad: pedidoInicial.direccionEntrega.ciudad || 'Xàtiva',
-          codigoPostal: pedidoInicial.direccionEntrega.codigoPostal || '46800',
-          telefono: pedidoInicial.direccionEntrega.telefono || '',
-          notas: pedidoInicial.direccionEntrega.notas || '',
-        }
-        : prev.direccionEntrega,
-    }));
-
-    const productos = (pedidoInicial.productos || []).map((item) => {
-      const prodId = typeof item.producto === 'string' ? item.producto : item.producto._id;
-
-      return {
-        producto: prodId,
-        cantidad: item.cantidad,
-        notas: item.notas || '',
-        personalizaciones: item.personalizaciones || {},
-        precioPersonalizado: typeof item.subtotal === 'number' ? item.subtotal : undefined,
-        precioUnitario: typeof item.precioUnitario === 'number' ? item.precioUnitario : undefined,
-      };
-    });
-
-    setProductosSeleccionados(productos);
-  }, [modo, pedidoInicial]);
-
-  // Cargar mesas (si tipo === 'local')
-  useEffect(() => {
-    if (formData.tipo !== 'local') {
-      setMesasDisponibles([]);
-      setFormData((prev) => ({ ...prev, mesa: '' }));
-      return;
-    }
-
-    const cargarMesas = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        if (!token) return;
-
-        const res = await fetch('/api/mesas', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          // ✅ en edición: deja la mesa actual aunque esté ocupada
-          const mesasOcupables = (data.data as Mesa[]).filter(
-            (m) => m.estado === 'libre' || m.estado === 'reservada' || m._id === formData.mesa
-          );
-
-          setMesasDisponibles(mesasOcupables);
-        }
-      } catch (e) {
-        console.error('Error cargando mesas:', e);
-      }
-    };
-
-    cargarMesas();
-  }, [formData.tipo, formData.mesa]);
-
-  // Cargar productos disponibles
-  useEffect(() => {
-    const cargarProductos = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        if (!token) return;
-
-        const res = await fetch('/api/productos', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          const productosActivos = (data.data as Producto[]).filter((p) => p.disponible);
-          setProductosDisponibles(productosActivos);
-        }
-      } catch (e) {
-        console.error('Error cargando productos:', e);
-      }
-    };
-
-    cargarProductos();
-  }, []);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleDireccionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      direccionEntrega: { ...prev.direccionEntrega, [name]: value },
-    }));
-  };
-
-  const handleAbrirPersonalizacion = () => {
-    if (!productoSeleccionado || !cantidadProducto) {
-      alert('⚠️ Selecciona un producto y cantidad');
-      return;
-    }
-
-    const cantidad = parseInt(cantidadProducto);
-    if (Number.isNaN(cantidad) || cantidad <= 0) {
-      alert('⚠️ La cantidad debe ser mayor a 0');
-      return;
-    }
-
-    const producto = (productosDisponibles as Producto[]).find((p) => p._id === productoSeleccionado);
-    if (!producto) return;
-
-    setProductoAPersonalizar(producto);
-    setCantidadTemp(cantidad);
-    setModalAbierto(true);
-  };
-
-  const handleConfirmarPersonalizacion = (personalizacion: {
-    extras: string[];
-    removidos: string[];
-    notas: string;
-    precioTotal: number; // total línea
-  }) => {
-    if (!productoAPersonalizar) return;
-
-    const unit = cantidadTemp > 0 ? personalizacion.precioTotal / cantidadTemp : undefined;
-
-    setProductosSeleccionados((prev) => [
-      ...prev,
-      {
-        producto: productoAPersonalizar._id,
-        cantidad: cantidadTemp,
-        notas: personalizacion.notas || notasProducto,
-        personalizaciones: {
-          ingredientesExtra: personalizacion.extras,
-          ingredientesRemovidos: personalizacion.removidos,
-        },
-        precioPersonalizado: personalizacion.precioTotal,
-        precioUnitario: unit,
-      },
-    ]);
-
-    setModalAbierto(false);
-    setProductoAPersonalizar(null);
-    setProductoSeleccionado('');
-    setCantidadProducto('1');
-    setNotasProducto('');
-  };
-
-  const handleRemoveProducto = (index: number) => {
-    setProductosSeleccionados((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const getNombreProducto = (id: string) => {
-    const prod = productosDisponibles.find((p) => p._id === id);
-    return prod?.nombre || 'Desconocido';
-  };
-
-  const getPrecioProducto = (id: string) => {
-    const prod = productosDisponibles.find((p) => p._id === id);
-    return prod?.precio || 0;
-  };
-
-  const calcularTotal = () => {
-    const subtotal = productosSeleccionados.reduce((sum, item) => {
-      if (typeof item.precioPersonalizado === 'number') return sum + item.precioPersonalizado;
-      const precio = getPrecioProducto(item.producto);
-      return sum + precio * item.cantidad;
-    }, 0);
-
-    const impuestos = subtotal * 0.21;
-    const gastoEnvio = formData.tipo === 'domicilio' ? Number(formData.gastoEnvio) || 0 : 0;
-    const descuento = Number(formData.descuento) || 0;
-    const total = subtotal + impuestos + gastoEnvio - descuento;
-
-    return {
-      subtotal: subtotal.toFixed(2),
-      impuestos: impuestos.toFixed(2),
-      gastoEnvio: gastoEnvio.toFixed(2),
-      total: total.toFixed(2),
-    };
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    if (productosSeleccionados.length === 0) {
-      setError('⚠️ Debes añadir al menos un producto');
-      setLoading(false);
-      return;
-    }
-
-    if (formData.tipo === 'local' && !formData.mesa) {
-      setError('⚠️ Debes seleccionar una mesa para pedidos en local');
-      setLoading(false);
-      return;
-    }
-
-    if (formData.tipo === 'recoger' && !formData.telefono) {
-      setError('⚠️ El teléfono es obligatorio para pedidos para recoger');
-      setLoading(false);
-      return;
-    }
-
-    if (formData.tipo === 'domicilio') {
-      const { calle, numero, ciudad, codigoPostal, telefono } = formData.direccionEntrega;
-      if (!calle || !numero || !ciudad || !codigoPostal || !telefono) {
-        setError('⚠️ Completa todos los campos obligatorios de la dirección');
-        setLoading(false);
-        return;
-      }
-    }
-
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) throw new Error('No hay sesión iniciada');
-
-      // ✅ Si estás editando, intentamos preservar precioUnitario si existe
-      const productosPayload = productosSeleccionados.map((p) => ({
-        producto: p.producto,
-        cantidad: p.cantidad,
-        notas: p.notas,
-        personalizaciones: p.personalizaciones || {},
-        ...(typeof p.precioUnitario === 'number' ? { precioUnitario: p.precioUnitario } : {}),
-      }));
-
-      const payload: any = {
-        tipo: formData.tipo,
-        productos: productosPayload,
-        cliente: formData.cliente,
-        telefono: formData.telefono,
-        notas: formData.notas,
-        descuento: parseFloat(formData.descuento.toString()) || 0,
-      };
-
-      if (formData.tipo === 'local') payload.mesa = formData.mesa;
-
-      if (formData.tipo === 'domicilio') {
-        payload.direccionEntrega = formData.direccionEntrega;
-        payload.gastoEnvio = parseFloat(formData.gastoEnvio.toString()) || 3.5;
-      }
-
-      const url = modo === 'edit' ? `/api/pedidos/${pedidoId}` : '/api/pedidos';
-      const method = modo === 'edit' ? 'PUT' : 'POST';
-
-      if (modo === 'edit' && !pedidoId) throw new Error('Falta pedidoId para editar');
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) throw new Error(data.error || 'Error al guardar pedido');
-
-      alert(modo === 'edit' ? '✅ Pedido actualizado' : '✅ Pedido creado exitosamente');
-      await onGuardar();
-    } catch (err: any) {
-      console.error('Error al guardar:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const totales = calcularTotal();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -447,7 +114,7 @@ export default function PedidoForm({
           value={formData.tipo}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
         >
           <option value="local">🍽️ Local (comer aquí)</option>
           <option value="recoger">🛍️ Para recoger</option>
@@ -464,7 +131,7 @@ export default function PedidoForm({
             value={formData.mesa}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           >
             <option value="">-- Selecciona una mesa --</option>
             {mesasDisponibles.map((mesa: Mesa) => (
@@ -488,7 +155,7 @@ export default function PedidoForm({
             value={formData.cliente}
             onChange={handleChange}
             required={formData.tipo !== 'local'}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           />
         </div>
         <div>
@@ -501,7 +168,7 @@ export default function PedidoForm({
             value={formData.telefono}
             onChange={handleChange}
             required={formData.tipo !== 'local'}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           />
         </div>
       </div>
@@ -512,7 +179,7 @@ export default function PedidoForm({
           <h3 className="text-sm font-semibold text-amber-400 mb-3">📍 Dirección de Entrega</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
+            <div className="md:sm:col-span-2">
               <input
                 type="text"
                 name="calle"
@@ -601,8 +268,8 @@ export default function PedidoForm({
       <div className="bg-gray-700 p-4 rounded space-y-4">
         <h3 className="text-sm font-semibold text-amber-400 mb-3">🍽️ Productos del Pedido</h3>
 
-        <div className="grid grid-cols-12 gap-2">
-          <div className="col-span-5">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+          <div className="sm:col-span-5">
             <select
               value={productoSeleccionado}
               onChange={(e) => setProductoSeleccionado(e.target.value)}
@@ -617,7 +284,7 @@ export default function PedidoForm({
             </select>
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <input
               type="number"
               value={cantidadProducto}
@@ -628,7 +295,7 @@ export default function PedidoForm({
             />
           </div>
 
-          <div className="col-span-3">
+          <div className="sm:col-span-3">
             <input
               type="text"
               value={notasProducto}
@@ -638,7 +305,7 @@ export default function PedidoForm({
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <button
               type="button"
               onClick={handleAbrirPersonalizacion}
@@ -713,7 +380,7 @@ export default function PedidoForm({
             onChange={handleChange}
             step="0.01"
             min="0"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           />
         </div>
 
@@ -727,7 +394,7 @@ export default function PedidoForm({
               onChange={handleChange}
               step="0.01"
               min="0"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+              className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             />
           </div>
         )}
@@ -740,7 +407,7 @@ export default function PedidoForm({
           name="notas"
           value={formData.notas}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           rows={3}
         />
       </div>
@@ -769,7 +436,7 @@ export default function PedidoForm({
               <span>-{Number(formData.descuento).toFixed(2)}€</span>
             </div>
           )}
-          <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-600">
+          <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-700">
             <span>TOTAL:</span>
             <span className="text-amber-400">{totales.total}€</span>
           </div>

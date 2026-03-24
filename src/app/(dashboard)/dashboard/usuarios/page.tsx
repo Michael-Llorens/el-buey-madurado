@@ -1,49 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useUsuarios } from '@/lib/hooks/swr';
+import ConfirmModal from '@/components/dashboard/ConfirmModal';
+import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
 
 type Modo = 'view' | 'add' | 'edit';
 
 export default function UsuariosPanel() {
-  const [usuarios, setUsuarios] = useState<any[]>([]);
+  const { usuarios, error: swrError, isLoading: loading, mutate } = useUsuarios();
+  const { confirmar, confirmProps } = useConfirm();
+  const error = swrError?.message ?? null;
+
   const [modo, setModo] = useState<Modo>('view');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [usuarioEditar, setUsuarioEditar] = useState<any>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
-
-  // 📥 Cargar usuarios
-  const cargarUsuarios = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setError('No hay sesión iniciada');
-        return;
-      }
-
-      const res = await fetch('/api/usuarios', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Error al cargar usuarios');
-      }
-
-      setUsuarios(data.data || []);
-    } catch (error: any) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Cargar al montar
-  useEffect(() => {
-    cargarUsuarios();
-  }, []);
 
   // ✏️ Editar usuario
   const handleEditar = (usuario: any) => {
@@ -53,7 +25,8 @@ export default function UsuariosPanel() {
 
   // 🗑️ Eliminar usuario
   const handleEliminar = async (id: string) => {
-    if (!confirm('¿Eliminar este usuario?')) return;
+    const ok = await confirmar('¿Seguro que quieres eliminar este usuario?', { titulo: 'Eliminar usuario', textoConfirmar: 'Eliminar' });
+    if (!ok) return;
 
     try {
       setEliminandoId(id);
@@ -65,13 +38,13 @@ export default function UsuariosPanel() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        await cargarUsuarios();
-        alert('✅ Usuario eliminado');
+        await mutate();
+        toast.success('Usuario eliminado');
       } else {
         throw new Error(data.error);
       }
     } catch (error: any) {
-      alert(`❌ ${error.message}`);
+      toast.error(error.message);
     } finally {
       setEliminandoId(null);
     }
@@ -89,7 +62,7 @@ export default function UsuariosPanel() {
               setUsuarioEditar(null);
               setModo('add');
             }}
-            className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition"
+            className="px-4 sm:px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition text-sm sm:text-base min-h-[44px]"
           >
             ➕ Nuevo Usuario
           </button>
@@ -108,62 +81,102 @@ export default function UsuariosPanel() {
         <div className="text-center text-gray-400 py-8">⏳ Cargando...</div>
       )}
 
-      {/* VISTA: LISTA */}
+      {/* VISTA: LISTA — tabla en desktop, cards en mobile */}
       {modo === 'view' && !loading && usuarios.length > 0 && (
-        <div className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
-          <table className="w-full">
-            <thead className="bg-gray-700 border-b border-gray-600">
-              <tr>
-                <th className="px-6 py-3 text-left text-gray-300">Email</th>
-                <th className="px-6 py-3 text-left text-gray-300">Rol</th>
-                <th className="px-6 py-3 text-left text-gray-300">Estado</th>
-                <th className="px-6 py-3 text-left text-gray-300">Último Login</th>
-                <th className="px-6 py-3 text-center text-gray-300">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuarios.map((usuario) => (
-                <tr key={usuario._id} className="border-b border-gray-700 hover:bg-gray-750">
-                  <td className="px-6 py-3 text-gray-200">{usuario.email}</td>
-                  <td className="px-6 py-3">
-                    <span className={`px-3 py-1 rounded text-sm font-semibold ${
-                      usuario.rol === 'admin' ? 'bg-red-600 text-white' :
-                      usuario.rol === 'cocinero' ? 'bg-blue-600 text-white' :
-                      'bg-gray-600 text-white'
-                    }`}>
-                      {usuario.rol}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3">
-                    <span className={`px-3 py-1 rounded text-sm font-semibold ${
-                      usuario.activo ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'
-                    }`}>
-                      {usuario.activo ? '✅ Activo' : '❌ Inactivo'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-gray-400 text-sm">
-                    {usuario.ultimoLogin ? new Date(usuario.ultimoLogin).toLocaleDateString() : 'Nunca'}
-                  </td>
-                  <td className="px-6 py-3 text-center space-x-2">
-                    <button
-                      onClick={() => handleEditar(usuario)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition"
-                    >
-                      ✏️ Editar
-                    </button>
-                    <button
-                      onClick={() => handleEliminar(usuario._id)}
-                      disabled={eliminandoId === usuario._id}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50"
-                    >
-                      {eliminandoId === usuario._id ? '⏳...' : '🗑️ Eliminar'}
-                    </button>
-                  </td>
+        <>
+          {/* Desktop: tabla */}
+          <div className="hidden md:block bg-gray-800 rounded-lg overflow-hidden border border-gray-700">
+            <table className="w-full">
+              <thead className="bg-gray-700 border-b border-gray-600">
+                <tr>
+                  <th className="px-6 py-3 text-left text-gray-300">Email</th>
+                  <th className="px-6 py-3 text-left text-gray-300">Rol</th>
+                  <th className="px-6 py-3 text-left text-gray-300">Estado</th>
+                  <th className="px-6 py-3 text-left text-gray-300">Ultimo Login</th>
+                  <th className="px-6 py-3 text-center text-gray-300">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {usuarios.map((usuario) => (
+                  <tr key={usuario._id} className="border-b border-gray-700 hover:bg-gray-750">
+                    <td className="px-6 py-3 text-gray-200">{usuario.email}</td>
+                    <td className="px-6 py-3">
+                      <span className={`px-3 py-1 rounded text-sm font-semibold ${
+                        usuario.rol === 'admin' ? 'bg-red-600 text-white' :
+                        usuario.rol === 'cocinero' ? 'bg-blue-600 text-white' :
+                        'bg-gray-600 text-white'
+                      }`}>
+                        {usuario.rol}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3">
+                      <span className={`px-3 py-1 rounded text-sm font-semibold ${
+                        usuario.activo ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'
+                      }`}>
+                        {usuario.activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-gray-400 text-sm">
+                      {usuario.ultimoLogin ? new Date(usuario.ultimoLogin).toLocaleDateString() : 'Nunca'}
+                    </td>
+                    <td className="px-6 py-3 text-center space-x-2">
+                      <button
+                        onClick={() => handleEditar(usuario)}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition text-sm"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleEliminar(usuario._id)}
+                        disabled={eliminandoId === usuario._id}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50 text-sm"
+                      >
+                        {eliminandoId === usuario._id ? '...' : 'Eliminar'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: cards */}
+          <div className="md:hidden space-y-3">
+            {usuarios.map((usuario) => (
+              <div key={usuario._id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-white font-semibold text-sm truncate max-w-[200px]">{usuario.email}</p>
+                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                    usuario.rol === 'admin' ? 'bg-red-600 text-white' :
+                    usuario.rol === 'cocinero' ? 'bg-blue-600 text-white' :
+                    'bg-gray-600 text-white'
+                  }`}>
+                    {usuario.rol}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
+                  <span>{usuario.activo ? 'Activo' : 'Inactivo'}</span>
+                  <span>{usuario.ultimoLogin ? new Date(usuario.ultimoLogin).toLocaleDateString() : 'Sin login'}</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditar(usuario)}
+                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded font-semibold transition text-sm"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleEliminar(usuario._id)}
+                    disabled={eliminandoId === usuario._id}
+                    className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50 text-sm"
+                  >
+                    {eliminandoId === usuario._id ? '...' : 'Eliminar'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* VISTA: VACÍO */}
@@ -182,13 +195,15 @@ export default function UsuariosPanel() {
           <UsuarioForm
             usuario={usuarioEditar}
             onGuardar={async () => {
-              await cargarUsuarios();
+              await mutate();
               setModo('view');
             }}
             onCancelar={() => setModo('view')}
           />
         </div>
       )}
+
+      <ConfirmModal {...confirmProps} />
     </div>
   );
 }
@@ -217,10 +232,10 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error);
       
-      alert(`✅ ${usuario ? 'Actualizado' : 'Creado'}`);
+      toast.success(usuario ? 'Actualizado' : 'Creado');
       onGuardar();
     } catch (error: any) {
-      alert(`❌ ${error.message}`);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -234,7 +249,7 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
           type="email"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded text-white min-h-[44px]"
           disabled={!!usuario}
         />
       </div>
@@ -246,7 +261,7 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
             type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded text-white min-h-[44px]"
           />
         </div>
       )}
@@ -256,7 +271,7 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
         <select
           value={form.rol}
           onChange={(e) => setForm({ ...form, rol: e.target.value })}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-600 rounded text-white min-h-[44px]"
         >
           <option value="camarero">Camarero</option>
           <option value="cocinero">Cocinero</option>

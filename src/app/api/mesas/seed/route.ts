@@ -38,8 +38,6 @@ export async function POST(req: NextRequest) {
 
     const mesasCreadas = await Mesa.insertMany(mesas);
 
-    console.log('✅ 15 mesas creadas exitosamente');
-
     return NextResponse.json<ApiResponse>(
       {
         success: true,

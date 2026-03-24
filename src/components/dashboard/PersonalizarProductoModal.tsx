@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useIngredientes } from '@/lib/hooks/swr';
 
 interface IngredienteGlobal {
   _id: string;
@@ -46,42 +47,11 @@ export default function PersonalizarProductoModal({
   const [removidos, setRemovidos] = useState<string[]>([]);
   const [notas, setNotas] = useState('');
 
-  const [todosIngredientes, setTodosIngredientes] = useState<IngredienteGlobal[]>([]);
-  const [loadingIngredientes, setLoadingIngredientes] = useState(true);
-  const [errorIngredientes, setErrorIngredientes] = useState<string | null>(null);
+  const { ingredientes: rawIngredientes, error: swrErr, isLoading: loadingIngredientes } = useIngredientes();
+  const todosIngredientes = rawIngredientes as IngredienteGlobal[];
+  const errorIngredientes = swrErr?.message ?? null;
 
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState<string>('');
-
-  // 1) Cargar todos los ingredientes globales (BD)
-  useEffect(() => {
-    const cargarIngredientes = async () => {
-      try {
-        setLoadingIngredientes(true);
-        setErrorIngredientes(null);
-
-        const token = localStorage.getItem('authToken');
-
-        const res = await fetch('/api/ingredientes', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data?.success) {
-          throw new Error(data?.error || 'No se pudieron cargar ingredientes');
-        }
-
-        setTodosIngredientes(Array.isArray(data.data) ? data.data : []);
-      } catch (err: any) {
-        setErrorIngredientes(err.message || 'Error cargando ingredientes');
-      } finally {
-        setLoadingIngredientes(false);
-      }
-    };
-
-    cargarIngredientes();
-  }, []);
-
   // 2) Extras disponibles = TODOS ingredientes (globales)
   const extrasDisponibles = useMemo(() => {
     return todosIngredientes
@@ -144,7 +114,7 @@ export default function PersonalizarProductoModal({
       <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6">
-          <h2 className="text-2xl font-bold text-amber-400">🍽️ Personalizar {producto.nombre}</h2>
+          <h2 className="text-lg sm:text-2xl font-bold text-amber-400">🍽️ Personalizar {producto.nombre}</h2>
           <p className="text-sm text-gray-400 mt-1">
             Cantidad: {cantidad} • Precio base: {producto.precio.toFixed(2)}€
           </p>
@@ -184,7 +154,7 @@ export default function PersonalizarProductoModal({
                   type="button"
                   onClick={añadirExtraDesdeSelect}
                   disabled={!ingredienteSeleccionado || loadingIngredientes}
-                  className="px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded transition whitespace-nowrap"
+                  className="px-4 sm:px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded transition whitespace-nowrap"
                 >
                   Añadir
                 </button>
@@ -290,14 +260,14 @@ export default function PersonalizarProductoModal({
           <button
             type="button"
             onClick={onCancelar}
-            className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded transition"
+            className="flex-1 px-4 sm:px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded transition"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={handleConfirmar}
-            className="flex-1 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded transition"
+            className="flex-1 px-4 sm:px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded transition"
           >
             ✅ Confirmar ({precioTotal.toFixed(2)}€)
           </button>

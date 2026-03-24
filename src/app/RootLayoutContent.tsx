@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
@@ -11,6 +12,13 @@ export default function RootLayoutContent({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  // Registrar Service Worker para PWA
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }, []);
   
   // Rutas donde NO mostrar Navbar, Footer, Reservar
   const routesWithoutLayout = [

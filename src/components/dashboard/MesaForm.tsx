@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface MesaFormData {
   nombre: string; 
@@ -122,7 +123,7 @@ export default function MesaForm({ mesa, onGuardar, onCancelar }: MesaFormProps)
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || 'Error al guardar mesa');
 
-      alert(mesa && mesa._id ? '✅ Mesa actualizada exitosamente' : '✅ Mesa creada exitosamente');
+      toast.success(mesa && mesa._id ? 'Mesa actualizada exitosamente' : 'Mesa creada exitosamente');
       onGuardar();
     } catch (err: any) {
       console.error('Error al guardar:', err);
@@ -148,7 +149,7 @@ export default function MesaForm({ mesa, onGuardar, onCancelar }: MesaFormProps)
           onChange={handleChange}
           required
           maxLength={40}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="Ej: Terraza 1"
         />
       </div>
@@ -164,7 +165,7 @@ export default function MesaForm({ mesa, onGuardar, onCancelar }: MesaFormProps)
           required
           min={1}
           max={20}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="Ej: 4"
         />
       </div>
@@ -179,7 +180,7 @@ export default function MesaForm({ mesa, onGuardar, onCancelar }: MesaFormProps)
           onChange={handleChange}
           min={0}
           max={capacidadNum} 
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="0"
         />
         <p className="text-xs text-gray-400 mt-1">Máximo permitido ahora: {capacidadNum}.</p>
@@ -193,7 +194,7 @@ export default function MesaForm({ mesa, onGuardar, onCancelar }: MesaFormProps)
           value={formData.estado}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
         >
           <option value="libre">🟢 Libre</option>
           <option value="ocupada">🔴 Ocupada</option>

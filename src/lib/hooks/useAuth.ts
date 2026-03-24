@@ -14,13 +14,34 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
 
-  // Verificar token al cargar
+  // Verificar sesión al cargar: si hay token, obtener datos del usuario via /api/auth/me
   useEffect(() => {
     const tokenGuardado = localStorage.getItem('authToken');
-    if (tokenGuardado) {
-      setToken(tokenGuardado);
+    if (!tokenGuardado) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    setToken(tokenGuardado);
+
+    fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${tokenGuardado}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          setUsuario(data.data);
+        } else {
+          // Token inválido o expirado — limpiar
+          localStorage.removeItem('authToken');
+          setToken(null);
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem('authToken');
+        setToken(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -44,6 +65,8 @@ export function useAuth() {
     localStorage.removeItem('authToken');
     setToken(null);
     setUsuario(null);
+    // Borrar cookie httpOnly via endpoint
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   };
 
   return {

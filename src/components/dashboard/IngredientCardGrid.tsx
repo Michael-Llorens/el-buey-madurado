@@ -42,7 +42,7 @@ export default function IngredientCardGrid({
 
   return (
     <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         {ingredientes.map((ingrediente) => (
           <div
             key={ingrediente._id}
@@ -54,7 +54,7 @@ export default function IngredientCardGrid({
                 <h3 className="text-lg font-bold text-white">{ingrediente.nombre}</h3>
                 <p className="text-gray-400 text-sm">{ingrediente.categoria}</p>
               </div>
-              <span className="text-2xl">{ingrediente.disponible ? '✅' : '❌'}</span>
+              <span className="text-lg sm:text-2xl">{ingrediente.disponible ? '✅' : '❌'}</span>
             </div>
 
             {/* Información */}

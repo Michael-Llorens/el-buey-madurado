@@ -3,6 +3,8 @@ import { connectDB } from '@/lib/db';
 import Ingrediente from '@/lib/models/Ingrediente';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { validarObjectId } from '@/lib/utils/validateId';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 type Ctx = { params: Promise<{ id: string }> }; // Next 15: params es Promise [web:366]
 
@@ -11,7 +13,10 @@ export async function GET(request: NextRequest, { params }: Ctx) {
   if (!auth.valido) return auth.response!;
 
   try {
-    const { id } = await params; // ✅ obligatorio en Next 15 [web:366]
+    const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
 
     const ingrediente = await Ingrediente.findById(id).lean();
@@ -45,10 +50,13 @@ export async function PUT(request: NextRequest, { params }: Ctx) {
   }
 
   try {
-    const { id } = await params; // ✅ obligatorio en Next 15 [web:366]
+    const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
 
-    const body = await request.json();
+    const body = sanitizeBody(await request.json());
 
     const ingrediente = await Ingrediente.findByIdAndUpdate(id, body, {
       new: true,
@@ -84,7 +92,10 @@ export async function DELETE(request: NextRequest, { params }: Ctx) {
   }
 
   try {
-    const { id } = await params; // ✅ obligatorio en Next 15 [web:366]
+    const { id } = await params;
+    const idError = validarObjectId(id);
+    if (idError) return idError;
+
     await connectDB();
 
     const ingrediente = await Ingrediente.findByIdAndDelete(id).lean();

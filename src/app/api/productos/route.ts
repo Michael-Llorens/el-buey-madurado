@@ -5,6 +5,7 @@ import Ingrediente from '@/lib/models/Ingrediente';
 import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import mongoose from 'mongoose';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 // ===========================
 // GET - Listar todos los productos
@@ -45,9 +46,7 @@ export async function POST(req: NextRequest) {
     await connectDB();
     await protegerRuta(req);
 
-    const body = await req.json();
-
-    console.log('📦 Body recibido:', JSON.stringify(body, null, 2));
+    const body = sanitizeBody(await req.json());
 
     // ✅ CONVERSIÓN: String → ObjectId
     if (body.ingredientes && Array.isArray(body.ingredientes)) {
@@ -56,13 +55,10 @@ export async function POST(req: NextRequest) {
         cantidad: ing.cantidad,
         unidad: ing.unidad,
       }));
-      console.log('✅ Ingredientes convertidos:', body.ingredientes);
     }
 
     const nuevoProducto = new Producto(body);
     await nuevoProducto.save();
-
-    console.log('✅ Producto guardado:', nuevoProducto);
 
     return NextResponse.json<ApiResponse>(
       {

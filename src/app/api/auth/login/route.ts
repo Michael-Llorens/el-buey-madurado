@@ -3,12 +3,26 @@ import { connectDB } from '@/lib/db';
 import Usuario from '@/lib/models/Usuario';
 import { generarToken } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
+import { sanitizeBody } from '@/lib/utils/sanitize';
+import { checkRateLimit } from '@/lib/utils/rateLimiter';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 5 intentos por minuto por IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+    const rateCheck = checkRateLimit(`login:${ip}`);
+    if (rateCheck.limited) {
+      return NextResponse.json<ApiResponse>({
+        success: false,
+        error: 'Demasiados intentos. Inténtalo de nuevo en un minuto.',
+      }, { status: 429 });
+    }
+
     await connectDB();
     
-    const { email, password } = await request.json();
+    const { email, password } = sanitizeBody(await request.json());
 
     // Validar entrada
     if (!email || !password) {
@@ -52,7 +66,9 @@ export async function POST(request: NextRequest) {
     usuario.ultimoLogin = new Date();
     await usuario.save();
 
-    return NextResponse.json<ApiResponse>({
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const response = NextResponse.json<ApiResponse>({
       success: true,
       data: {
         token,
@@ -63,6 +79,18 @@ export async function POST(request: NextRequest) {
         },
       },
     }, { status: 200 });
+
+    // Setear cookie httpOnly (protección server-side)
+    // El token también se devuelve en body para compatibilidad con localStorage
+    response.cookies.set('auth_token', token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 días (mismo que JWT_EXPIRE)
+    });
+
+    return response;
 
   } catch (error: any) {
     console.error('Error login:', error);

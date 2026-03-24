@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import Ingrediente from '@/lib/models/Ingrediente';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { sanitizeBody } from '@/lib/utils/sanitize';
 
 // GET /api/ingredientes  -> lista
 export async function GET(request: NextRequest) {
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    const body = await request.json();
+    const body = sanitizeBody(await request.json());
     const ingredienteCreado = await Ingrediente.create(body);
 
     return NextResponse.json<ApiResponse>(
