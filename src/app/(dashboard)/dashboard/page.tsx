@@ -17,11 +17,10 @@ type ModuloActivo =
   | 'pedidos'
   | 'cocina'
   | 'reportes'
-  | 'usuarios'
-  | 'configuracion';
+  | 'usuarios';
 
 const MODULOS_VALIDOS: ModuloActivo[] = [
-  'home', 'stock', 'mesas', 'pedidos', 'cocina', 'reportes', 'usuarios', 'configuracion',
+  'home', 'stock', 'mesas', 'pedidos', 'cocina', 'reportes', 'usuarios',
 ];
 
 export default function AdminPanel() {
@@ -43,11 +42,6 @@ export default function AdminPanel() {
       {moduloActivo === 'cocina' && <CocinaPanel />}
       {moduloActivo === 'reportes' && <ReportesPanel />}
       {moduloActivo === 'usuarios' && <UsuariosPanel />}
-      {moduloActivo === 'configuracion' && (
-        <div className="bg-gray-900 rounded-xl p-8 border border-gray-800 text-center">
-          <p className="text-gray-500">Modulo de configuracion en desarrollo</p>
-        </div>
-      )}
     </DashboardShell>
   );
 }

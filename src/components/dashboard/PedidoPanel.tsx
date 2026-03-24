@@ -6,6 +6,142 @@ import PedidoCard from '@/components/dashboard/PedidoCard';
 import ConfirmModal from '@/components/dashboard/ConfirmModal';
 import { usePedidoPanel } from './hooks/usePedidoPanel';
 
+// ── Generador de ticket PDF (formato 80mm TPV) ──
+async function generarTicketPDF(pedido: any) {
+    const { jsPDF } = await import('jspdf');
+    const w = 80; // 80mm de ancho (formato ticket TPV)
+    const pdf = new jsPDF({ unit: 'mm', format: [w, 250] }); // alto inicial, se recorta
+    const m = 4; // margen
+    let y = m;
+
+    const centro = (text: string, size: number) => {
+        pdf.setFontSize(size);
+        const tw = pdf.getTextWidth(text);
+        pdf.text(text, (w - tw) / 2, y);
+    };
+
+    const linea = () => {
+        pdf.setDrawColor(180); pdf.setLineWidth(0.2);
+        pdf.line(m, y, w - m, y); y += 2;
+    };
+
+    // ── Cabecera ──
+    pdf.setTextColor(40, 40, 40);
+    centro('EL BUEY MADURADO', 12); y += 5;
+    centro('Carne Madurada Premium', 7); y += 3;
+    centro('CIF: B12345678', 6); y += 3; // placeholder
+    linea();
+
+    // ── Info pedido ──
+    pdf.setFontSize(7); pdf.setTextColor(60, 60, 60);
+    const numPedido = '#' + (pedido._id?.slice(-4)?.toUpperCase() || '----');
+    const fecha = pedido.createdAt ? new Date(pedido.createdAt).toLocaleString('es-ES') : '-';
+    centro(`Pedido ${numPedido}`, 9); y += 4;
+    pdf.text(`Fecha: ${fecha}`, m, y); y += 3.5;
+
+    const tipoLabel = pedido.tipo === 'local' ? 'En local' : pedido.tipo === 'recoger' ? 'Para recoger' : 'A domicilio';
+    pdf.text(`Tipo: ${tipoLabel}`, m, y); y += 3.5;
+
+    if (pedido.tipo === 'local' && pedido.mesa) {
+        pdf.text(`Mesa: ${pedido.mesa.nombre ?? pedido.mesa.numero ?? '-'}`, m, y); y += 3.5;
+    }
+    if (pedido.cliente) { pdf.text(`Cliente: ${pedido.cliente}`, m, y); y += 3.5; }
+    if (pedido.telefono) { pdf.text(`Tel: ${pedido.telefono}`, m, y); y += 3.5; }
+    if (pedido.direccionEntrega) {
+        const dir = pedido.direccionEntrega;
+        pdf.text(`Dir: ${dir.calle} ${dir.numero}${dir.piso ? ', ' + dir.piso : ''}`, m, y); y += 3.5;
+        pdf.text(`     ${dir.ciudad} ${dir.codigoPostal || ''}`, m, y); y += 3.5;
+    }
+    if (pedido.creadoPor) {
+        const cam = pedido.creadoPor.nombre ?? pedido.creadoPor.email?.split('@')[0] ?? '';
+        if (cam) { pdf.text(`Atendido por: ${cam}`, m, y); y += 3.5; }
+    }
+    y += 1; linea();
+
+    // ── Productos ──
+    pdf.setFontSize(7); pdf.setTextColor(40, 40, 40);
+    pdf.text('Ud.  Producto', m, y);
+    pdf.text('Importe', w - m - pdf.getTextWidth('Importe'), y); y += 4;
+
+    (pedido.productos || []).forEach((item: any) => {
+        const nombre = item.producto?.nombre ?? 'Producto';
+        const cant = item.cantidad;
+        const sub = Number(item.subtotal || 0).toFixed(2) + '€';
+        const precioUd = Number(item.precioUnitario || 0).toFixed(2) + '€';
+
+        pdf.setFontSize(7); pdf.setTextColor(30, 30, 30);
+        pdf.text(`${cant}x  ${nombre.slice(0, 28)}`, m, y);
+        pdf.text(sub, w - m - pdf.getTextWidth(sub), y); y += 3.2;
+
+        // Precio unitario si cantidad > 1
+        if (cant > 1) {
+            pdf.setFontSize(5.5); pdf.setTextColor(120, 120, 120);
+            pdf.text(`     ${precioUd}/ud`, m, y); y += 2.8;
+        }
+
+        // Notas
+        if (item.notas) {
+            pdf.setFontSize(5.5); pdf.setTextColor(100, 100, 100);
+            pdf.text(`     Nota: ${item.notas.slice(0, 40)}`, m, y); y += 2.8;
+        }
+
+        // Personalizaciones
+        const extras: string[] = item?.personalizaciones?.ingredientesExtra || [];
+        const removidos: string[] = item?.personalizaciones?.ingredientesRemovidos || [];
+        if (extras.length > 0) {
+            pdf.setFontSize(5.5); pdf.setTextColor(0, 130, 0);
+            pdf.text(`     + ${extras.join(', ').slice(0, 40)}`, m, y); y += 2.8;
+        }
+        if (removidos.length > 0) {
+            pdf.setFontSize(5.5); pdf.setTextColor(180, 0, 0);
+            pdf.text(`     - ${removidos.join(', ').slice(0, 40)}`, m, y); y += 2.8;
+        }
+    });
+
+    y += 1; linea();
+
+    // ── Totales ──
+    pdf.setFontSize(7); pdf.setTextColor(60, 60, 60);
+    const subtotalTxt = Number(pedido.subtotal || 0).toFixed(2) + '€';
+    pdf.text('Subtotal:', m, y);
+    pdf.text(subtotalTxt, w - m - pdf.getTextWidth(subtotalTxt), y); y += 3.5;
+
+    const ivaTxt = Number(pedido.impuestos || 0).toFixed(2) + '€';
+    pdf.text('IVA (21%):', m, y);
+    pdf.text(ivaTxt, w - m - pdf.getTextWidth(ivaTxt), y); y += 3.5;
+
+    if (Number(pedido.gastoEnvio || 0) > 0) {
+        const envioTxt = Number(pedido.gastoEnvio).toFixed(2) + '€';
+        pdf.text('Envío:', m, y);
+        pdf.text(envioTxt, w - m - pdf.getTextWidth(envioTxt), y); y += 3.5;
+    }
+    if (Number(pedido.descuento || 0) > 0) {
+        const descTxt = '-' + Number(pedido.descuento).toFixed(2) + '€';
+        pdf.text('Descuento:', m, y);
+        pdf.text(descTxt, w - m - pdf.getTextWidth(descTxt), y); y += 3.5;
+    }
+
+    y += 1;
+    pdf.setFontSize(10); pdf.setTextColor(0, 0, 0);
+    const totalTxt = Number(pedido.total || 0).toFixed(2) + '€';
+    pdf.text('TOTAL:', m, y);
+    pdf.text(totalTxt, w - m - pdf.getTextWidth(totalTxt), y); y += 5;
+
+    if (pedido.metodoPago) {
+        pdf.setFontSize(6.5); pdf.setTextColor(80, 80, 80);
+        centro(`Método de pago: ${pedido.metodoPago}`, 6.5); y += 4;
+    }
+
+    linea();
+    pdf.setFontSize(6); pdf.setTextColor(120, 120, 120);
+    centro('Gracias por su visita', 7); y += 3.5;
+    centro('www.restauranteelbueymadurado.com', 5.5); y += 3;
+
+    // Nombre del archivo
+    const numCorto = pedido._id?.slice(-4)?.toUpperCase() || 'XXXX';
+    pdf.save(`ticket-${numCorto}-elbuey.pdf`);
+}
+
 export default function PedidosPanel() {
     const {
         searchParams,
@@ -273,61 +409,100 @@ export default function PedidosPanel() {
             )}
 
             {modo === 'detail' && (
-                <div className="bg-gray-800 rounded-lg p-4 sm:p-8 border border-gray-700">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-xl sm:text-2xl font-bold text-amber-400">Detalle del pedido</h2>
-
-                        <div className="flex gap-2">
-                            {pedidoDetalle && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleEditar(pedidoDetalle)}
-                                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold transition"
-                                    title="Editar (si procede)"
-                                >
-                                    ✏️ Editar
-                                </button>
-                            )}
-
-                            <button
-                                type="button"
-                                onClick={cerrarDetalle}
-                                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded font-semibold transition"
-                            >
-                                ← Volver
-                            </button>
-                        </div>
-                    </div>
-
-                    {error && <div className="bg-red-600 text-white p-4 rounded mb-4">❌ {error}</div>}
+                <div className="max-w-2xl mx-auto">
+                    {error && <div className="bg-red-600 text-white p-4 rounded mb-4">{error}</div>}
 
                     {loadingDetalle ? (
-                        <div className="text-center text-gray-400 py-8">⏳ Cargando detalle...</div>
+                        <div className="text-center text-gray-400 py-12">Cargando detalle...</div>
                     ) : !pedidoDetalle ? (
-                        <div className="text-center text-gray-400 py-8">No se pudo cargar el pedido.</div>
+                        <div className="text-center text-gray-400 py-12">No se pudo cargar el pedido.</div>
                     ) : (
-                        <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <DetailField label="Estado" value={pedidoDetalle.estado} bold />
-                                <DetailField label="Tipo" value={pedidoDetalle.tipo === 'local' ? '🍽️ Local' : pedidoDetalle.tipo === 'recoger' ? '🛍️ Recoger' : '🛵 Domicilio'} />
-                                <DetailField label="Fecha" value={pedidoDetalle.createdAt ? new Date(pedidoDetalle.createdAt).toLocaleString('es-ES') : '-'} />
+                        <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+                            {/* ── Cabecera con estado ── */}
+                            <div className={`px-5 sm:px-6 py-4 ${
+                                pedidoDetalle.estado === 'pagado' ? 'bg-green-900/30' :
+                                pedidoDetalle.estado === 'cancelado' ? 'bg-red-900/30' :
+                                'bg-gray-900/50'
+                            }`}>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-amber-400 font-bold text-lg sm:text-xl">
+                                                Pedido #{pedidoDetalle._id?.slice(-4)?.toUpperCase()}
+                                            </span>
+                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                                                pedidoDetalle.estado === 'pendiente' ? 'bg-yellow-500/20 text-yellow-300' :
+                                                pedidoDetalle.estado === 'preparando' ? 'bg-blue-500/20 text-blue-300' :
+                                                pedidoDetalle.estado === 'listo' ? 'bg-purple-500/20 text-purple-300' :
+                                                pedidoDetalle.estado === 'servido' ? 'bg-green-500/20 text-green-300' :
+                                                pedidoDetalle.estado === 'pagado' ? 'bg-green-500/20 text-green-200' :
+                                                pedidoDetalle.estado === 'cancelado' ? 'bg-red-500/20 text-red-300' :
+                                                'bg-gray-500/20 text-gray-300'
+                                            }`}>
+                                                {pedidoDetalle.estado?.charAt(0).toUpperCase() + pedidoDetalle.estado?.slice(1)}
+                                            </span>
+                                        </div>
+                                        <p className="text-gray-400 text-sm">
+                                            {pedidoDetalle.createdAt ? new Date(pedidoDetalle.createdAt).toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <button onClick={() => void generarTicketPDF(pedidoDetalle)} className="p-2 bg-gray-700/60 hover:bg-gray-600 rounded-lg transition text-sm" title="Ticket">🧾</button>
+                                        <button onClick={() => handleEditar(pedidoDetalle)} className="p-2 bg-gray-700/60 hover:bg-gray-600 rounded-lg transition text-sm" title="Editar">✏️</button>
+                                        <button onClick={cerrarDetalle} className="p-2 bg-gray-700/60 hover:bg-gray-600 rounded-lg transition text-sm" title="Volver">✕</button>
+                                    </div>
+                                </div>
+                            </div>
 
-                                {(pedidoDetalle.mesa?.nombre || pedidoDetalle.mesa?.numero) && (
-                                    <DetailField label="Mesa" value={`Mesa ${pedidoDetalle.mesa.nombre ?? pedidoDetalle.mesa.numero}`} bold />
-                                )}
+                            {/* ── Info del pedido ── */}
+                            <div className="px-5 sm:px-6 py-4 border-b border-gray-700/50">
+                                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                                    {/* Tipo */}
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-lg">{pedidoDetalle.tipo === 'local' ? '🍽️' : pedidoDetalle.tipo === 'recoger' ? '🛍️' : '🛵'}</span>
+                                        <span className="text-white font-medium">
+                                            {pedidoDetalle.tipo === 'local' ? 'En local' : pedidoDetalle.tipo === 'recoger' ? 'Para recoger' : 'A domicilio'}
+                                        </span>
+                                    </div>
 
-                                {pedidoDetalle.creadoPor?.email && (
-                                    <DetailField label="Creado por" value={`${pedidoDetalle.creadoPor.nombre ?? pedidoDetalle.creadoPor.email.split('@')[0]} (${pedidoDetalle.creadoPor.rol ?? 'usuario'})`} />
-                                )}
+                                    {/* Mesa */}
+                                    {(pedidoDetalle.mesa?.nombre || pedidoDetalle.mesa?.numero) && (
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-gray-500">Mesa:</span>
+                                            <span className="text-white font-medium">{pedidoDetalle.mesa.nombre ?? pedidoDetalle.mesa.numero}</span>
+                                        </div>
+                                    )}
 
-                                {(pedidoDetalle.cliente || pedidoDetalle.telefono) && (
-                                    <DetailField label="Cliente" value={`${pedidoDetalle.cliente || '-'}${pedidoDetalle.telefono ? ` · ${pedidoDetalle.telefono}` : ''}`} />
-                                )}
+                                    {/* Camarero */}
+                                    {pedidoDetalle.creadoPor?.email && (
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-gray-500">Atendido por:</span>
+                                            <span className="text-white">{pedidoDetalle.creadoPor.nombre ?? pedidoDetalle.creadoPor.email.split('@')[0]}</span>
+                                        </div>
+                                    )}
 
+                                    {/* Cliente */}
+                                    {pedidoDetalle.cliente && (
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-gray-500">Cliente:</span>
+                                            <span className="text-white">{pedidoDetalle.cliente}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Teléfono */}
+                                    {pedidoDetalle.telefono && (
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-gray-500">Tel:</span>
+                                            <span className="text-white">{pedidoDetalle.telefono}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Dirección */}
                                 {pedidoDetalle.direccionEntrega && (
-                                    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 md:col-span-2">
-                                        <p className="text-gray-500 text-xs mb-1">Direccion de entrega</p>
-                                        <p className="text-white">
+                                    <div className="mt-3 pt-3 border-t border-gray-700/40">
+                                        <p className="text-gray-500 text-xs mb-1">Dirección de entrega</p>
+                                        <p className="text-white text-sm">
                                             {pedidoDetalle.direccionEntrega.calle} {pedidoDetalle.direccionEntrega.numero}
                                             {pedidoDetalle.direccionEntrega.piso ? `, ${pedidoDetalle.direccionEntrega.piso}` : ''}
                                             {' · '}{pedidoDetalle.direccionEntrega.ciudad}
@@ -337,90 +512,63 @@ export default function PedidosPanel() {
                                 )}
                             </div>
 
-                            <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                <p className="text-gray-300 font-semibold mb-3">Productos</p>
-
-                                <div className="space-y-2">
+                            {/* ── Productos ── */}
+                            <div className="px-5 sm:px-6 py-4 border-b border-gray-700/50">
+                                <div className="space-y-3">
                                     {(pedidoDetalle.productos || []).map((item: any, idx: number) => {
                                         const extras: string[] = item?.personalizaciones?.ingredientesExtra || [];
                                         const removidos: string[] = item?.personalizaciones?.ingredientesRemovidos || [];
 
                                         return (
-                                            <div
-                                                key={idx}
-                                                className="flex flex-col sm:flex-row items-start justify-between gap-2 sm:gap-4 bg-gray-700/50 px-3 py-2 rounded"
-                                            >
-                                                <div className="text-white">
-                                                    <p className="font-semibold">
-                                                        {item.cantidad}x {item.producto?.nombre ?? 'Producto'}
-                                                    </p>
+                                            <div key={idx} className="flex items-start justify-between gap-3">
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className="text-amber-400 font-bold text-sm">{item.cantidad}x</span>
+                                                        <span className="text-white font-medium text-sm">{item.producto?.nombre ?? 'Producto'}</span>
+                                                        {item.precioUnitario !== undefined && item.cantidad > 1 && (
+                                                            <span className="text-gray-500 text-xs">({Number(item.precioUnitario).toFixed(2)}€/ud)</span>
+                                                        )}
+                                                    </div>
 
-                                                    {item.notas && <p className="text-xs text-gray-300 mt-1">📝 {item.notas}</p>}
-
-                                                    {item.precioUnitario !== undefined && (
-                                                        <p className="text-xs text-gray-300">
-                                                            Precio ud: {Number(item.precioUnitario).toFixed(2)}€
-                                                        </p>
+                                                    {item.notas && (
+                                                        <p className="text-xs text-gray-400 mt-0.5 pl-6">📝 {item.notas}</p>
                                                     )}
 
                                                     {extras.length > 0 && (
-                                                        <div className="mt-2">
-                                                            <p className="text-xs text-emerald-300 font-semibold mb-1">
-                                                                ➕ Ingredientes extra
-                                                            </p>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {extras.map((ing, i) => (
-                                                                    <span
-                                                                        key={`extra-${idx}-${i}`}
-                                                                        className="text-xs bg-emerald-900/40 border border-emerald-700 text-emerald-200 px-2 py-1 rounded"
-                                                                    >
-                                                                        {ing}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
+                                                        <div className="flex flex-wrap gap-1 mt-1 pl-6">
+                                                            {extras.map((ing, i) => (
+                                                                <span key={`e${idx}-${i}`} className="text-[10px] text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded">+ {ing}</span>
+                                                            ))}
                                                         </div>
                                                     )}
 
                                                     {removidos.length > 0 && (
-                                                        <div className="mt-2">
-                                                            <p className="text-xs text-red-300 font-semibold mb-1">
-                                                                ➖ Ingredientes quitados
-                                                            </p>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                {removidos.map((ing, i) => (
-                                                                    <span
-                                                                        key={`rem-${idx}-${i}`}
-                                                                        className="text-xs bg-red-900/30 border border-red-700 text-red-200 px-2 py-1 rounded"
-                                                                    >
-                                                                        {ing}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
+                                                        <div className="flex flex-wrap gap-1 mt-1 pl-6">
+                                                            {removidos.map((ing, i) => (
+                                                                <span key={`r${idx}-${i}`} className="text-[10px] text-red-400 bg-red-900/30 px-1.5 py-0.5 rounded">- {ing}</span>
+                                                            ))}
                                                         </div>
                                                     )}
                                                 </div>
 
-                                                <div className="text-right">
-                                                    <p className="text-amber-400 font-bold">
-                                                        {Number(item.subtotal || 0).toFixed(2)}€
-                                                    </p>
-                                                </div>
+                                                <span className="text-white font-semibold text-sm whitespace-nowrap">
+                                                    {Number(item.subtotal || 0).toFixed(2)}€
+                                                </span>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
 
-                            <div className="bg-gray-900/40 rounded p-4 border border-gray-700">
-                                <p className="text-gray-300 font-semibold mb-3">Totales</p>
-
-                                <div className="space-y-1 text-sm">
-                                    <div className="flex justify-between text-gray-300">
+                            {/* ── Totales ── */}
+                            <div className="px-5 sm:px-6 py-4 bg-gray-900/30">
+                                <div className="space-y-1.5 text-sm max-w-xs ml-auto">
+                                    <div className="flex justify-between text-gray-400">
                                         <span>Subtotal</span>
                                         <span>{Number(pedidoDetalle.subtotal || 0).toFixed(2)}€</span>
                                     </div>
-                                    <div className="flex justify-between text-gray-300">
-                                        <span>IVA</span>
+                                    <div className="flex justify-between text-gray-400">
+                                        <span>IVA (21%)</span>
                                         <span>{Number(pedidoDetalle.impuestos || 0).toFixed(2)}€</span>
                                     </div>
                                     {Number(pedidoDetalle.gastoEnvio || 0) > 0 && (
@@ -435,37 +583,26 @@ export default function PedidosPanel() {
                                             <span>-{Number(pedidoDetalle.descuento || 0).toFixed(2)}€</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between text-white font-bold pt-2 border-t border-gray-700">
+                                    <div className="flex justify-between text-white font-bold text-base pt-2 border-t border-gray-600">
                                         <span>TOTAL</span>
-                                        <span className="text-amber-400">{Number(pedidoDetalle.total || 0).toFixed(2)}€</span>
+                                        <span className="text-amber-400 text-lg">{Number(pedidoDetalle.total || 0).toFixed(2)}€</span>
                                     </div>
+                                    {pedidoDetalle.metodoPago && (
+                                        <p className="text-xs text-gray-500 text-right pt-1">Pago: {pedidoDetalle.metodoPago}</p>
+                                    )}
                                 </div>
-
-                                {pedidoDetalle.metodoPago && (
-                                    <p className="text-xs text-gray-400 mt-3">💳 Método pago: {pedidoDetalle.metodoPago}</p>
-                                )}
                             </div>
 
-                            <div className="flex gap-2 flex-wrap">
-                                <button
-                                    type="button"
-                                    onClick={cerrarDetalle}
-                                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded font-semibold transition"
-                                >
-                                    ← Volver a la lista
+                            {/* ── Acciones ── */}
+                            <div className="px-5 sm:px-6 py-4 flex gap-2 flex-wrap">
+                                <button onClick={cerrarDetalle} className="px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition text-sm">
+                                    ← Volver
                                 </button>
-
-                                {pedidoDetalle?.estado !== 'pagado' &&
-                                    pedidoDetalle?.estado !== 'entregado' &&
-                                    pedidoDetalle?.estado !== 'cancelado' && (
-                                        <button
-                                            type="button"
-                                            onClick={() => void handleEliminar(pedidoDetalle._id)}
-                                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition"
-                                        >
-                                            ❌ Cancelar pedido
-                                        </button>
-                                    )}
+                                {pedidoDetalle?.estado !== 'pagado' && pedidoDetalle?.estado !== 'entregado' && pedidoDetalle?.estado !== 'cancelado' && (
+                                    <button onClick={() => void handleEliminar(pedidoDetalle._id)} className="px-4 py-2.5 bg-red-600/80 hover:bg-red-600 text-white rounded-lg font-medium transition text-sm">
+                                        Cancelar pedido
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
@@ -517,12 +654,4 @@ export default function PedidosPanel() {
     );
 }
 
-function DetailField({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
-    return (
-        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <p className="text-gray-500 text-xs mb-1">{label}</p>
-            <p className={`text-white ${bold ? 'font-semibold' : ''}`}>{value}</p>
-        </div>
-    );
-}
 

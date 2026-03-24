@@ -5,7 +5,7 @@ import { CldImage } from 'next-cloudinary';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePedidos } from '@/lib/hooks/swr';
 
-type ModuloId = 'home' | 'stock' | 'mesas' | 'pedidos' | 'cocina' | 'reportes' | 'usuarios' | 'configuracion';
+type ModuloId = 'home' | 'stock' | 'mesas' | 'pedidos' | 'cocina' | 'reportes' | 'usuarios';
 
 interface SidebarItem {
   id: ModuloId;
@@ -31,7 +31,6 @@ const COLOR_MAP: Record<ModuloId, string> = {
   stock: 'bg-red-600',
   reportes: 'bg-purple-600',
   usuarios: 'bg-yellow-600',
-  configuracion: 'bg-gray-600',
 };
 
 interface DashboardShellProps {
