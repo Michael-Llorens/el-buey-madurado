@@ -4,11 +4,22 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { authFetcher } from '@/lib/hooks/swr';
 import { toast } from 'sonner';
+import {
+  ALERGENOS_LABELS,
+  ALERGENOS_ICONOS,
+  getAlergenosProducto,
+  type AlergenoUE,
+} from '@/lib/constants/alergenos';
 
 type EstadoCocina = 'pendiente' | 'preparando' | 'listo';
 
 interface ProductoPedido {
-  producto: { _id: string; nombre: string; imagen?: string } | string;
+  producto: {
+    _id: string;
+    nombre: string;
+    imagen?: string;
+    ingredientes?: Array<{ ingrediente?: { alergenos?: string[] } }>;
+  } | string;
   cantidad: number;
   notas?: string;
   personalizaciones?: {
@@ -69,17 +80,32 @@ const LABEL_BOTON: Record<EstadoCocina, string> = {
   listo: '',
 };
 
-function tiempoDesde(fecha: string): string {
+// Badge semáforo de tiempo
+function TimeBadge({ fecha }: { fecha: string }) {
   const diff = Date.now() - new Date(fecha).getTime();
   const min = Math.floor(diff / 60_000);
-  if (min < 1) return 'ahora';
-  if (min < 60) return `${min} min`;
-  return `${Math.floor(min / 60)}h ${min % 60}m`;
+
+  let bg = 'bg-green-500';
+  if (min >= 20) bg = 'bg-red-500';
+  else if (min >= 10) bg = 'bg-yellow-500';
+
+  const text = min < 1 ? '<1m' : min >= 60 ? `${Math.floor(min / 60)}h${min % 60}m` : `${min}m`;
+
+  return (
+    <span className={`${bg} text-white text-xs font-bold px-2 py-0.5 rounded-full`}>
+      {text}
+    </span>
+  );
 }
 
 function nombreProducto(p: ProductoPedido): string {
   if (typeof p.producto === 'string') return p.producto;
   return p.producto?.nombre ?? 'Desconocido';
+}
+
+function getProductoAlergenos(p: ProductoPedido): AlergenoUE[] {
+  if (typeof p.producto === 'string') return [];
+  return getAlergenosProducto(p.producto);
 }
 
 function nombreCamarero(pedido: PedidoCocina): string {
@@ -93,7 +119,6 @@ export default function CocinaPanel() {
   const { data: pedidos, mutate } = useSWR<PedidoCocina[]>(
     '/api/pedidos?estado=pendiente,preparando,listo',
     async () => {
-      // Traemos los 3 estados relevantes para cocina
       const [pendientes, preparando, listos] = await Promise.all([
         authFetcher<any>('/api/pedidos?estado=pendiente'),
         authFetcher<any>('/api/pedidos?estado=preparando'),
@@ -109,7 +134,15 @@ export default function CocinaPanel() {
   const prevCountRef = useRef(0);
   const [sonidoActivo, setSonidoActivo] = useState(true);
 
-  const playBeep = useCallback(() => {
+  // Re-render cada minuto para actualizar badges de tiempo
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Sonido nuevo pedido: beep corto agudo
+  const playBeepNuevo = useCallback(() => {
     try {
       const ctx = new AudioContext();
       const osc = ctx.createOscillator();
@@ -123,27 +156,63 @@ export default function CocinaPanel() {
     } catch { /* navegador sin soporte */ }
   }, []);
 
-  // Notificación cuando llegan pedidos nuevos pendientes
+  // Sonido urgente (>20min): triple beep grave
+  const playBeepUrgente = useCallback(() => {
+    try {
+      const ctx = new AudioContext();
+      [0, 0.25, 0.5].forEach((delay) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 440;
+        gain.gain.value = 0.4;
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.15);
+      });
+    } catch { /* navegador sin soporte */ }
+  }, []);
+
   const pendientesCount = useMemo(
     () => (pedidos ?? []).filter((p) => p.estado === 'pendiente').length,
     [pedidos]
   );
 
+  // Detectar pedidos urgentes (>20min pendientes)
+  const urgentesCount = useMemo(
+    () => (pedidos ?? []).filter((p) => {
+      if (p.estado !== 'pendiente' && p.estado !== 'preparando') return false;
+      return (Date.now() - new Date(p.createdAt).getTime()) > 20 * 60_000;
+    }).length,
+    [pedidos]
+  );
+  const prevUrgentesRef = useRef(0);
+
   useEffect(() => {
     if (prevCountRef.current > 0 && pendientesCount > prevCountRef.current) {
-      // Hay pedidos nuevos
       toast.info(`Nuevo pedido en cocina`, { duration: 5000 });
-      if (sonidoActivo) playBeep();
+      if (sonidoActivo) playBeepNuevo();
     }
     prevCountRef.current = pendientesCount;
   }, [pendientesCount, sonidoActivo]);
+
+  // Alerta sonora para pedidos urgentes nuevos
+  useEffect(() => {
+    if (urgentesCount > prevUrgentesRef.current && prevUrgentesRef.current >= 0) {
+      if (sonidoActivo && prevUrgentesRef.current > 0) {
+        playBeepUrgente();
+        toast.warning(`Pedido urgente (+20 min)`, { duration: 8000 });
+      }
+    }
+    prevUrgentesRef.current = urgentesCount;
+  }, [urgentesCount, sonidoActivo]);
 
   const cambiarEstado = useCallback(
     async (pedidoId: string, nuevoEstado: EstadoCocina) => {
       try {
         setCambiandoId(pedidoId);
         const token = localStorage.getItem('authToken');
-        if (!token) throw new Error('Sin sesión');
+        if (!token) throw new Error('Sin sesion');
 
         const res = await fetch(`/api/pedidos/${pedidoId}`, {
           method: 'PUT',
@@ -181,7 +250,6 @@ export default function CocinaPanel() {
         map[p.estado as EstadoCocina].push(p);
       }
     }
-    // Ordenar por antiguedad (más antiguo arriba)
     for (const estado of columnas) {
       map[estado].sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -196,7 +264,7 @@ export default function CocinaPanel() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <span className="text-gray-400 text-sm">
-            Actualización cada 5s
+            Actualizacion cada 5s
           </span>
           <span className={`inline-block w-2 h-2 rounded-full ${pedidos ? 'bg-green-500' : 'bg-yellow-500'} animate-pulse`} />
         </div>
@@ -259,7 +327,7 @@ export default function CocinaPanel() {
 }
 
 // ============================================================
-// Card de pedido individual
+// Card de pedido individual con alérgenos e indicadores de tiempo
 // ============================================================
 
 function PedidoCard({
@@ -272,7 +340,6 @@ function PedidoCard({
   onCambiarEstado: (id: string, estado: EstadoCocina) => void;
 }) {
   const siguiente = SIGUIENTE_ESTADO[pedido.estado as EstadoCocina];
-  const tiempoLabel = tiempoDesde(pedido.createdAt);
   const camarero = nombreCamarero(pedido);
 
   const tipoLabel =
@@ -284,12 +351,23 @@ function PedidoCard({
         ? 'Recoger'
         : 'Domicilio';
 
+  // Recoger todos los alérgenos únicos del pedido
+  const alergenosPedido = useMemo(() => {
+    const set = new Set<AlergenoUE>();
+    for (const p of pedido.productos) {
+      for (const a of getProductoAlergenos(p)) {
+        set.add(a);
+      }
+    }
+    return Array.from(set);
+  }, [pedido.productos]);
+
   return (
     <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 shadow-sm">
-      {/* Header: tipo + tiempo */}
+      {/* Header: tipo + tiempo semáforo */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-white font-semibold text-sm">{tipoLabel}</span>
-        <span className="text-gray-500 text-xs">{tiempoLabel}</span>
+        <TimeBadge fecha={pedido.createdAt} />
       </div>
 
       {/* Cliente / camarero */}
@@ -301,27 +379,60 @@ function PedidoCard({
         </p>
       )}
 
+      {/* Alérgenos del pedido destacados */}
+      {alergenosPedido.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-3 p-2 bg-red-900/30 border border-red-700/50 rounded-lg">
+          <span className="text-red-400 text-xs font-bold w-full mb-1">ALERGENOS:</span>
+          {alergenosPedido.map((alerg) => (
+            <span
+              key={alerg}
+              className="bg-red-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1"
+            >
+              <span>{ALERGENOS_ICONOS[alerg]}</span>
+              <span>{ALERGENOS_LABELS[alerg]}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Productos */}
-      <ul className="space-y-1 mb-3">
-        {pedido.productos.map((p, i) => (
-          <li key={i} className="text-sm">
-            <span className="text-amber-400 font-semibold">{p.cantidad}x</span>{' '}
-            <span className="text-gray-200">{nombreProducto(p)}</span>
-            {p.notas && (
-              <span className="text-gray-500 text-xs ml-1">({p.notas})</span>
-            )}
-            {p.personalizaciones?.ingredientesExtra?.length ? (
-              <span className="text-green-500 text-xs block ml-5">
-                + {p.personalizaciones.ingredientesExtra.join(', ')}
-              </span>
-            ) : null}
-            {p.personalizaciones?.ingredientesRemovidos?.length ? (
-              <span className="text-red-500 text-xs block ml-5">
-                - {p.personalizaciones.ingredientesRemovidos.join(', ')}
-              </span>
-            ) : null}
-          </li>
-        ))}
+      <ul className="space-y-1.5 mb-3">
+        {pedido.productos.map((p, i) => {
+          const alergenos = getProductoAlergenos(p);
+          return (
+            <li key={i} className="text-sm">
+              <div className="flex items-start gap-1">
+                <span className="text-amber-400 font-semibold">{p.cantidad}x</span>
+                <div className="flex-1">
+                  <span className="text-gray-200">{nombreProducto(p)}</span>
+                  {/* Alérgenos por producto */}
+                  {alergenos.length > 0 && (
+                    <span className="ml-1.5 inline-flex gap-0.5">
+                      {alergenos.map((a) => (
+                        <span key={a} title={ALERGENOS_LABELS[a]} className="text-sm">
+                          {ALERGENOS_ICONOS[a]}
+                        </span>
+                      ))}
+                    </span>
+                  )}
+                  {p.notas && (
+                    <span className="text-gray-500 text-xs ml-1">({p.notas})</span>
+                  )}
+                  {p.personalizaciones?.ingredientesExtra?.length ? (
+                    <span className="text-green-500 text-xs block ml-3">
+                      + {p.personalizaciones.ingredientesExtra.join(', ')}
+                    </span>
+                  ) : null}
+                  {p.personalizaciones?.ingredientesRemovidos?.length ? (
+                    <span className="text-red-500 text-xs block ml-3">
+                      - {p.personalizaciones.ingredientesRemovidos.join(', ')}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       {/* Notas del pedido */}
@@ -341,6 +452,7 @@ function PedidoCard({
               ? 'bg-blue-600 hover:bg-blue-700 text-white'
               : 'bg-green-600 hover:bg-green-700 text-white'
           } disabled:opacity-50`}
+          style={{ minHeight: '48px' }}
         >
           {cambiandoId === pedido._id ? 'Cambiando...' : LABEL_BOTON[pedido.estado as EstadoCocina]}
         </button>

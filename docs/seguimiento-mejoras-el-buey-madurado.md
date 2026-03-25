@@ -24,10 +24,10 @@ No sustituye al plan de mejoras — lo complementa con el estado real de impleme
 
 | Indicador | Valor |
 |-----------|-------|
-| **Avance global** | **Fases 1-7 completadas + rediseño UX PDA profesional + filtros avanzados + optimizaciones UX.** Proyecto production-ready. |
-| **Fase actual** | Dashboard PDA profesional completo: sidebar, tarjetas estilo PDA, filtros multi-selección en dropdown, búsqueda universal, ordenación por urgencia, número de pedido visible (#XXXX), sonido en pedidos nuevos, confirmaciones modales. 71 unit tests + 8 e2e tests. 25 rutas API. |
+| **Avance global** | **Fases 1-7 + Épicas BMad MVP (1-6) completadas.** Sistema PDA profesional con alérgenos UE, cobro con cuentas divididas, semáforos de tiempo, PWA mejorada. |
+| **Fase actual** | Épicas BMad implementadas: alérgenos 14 UE, mapa mesas con semáforo, cocina con alérgenos visibles, modal cobro con división de cuenta, PWA con cache inteligente, banner sin conexión, navegación por rol, sonidos diferenciados. 26 rutas API. |
 | **Bloqueos actuales** | Ninguno |
-| **Última actualización** | 2026-03-24 |
+| **Última actualización** | 2026-03-25 |
 
 ### Proximos pasos pendientes
 1. **PWA (Progressive Web App)** — Instalar como app nativa en tablet/movil. Ideal para cocina y camareros. next-pwa.
@@ -896,6 +896,15 @@ _Ninguno._
 | 2026-03-24 | **Ordenación por urgencia.** Opción en dropdown: "Más recientes" (defecto) vs "Urgencia" (pendientes primero, más antiguos arriba). |
 | 2026-03-24 | **Número de pedido visible.** `#XXXX` (últimos 4 del ID) en cada tarjeta para comunicación sala-cocina. |
 | 2026-03-24 | **Sonido en pedidos nuevos.** Beep + toast "Nuevo pedido recibido" cuando llegan pedidos via polling SWR. |
+| 2026-03-25 | **Epic 1: Alérgenos UE.** Constantes 14 alérgenos regulados (`src/lib/constants/alergenos.ts`) con labels, iconos, colores y utilidad `getAlergenosProducto()`. Campo `alergenos: AlergenoUE[]` en modelo Ingrediente con validación enum. IngredienteForm reescrito: checkboxes visuales con iconos en vez de texto libre. |
+| 2026-03-25 | **Epic 2: Mapa de Mesas Profesional.** Badges semáforo de tiempo en mesas ocupadas (verde <30m, amarillo 30-60m, rojo >60m). Badge inferior con estado del pedido (Preparando/Listo/Servido). Polling SWR cada 10s. API mesas populate `createdAt` del pedido. |
+| 2026-03-25 | **Epic 4: Cocina en Tiempo Real.** Badges semáforo por ticket (verde <10m, amarillo 10-20m, rojo >20m). Alérgenos visibles con iconos UE en rojo destacado por producto y por pedido. API pedidos con populate anidado de ingredientes+alérgenos. Sonidos diferenciados: beep agudo nuevo pedido, triple beep grave urgente (+20min). |
+| 2026-03-25 | **Epic 5: Cobro y Cuentas Divididas.** Endpoint `PUT /api/pedidos/[id]/cobrar` con validación método pago, cálculo cambio, liberación automática mesa. Modal CobrarModal: resumen, selección método pago (tarjeta/efectivo/mixto), botones rápidos importe, cálculo cambio. División cuenta a partes iguales con selector comensales e indicador visual. Botón "Cobrar" en PedidoCard abre modal en vez de cambiar estado directo. |
+| 2026-03-25 | **Epic 6: PWA Completa.** Service Worker v2 con stale-while-revalidate para datos (productos/ingredientes/mesas), network-only para pedidos, offline fallback HTML. themeColor en viewport. Detección actualizaciones SW + banner "Nueva versión disponible". |
+| 2026-03-25 | **Banner Sin Conexión.** Componente OfflineBanner: banner rojo fijo "Sin conexión — Las comandas no se pueden enviar" cuando se pierde WiFi. Integrado globalmente. |
+| 2026-03-25 | **Navegación por rol.** Login redirige según rol: camarero → mesas, cocinero → cocina, admin → pedidos. |
+| 2026-03-25 | **Semáforo tiempo en PedidoCard.** Badges con fondo coloreado (verde/amarillo/rojo) en vez de texto plano. |
+| 2026-03-25 | **Touch targets 48px.** Botones +/- carrito, botones estado mesa, botones acción PedidoCard y modal cobro ampliados a 44-48px mínimo con feedback táctil `active:scale-95`. |
 
 ---
 
