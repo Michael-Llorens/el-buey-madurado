@@ -9,7 +9,8 @@ import { authFetcher } from './fetcher';
 export function useMesas() {
   const { data, error, isLoading, mutate } = useSWR<any[]>(
     '/api/mesas',
-    authFetcher
+    authFetcher,
+    { refreshInterval: 10000 }
   );
 
   return {

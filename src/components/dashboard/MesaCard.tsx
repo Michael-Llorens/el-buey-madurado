@@ -105,25 +105,28 @@ export default function MesaCard({
             type="button"
             onClick={() => onCambiarEstado(mesa._id, 'libre')}
             disabled={mesa.estado === 'libre'}
-            className="flex-1 px-3 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
+            className="flex-1 px-3 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white rounded-lg text-xs font-semibold transition active:scale-95"
+            style={{ minHeight: '44px' }}
           >
-            🟢 Liberar
+            Liberar
           </button>
           <button
             type="button"
             onClick={() => onCambiarEstado(mesa._id, 'ocupada')}
             disabled={mesa.estado === 'ocupada'}
-            className="flex-1 px-3 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
+            className="flex-1 px-3 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-700 text-white rounded-lg text-xs font-semibold transition active:scale-95"
+            style={{ minHeight: '44px' }}
           >
-            🔴 Ocupar
+            Ocupar
           </button>
           <button
             type="button"
             onClick={() => onCambiarEstado(mesa._id, 'reservada')}
             disabled={mesa.estado === 'reservada'}
-            className="flex-1 px-3 py-2.5 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-700 text-white rounded text-xs font-semibold transition"
+            className="flex-1 px-3 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-700 text-white rounded-lg text-xs font-semibold transition active:scale-95"
+            style={{ minHeight: '44px' }}
           >
-            🟡 Reservar
+            Reservar
           </button>
         </div>
       </div>

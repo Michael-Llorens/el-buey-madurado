@@ -39,9 +39,16 @@ export async function GET(req: NextRequest) {
     const { page, limit, sort } = getPaginationParams(req);
     const total = await Pedido.countDocuments(filtros);
 
+    // Forzar registro del modelo Ingrediente para el populate anidado
+    await import('@/lib/models/Ingrediente');
+
     const pedidos = await Pedido.find(filtros)
       .populate('mesa', 'nombre numero capacidad estado')
-      .populate('productos.producto', 'nombre precio imagen')
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
       .populate('camarero', 'nombre email rol')
       .sort(sort)
       .skip((page - 1) * limit)
@@ -171,8 +178,12 @@ export async function POST(req: NextRequest) {
 
     const pedidoCompleto = await Pedido.findById(nuevoPedido._id)
       .populate('mesa', 'nombre numero capacidad')
-      .populate('productos.producto', 'nombre precio imagen')
-      .populate('camarero', 'nombre email rol'); // ✅ añade rol
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
+      .populate('camarero', 'nombre email rol');
 
     return NextResponse.json<ApiResponse>(
       {

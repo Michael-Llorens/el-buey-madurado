@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model} from 'mongoose';
+import { ALERGENOS_UE, type AlergenoUE } from '@/lib/constants/alergenos';
 
 export interface IIngrediente extends Document {
   nombre: string;
@@ -9,6 +10,7 @@ export interface IIngrediente extends Document {
     cantidad: number;
     unidad: string;
   };
+  alergenos: AlergenoUE[];
   disponible: boolean;
   activo: boolean;
 }
@@ -21,6 +23,14 @@ const IngredienteSchema: Schema = new Schema({
   inventario: {
     cantidad: { type: Number, required: true, default: 0 },
     unidad: { type: String, required: true, default: 'kg' },
+  },
+  alergenos: {
+    type: [String],
+    default: [],
+    validate: {
+      validator: (v: string[]) => v.every(a => (ALERGENOS_UE as readonly string[]).includes(a)),
+      message: 'Alérgeno no válido. Debe ser uno de los 14 regulados por la UE.',
+    },
   },
   disponible: { type: Boolean, default: true },
   activo: { type: Boolean, default: true },

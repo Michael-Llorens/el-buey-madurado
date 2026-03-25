@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import {
+  ALERGENOS_UE,
+  ALERGENOS_LABELS,
+  ALERGENOS_ICONOS,
+  ALERGENOS_COLORES,
+  type AlergenoUE,
+} from '@/lib/constants/alergenos';
 
 interface IngredienteFormProps {
   ingrediente?: any | null;
@@ -33,7 +40,6 @@ export default function IngredienteForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState('');
-  const [alergeno, setAlergeno] = useState('');
 
   // ✅ Al montar o cambiar ingrediente, precargar datos
   useEffect(() => {
@@ -83,20 +89,12 @@ export default function IngredienteForm({
     }
   };
 
-  const handleAddAlergeno = () => {
-    if (alergeno.trim() && !formData.alergenos.includes(alergeno.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        alergenos: [...prev.alergenos, alergeno.trim()],
-      }));
-      setAlergeno('');
-    }
-  };
-
-  const handleRemoveAlergeno = (index: number) => {
+  const handleToggleAlergeno = (alergeno: AlergenoUE) => {
     setFormData(prev => ({
       ...prev,
-      alergenos: prev.alergenos.filter((_, i) => i !== index),
+      alergenos: prev.alergenos.includes(alergeno)
+        ? prev.alergenos.filter(a => a !== alergeno)
+        : [...prev.alergenos, alergeno],
     }));
   };
 
@@ -308,40 +306,35 @@ export default function IngredienteForm({
         )}
       </div>
 
-      {/* Alergenos */}
+      {/* Alérgenos UE (14 regulados) */}
       <div>
-        <label className="block text-sm font-medium mb-2">Alergenos</label>
-        <div className="flex gap-2 mb-2">
-          <input
-            type="text"
-            value={alergeno}
-            onChange={(e) => setAlergeno(e.target.value)}
-            placeholder="Ej: Gluten"
-            className="flex-1 px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={handleAddAlergeno}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold"
-          >
-            Añadir
-          </button>
+        <label className="block text-sm font-medium mb-2">
+          Alérgenos <span className="text-gray-400 text-xs">(14 regulados UE)</span>
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          {ALERGENOS_UE.map((alerg) => {
+            const isSelected = formData.alergenos.includes(alerg);
+            return (
+              <button
+                key={alerg}
+                type="button"
+                onClick={() => handleToggleAlergeno(alerg)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all text-left text-sm ${
+                  isSelected
+                    ? `${ALERGENOS_COLORES[alerg]} border-white text-white font-semibold`
+                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <span className="text-lg">{ALERGENOS_ICONOS[alerg]}</span>
+                <span>{ALERGENOS_LABELS[alerg]}</span>
+              </button>
+            );
+          })}
         </div>
         {formData.alergenos.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {formData.alergenos.map((alerg, idx) => (
-              <div key={idx} className="bg-amber-600 px-3 py-1 rounded text-sm flex items-center gap-2">
-                {alerg}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveAlergeno(idx)}
-                  className="text-white hover:text-red-200 font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
+          <p className="mt-2 text-xs text-amber-400">
+            {formData.alergenos.length} alérgeno{formData.alergenos.length !== 1 ? 's' : ''} seleccionado{formData.alergenos.length !== 1 ? 's' : ''}
+          </p>
         )}
       </div>
 

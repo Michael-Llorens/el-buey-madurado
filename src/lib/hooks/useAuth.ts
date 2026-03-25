@@ -52,7 +52,7 @@ export function useAuth() {
         localStorage.setItem('authToken', res.data.token);
         setToken(res.data.token);
         setUsuario(res.data.usuario);
-        return { success: true };
+        return { success: true, usuario: res.data.usuario };
       }
 
       return { success: false, error: res.error };

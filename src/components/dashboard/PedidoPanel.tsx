@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import PedidoForm from '@/components/dashboard/PedidoForm';
 import PedidoCard from '@/components/dashboard/PedidoCard';
 import ConfirmModal from '@/components/dashboard/ConfirmModal';
+import CobrarModal from '@/components/dashboard/CobrarModal';
 import { usePedidoPanel } from './hooks/usePedidoPanel';
 
 // ── Generador de ticket PDF (formato 80mm TPV) ──
@@ -173,9 +174,11 @@ export default function PedidosPanel() {
         handleVerDetalle,
         cerrarDetalle,
         confirmProps,
+        mutate,
     } = usePedidoPanel();
 
     const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
+    const [pedidoCobrar, setPedidoCobrar] = useState<any>(null);
     const filtrosRef = useRef<HTMLDivElement>(null);
 
     // Cerrar dropdown al hacer click fuera
@@ -598,6 +601,15 @@ export default function PedidosPanel() {
                                 <button onClick={cerrarDetalle} className="px-4 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition text-sm">
                                     ← Volver
                                 </button>
+                                {pedidoDetalle?.estado !== 'pagado' && pedidoDetalle?.estado !== 'cancelado' && (
+                                    <button
+                                        onClick={() => setPedidoCobrar(pedidoDetalle)}
+                                        className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition text-sm"
+                                        style={{ minHeight: '44px' }}
+                                    >
+                                        Cobrar {Number(pedidoDetalle.total || 0).toFixed(2)} EUR
+                                    </button>
+                                )}
                                 {pedidoDetalle?.estado !== 'pagado' && pedidoDetalle?.estado !== 'entregado' && pedidoDetalle?.estado !== 'cancelado' && (
                                     <button onClick={() => void handleEliminar(pedidoDetalle._id)} className="px-4 py-2.5 bg-red-600/80 hover:bg-red-600 text-white rounded-lg font-medium transition text-sm">
                                         Cancelar pedido
@@ -642,6 +654,7 @@ export default function PedidosPanel() {
                                     onEliminar={handleEliminar}
                                     onEditar={handleEditar}
                                     onVerDetalle={handleVerDetalle}
+                                    onCobrar={(p) => setPedidoCobrar(p)}
                                 />
                             ))}
                         </div>
@@ -650,6 +663,18 @@ export default function PedidosPanel() {
             )}
 
             <ConfirmModal {...confirmProps} />
+
+            {pedidoCobrar && (
+                <CobrarModal
+                    pedido={pedidoCobrar}
+                    onClose={() => setPedidoCobrar(null)}
+                    onCobrado={() => {
+                        setPedidoCobrar(null);
+                        cerrarDetalle();
+                        void mutate();
+                    }}
+                />
+            )}
         </div>
     );
 }

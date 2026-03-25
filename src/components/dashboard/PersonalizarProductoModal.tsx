@@ -6,7 +6,6 @@ import { useIngredientes } from '@/lib/hooks/swr';
 interface IngredienteGlobal {
   _id: string;
   nombre: string;
-  // Si tu modelo Ingrediente NO tiene este campo, se usará el fallback (PRECIO_EXTRA_DEFECTO)
   precioExtra?: number;
 }
 
@@ -45,14 +44,13 @@ export default function PersonalizarProductoModal({
 }: PersonalizarProductoModalProps) {
   const [extrasSeleccionados, setExtrasSeleccionados] = useState<string[]>([]);
   const [removidos, setRemovidos] = useState<string[]>([]);
-  const [notas, setNotas] = useState('');
 
   const { ingredientes: rawIngredientes, error: swrErr, isLoading: loadingIngredientes } = useIngredientes();
   const todosIngredientes = rawIngredientes as IngredienteGlobal[];
   const errorIngredientes = swrErr?.message ?? null;
 
   const [ingredienteSeleccionado, setIngredienteSeleccionado] = useState<string>('');
-  // 2) Extras disponibles = TODOS ingredientes (globales)
+
   const extrasDisponibles = useMemo(() => {
     return todosIngredientes
       .filter((i) => i?.nombre)
@@ -89,7 +87,6 @@ export default function PersonalizarProductoModal({
       const extra = extrasDisponibles.find((e) => e.nombre === nombreExtra);
       return sum + (extra?.precio ?? PRECIO_EXTRA_DEFECTO);
     }, 0);
-
     return (producto.precio + precioExtras) * cantidad;
   };
 
@@ -97,7 +94,7 @@ export default function PersonalizarProductoModal({
     onConfirmar({
       extras: extrasSeleccionados,
       removidos,
-      notas,
+      notas: '',
       precioTotal: calcularPrecioTotal(),
     });
   };
@@ -108,44 +105,44 @@ export default function PersonalizarProductoModal({
   const tieneIngredientes = !!(producto.ingredientes && producto.ingredientes.length > 0);
   const permitirExtras = producto.permitirExtras ?? true;
   const permitirRemover = producto.permitirRemover ?? true;
+  const hayModificaciones = extrasSeleccionados.length > 0 || removidos.length > 0;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6">
-          <h2 className="text-lg sm:text-2xl font-bold text-amber-400">🍽️ Personalizar {producto.nombre}</h2>
-          <p className="text-sm text-gray-400 mt-1">
-            Cantidad: {cantidad} • Precio base: {producto.precio.toFixed(2)}€
+        <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-5 py-4">
+          <h2 className="text-lg font-bold text-amber-400">Personalizar {producto.nombre}</h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {cantidad}x · {producto.precio.toFixed(2)}€/ud
           </p>
         </div>
 
-        <div className="p-6 space-y-6">
-          {/* EXTRAS (globales) */}
+        <div className="px-5 py-4 space-y-5">
+          {/* AÑADIR EXTRAS */}
           {permitirExtras && (
             <div>
-              <h3 className="text-lg font-semibold text-white mb-3">➕ Añadir ingrediente extra</h3>
+              <h3 className="text-sm font-semibold text-white mb-2">➕ Añadir ingredientes extra</h3>
 
               {errorIngredientes && (
-                <div className="bg-red-600/20 border border-red-500 rounded p-3 text-red-200 text-sm mb-3">
-                  ❌ {errorIngredientes}
+                <div className="bg-red-600/20 border border-red-500 rounded-lg p-2.5 text-red-200 text-xs mb-2">
+                  {errorIngredientes}
                 </div>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <select
                   value={ingredienteSeleccionado}
                   onChange={(e) => setIngredienteSeleccionado(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
+                  className="flex-1 px-3 py-2.5 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:border-amber-500 focus:outline-none"
                   disabled={loadingIngredientes}
                 >
                   <option value="">
-                    {loadingIngredientes ? 'Cargando ingredientes...' : '📋 Selecciona un ingrediente'}
+                    {loadingIngredientes ? 'Cargando...' : 'Seleccionar ingrediente'}
                   </option>
-
                   {extrasDisponibles.map((ing) => (
                     <option key={ing.nombre} value={ing.nombre}>
-                      {ing.nombre} (+{ing.precio.toFixed(2)}€)
+                      {ing.nombre}
                     </option>
                   ))}
                 </select>
@@ -154,123 +151,92 @@ export default function PersonalizarProductoModal({
                   type="button"
                   onClick={añadirExtraDesdeSelect}
                   disabled={!ingredienteSeleccionado || loadingIngredientes}
-                  className="px-4 sm:px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded transition whitespace-nowrap"
+                  className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition text-sm whitespace-nowrap"
                 >
                   Añadir
                 </button>
               </div>
 
-              {/* Lista extras seleccionados */}
+              {/* Extras seleccionados */}
               {extrasSeleccionados.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-xs text-gray-400 mb-2">
-                    Extras seleccionados: {extrasSeleccionados.length}
-                  </p>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {extrasSeleccionados.map((nombre) => {
-                      const extra = extrasDisponibles.find((e) => e.nombre === nombre);
-                      const precio = extra?.precio ?? PRECIO_EXTRA_DEFECTO;
-
-                      return (
-                        <div
-                          key={nombre}
-                          className="flex items-center justify-between p-3 bg-gray-700 rounded"
-                        >
-                          <span className="text-white">{nombre}</span>
-                          <div className="flex items-center gap-3">
-                            <span className="text-amber-400 font-semibold">
-                              +{precio.toFixed(2)}€
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => toggleExtra(nombre)}
-                              className="text-red-400 hover:text-red-300 font-bold"
-                              title="Quitar extra"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {extrasSeleccionados.map((nombre) => (
+                    <span
+                      key={nombre}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/20 text-emerald-300 rounded-lg text-xs font-medium"
+                    >
+                      + {nombre}
+                      <button
+                        type="button"
+                        onClick={() => toggleExtra(nombre)}
+                        className="text-emerald-400 hover:text-red-400 font-bold ml-0.5"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* REMOVER INGREDIENTES */}
+          {/* QUITAR INGREDIENTES */}
           {permitirRemover && tieneIngredientes && (
             <div>
-              <h3 className="text-lg font-semibold text-white mb-3">🗑️ Remover ingredientes</h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {producto.ingredientes!.map((ing, idx) => (
-                  <label
-                    key={idx}
-                    className="flex items-center gap-3 p-3 bg-gray-700 rounded cursor-pointer hover:bg-gray-600 transition"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={removidos.includes(ing.ingrediente.nombre)}
-                      onChange={() => toggleRemovido(ing.ingrediente.nombre)}
-                      className="w-5 h-5 rounded accent-red-500"
-                    />
-                    <span className="text-white">{ing.ingrediente.nombre}</span>
-                  </label>
-                ))}
+              <h3 className="text-sm font-semibold text-white mb-2">🗑️ Quitar ingredientes</h3>
+              <div className="flex flex-wrap gap-2">
+                {producto.ingredientes!.map((ing, idx) => {
+                  const quitado = removidos.includes(ing.ingrediente.nombre);
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => toggleRemovido(ing.ingrediente.nombre)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                        quitado
+                          ? 'bg-red-600/20 text-red-300 ring-1 ring-red-500/30 line-through'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {quitado ? '- ' : ''}{ing.ingrediente.nombre}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
-
-          {/* NOTAS */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-3">📝 Notas especiales</h3>
-            <textarea
-              value={notas}
-              onChange={(e) => setNotas(e.target.value)}
-              placeholder="Ej: Poco hecho, sin sal, punto medio, etc."
-              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded text-white focus:border-amber-500 focus:outline-none"
-              rows={3}
-            />
-          </div>
-
-          {/* RESUMEN */}
-          <div className="bg-gray-700 p-4 rounded space-y-2">
-            <div className="flex justify-between text-sm text-gray-300">
-              <span>Precio base ({cantidad}x):</span>
-              <span>{(producto.precio * cantidad).toFixed(2)}€</span>
-            </div>
-
-            {precioExtras > 0 && (
-              <div className="flex justify-between text-sm text-amber-400">
-                <span>Extras:</span>
-                <span>+{precioExtras.toFixed(2)}€</span>
-              </div>
-            )}
-
-            <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-600">
-              <span>TOTAL:</span>
-              <span className="text-amber-400">{precioTotal.toFixed(2)}€</span>
-            </div>
-          </div>
         </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-800 border-t border-gray-700 p-6 flex gap-4">
-          <button
-            type="button"
-            onClick={onCancelar}
-            className="flex-1 px-4 sm:px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded transition"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirmar}
-            className="flex-1 px-4 sm:px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded transition"
-          >
-            ✅ Confirmar ({precioTotal.toFixed(2)}€)
-          </button>
+        {/* Footer con total */}
+        <div className="sticky bottom-0 bg-gray-800 border-t border-gray-700 px-5 py-4">
+          {/* Total solo si hay extras */}
+          {precioExtras > 0 && (
+            <div className="flex justify-between text-sm text-gray-400 mb-2">
+              <span>Extras ({extrasSeleccionados.length})</span>
+              <span className="text-amber-400">+{precioExtras.toFixed(2)}€</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center text-white font-bold mb-4">
+            <span>Total</span>
+            <span className="text-amber-400 text-lg">{precioTotal.toFixed(2)}€</span>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onCancelar}
+              className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl transition text-sm"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmar}
+              className="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl transition text-sm"
+            >
+              {hayModificaciones ? 'Confirmar cambios' : 'Sin cambios'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

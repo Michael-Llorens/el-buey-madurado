@@ -53,6 +53,7 @@ interface PedidoCardProps {
   onEliminar: (id: string) => void | Promise<void>;
   onVerDetalle?: (pedido: Pedido) => void | Promise<void>;
   onEditar?: (pedido: Pedido) => void | Promise<void>;
+  onCobrar?: (pedido: Pedido) => void;
 }
 
 // ============================================================
@@ -90,8 +91,6 @@ function tiempoDesde(fecha: string): { texto: string; urgencia: 'ok' | 'warn' | 
   if (min < 60) return { texto: `${min} min`, urgencia: 'danger' };
   return { texto: `${Math.floor(min / 60)}h ${min % 60}m`, urgencia: 'danger' };
 }
-
-const URGENCIA_COLOR = { ok: 'text-gray-500', warn: 'text-orange-400', danger: 'text-red-400 font-semibold' };
 
 function getSiguienteEstado(tipo: TipoPedido, estado: EstadoPedido): { next: EstadoPedido; label: string } | null {
   const flujos: Record<TipoPedido, Partial<Record<EstadoPedido, { next: EstadoPedido; label: string }>>> = {
@@ -137,6 +136,7 @@ export default function PedidoCard({
   onEliminar,
   onVerDetalle,
   onEditar,
+  onCobrar,
 }: PedidoCardProps) {
   const estadoCfg = ESTADO_CONFIG[pedido.estado];
   const tiempo = tiempoDesde(pedido.createdAt);
@@ -170,7 +170,11 @@ export default function PedidoCard({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400">{new Date(pedido.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full bg-gray-700 ${URGENCIA_COLOR[tiempo.urgencia]}`}>{tiempo.texto}</span>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+            tiempo.urgencia === 'ok' ? 'bg-green-600/20 text-green-400' :
+            tiempo.urgencia === 'warn' ? 'bg-yellow-600/20 text-yellow-400' :
+            'bg-red-600/20 text-red-400'
+          }`}>{tiempo.texto}</span>
         </div>
       </div>
 
@@ -240,8 +244,16 @@ export default function PedidoCard({
         {siguiente && (
           <button
             type="button"
-            onClick={() => void onCambiarEstado(pedido._id, siguiente.next)}
-            className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md font-semibold transition text-sm"
+            onClick={() => {
+              // Si el siguiente estado es "cobrar" y hay callback, abrir modal
+              if (siguiente.label === 'Cobrar' && onCobrar) {
+                onCobrar(pedido);
+              } else {
+                void onCambiarEstado(pedido._id, siguiente.next);
+              }
+            }}
+            className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md font-semibold transition text-sm active:scale-95"
+            style={{ minHeight: '48px' }}
           >
             {siguiente.label}
           </button>

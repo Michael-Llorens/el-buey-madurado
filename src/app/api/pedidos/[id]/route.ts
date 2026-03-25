@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Pedido from '@/lib/models/Pedido';
 import Producto from '@/lib/models/Producto';
+import Ingrediente from '@/lib/models/Ingrediente';
 import { protegerRuta } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
@@ -17,6 +18,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function GET(req: NextRequest, context: Ctx) {
   try {
     await connectDB();
+    void Producto; void Ingrediente; // asegurar registro para populate anidado
 
     const auth: any = await protegerRuta(req);
     if (!auth?.valido) return auth?.response!;
@@ -27,8 +29,12 @@ export async function GET(req: NextRequest, context: Ctx) {
 
     const pedido = await Pedido.findById(id)
       .populate('mesa', 'nombre numero capacidad estado')
-      .populate('productos.producto', 'nombre precio imagen descripcion')
-      .populate('camarero', 'nombre email rol'); // ✅ añade rol
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen descripcion ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
+      .populate('camarero', 'nombre email rol');
 
     if (!pedido) {
       return NextResponse.json<ApiResponse>(
@@ -117,8 +123,12 @@ export async function PUT(req: NextRequest, context: Ctx) {
 
     const pedidoActualizado = await Pedido.findById(id)
       .populate('mesa', 'nombre numero capacidad')
-      .populate('productos.producto', 'nombre precio imagen')
-      .populate('camarero', 'nombre email rol'); // ✅ añade rol
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
+      .populate('camarero', 'nombre email rol');
 
     return NextResponse.json<ApiResponse>({
       success: true,

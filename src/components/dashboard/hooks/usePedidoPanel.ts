@@ -360,5 +360,6 @@ export function usePedidoPanel() {
         handleVerDetalle,
         cerrarDetalle,
         confirmProps,
+        mutate,
     };
 }

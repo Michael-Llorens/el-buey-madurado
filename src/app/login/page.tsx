@@ -21,7 +21,15 @@ export default function LoginPage() {
       const result = await login(email, password);
 
       if (result.success) {
-        router.push('/dashboard');
+        // Redirigir según rol: camarero → mesas, cocinero → cocina, admin → pedidos
+        const rol = result.usuario?.rol;
+        if (rol === 'cocinero') {
+          router.push('/dashboard?modulo=cocina');
+        } else if (rol === 'camarero') {
+          router.push('/dashboard/mesas');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError(result.error || 'Error al iniciar sesión');
       }

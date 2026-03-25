@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     void Pedido; // asegurar registro del modelo antes del populate
 
     const mesas = await Mesa.find()
-      .populate('pedidoActual', '_id tipo estado') // 👈 AÑADIDO: trae pedidoActual con id, tipo y estado
+      .populate('pedidoActual', '_id tipo estado createdAt')
       .sort({ nombre: 1 });
 
     return NextResponse.json<ApiResponse>({
