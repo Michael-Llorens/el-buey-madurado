@@ -1111,3 +1111,51 @@ html.modal-open {
   color: rgba(120, 53, 15, 0.2);
   font-style: normal;
 }
+/* =========================
+   BLOQUE LETI'S – POSTRES
+   ========================= */
+
+.carta-letis-block {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 2rem 0 2.5rem;
+  padding: 1.5rem 0;
+  background: transparent;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.carta-letis-logo {
+  width: auto;          /* ancho automático */
+  max-width: 120px;     /* tamaño máximo permitido */
+  height: auto;         /* mantiene proporción */
+  object-fit: contain;
+  flex-shrink: 0;       /* no se encoja demasiado */
+}
+
+.carta-letis-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.carta-letis-title {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #6b4e2e;
+}
+
+.carta-letis-description {
+  font-size: 0.7rem;
+  color: #5a5a5a;
+  line-height: 1.4;
+}
+@media (max-width: 640px) {
+  .carta-letis-block {
+    flex-direction: column;
+    text-align: center;
+  }
+}

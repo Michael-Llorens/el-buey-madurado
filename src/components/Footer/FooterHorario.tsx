@@ -17,8 +17,17 @@ export default function FooterHorario() {
         </li>
 
         <li className="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
-          <span className="font-semibold text-gray-200">Lunes a Viernes</span>
+          <span className="font-semibold text-gray-200">Lunes a Jueves</span>
           <span className="text-white/90">20:00 – 00:00</span>
+        </li>
+
+        <li className="flex flex-col md:flex-row md:items-start md:justify-between gap-1">
+          <span className="font-semibold text-gray-200">Viernes</span>
+          <span className="text-white/90 md:text-right leading-relaxed">
+            13:00 – 16:30
+            <br />
+            20:00 – 00:00
+          </span>
         </li>
 
         <li className="flex flex-col md:flex-row md:items-start md:justify-between gap-1">

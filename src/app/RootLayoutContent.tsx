@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar/Navbar';
 import Footer from '@/components/Footer/Footer';
-import WhatsAppButton from '@/components/ui/ReservasButton';
+import WhatsAppButton from '@/components/ui/WhatsAppButton';
+import FirstVisitNotice from '@/components/ui/FirstVisitNotice';
 import OfflineBanner from '@/components/ui/OfflineBanner';
 
 export default function RootLayoutContent({
@@ -61,6 +62,7 @@ export default function RootLayoutContent({
       </main>
       {!shouldHideLayout && <Footer />}
       {!shouldHideLayout && <WhatsAppButton />}
+      {!shouldHideLayout && <FirstVisitNotice />}
       <OfflineBanner />
     </>
   );

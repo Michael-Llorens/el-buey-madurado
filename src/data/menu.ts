@@ -1,4 +1,4 @@
-// src/data/menu.ts 
+﻿// src/data/menu.ts
 
 export interface MenuItem {
   id: string;
@@ -15,7 +15,6 @@ export interface MenuItem {
   // ✅ Nuevo (opcional, solo lo usaremos en Bebidas)
   subcategoria?: "Cervezas" | "Refrescos" | "Vinos";
 }
-
 
 export const menuItems: MenuItem[] = [
   // =========================
@@ -36,7 +35,7 @@ export const menuItems: MenuItem[] = [
     tipo: "Frío",
     nombre: "Trilogía del buey",
     descripcion:
-      "Secreto de buey gallego selección LYO con 500 días de maduración, picaña de buey gallego selección LYO con 500 días de maduración y cecina de wagyu japonés A5.",
+      "Secreto de buey gallego selección LYO con 500 días de maduración, picaña de buey gallego selección LYO con 500 días de maduración y cecina de wagyu.",
     precio: "28€",
   },
   {
@@ -52,8 +51,8 @@ export const menuItems: MenuItem[] = [
     id: "ent-4",
     categoria: "Entrantes",
     tipo: "Frío",
-    nombre: "Tabla de cecina de auténtico wagyu japonés A5",
-    descripcion: "Cecina de auténtico wagyu japonés A5.",
+    nombre: "Tabla de cecina de wagyu",
+    descripcion: "Cecina de auténtico wagyu.",
     precio: "27€",
   },
   {
@@ -70,7 +69,8 @@ export const menuItems: MenuItem[] = [
     categoria: "Entrantes",
     tipo: "Frío",
     nombre: "Secreto de buey gallego selección LYO",
-    descripcion: "Secreto de buey gallego selección LYO con 500 días de maduración.",
+    descripcion:
+      "Secreto de buey gallego selección LYO con 500 días de maduración.",
     precio: "25€",
     detalle: "150 g",
   },
@@ -102,7 +102,8 @@ export const menuItems: MenuItem[] = [
     categoria: "Entrantes",
     tipo: "Entrante",
     nombre: "Croquetas de gamba roja al ajillo con kimchi",
-    descripcion: "Croquetas de gamba roja al ajillo con kimchi. Mínimo 2 unidades.",
+    descripcion:
+      "Croquetas de gamba roja al ajillo con kimchi. Mínimo 2 unidades.",
     precio: "3€/ud",
     unidad: true,
   },
@@ -111,8 +112,7 @@ export const menuItems: MenuItem[] = [
     categoria: "Entrantes",
     tipo: "Entrante",
     nombre: "Gyozas de vaca rubia gallega con demiglace",
-    descripcion:
-      "Gyozas de vaca rubia gallega con demiglace de Pedro Ximenéz.",
+    descripcion: "Gyozas de vaca rubia gallega con demiglace de Pedro Ximenéz.",
     precio: "12€",
     detalle: "4 unidades",
   },
@@ -131,7 +131,7 @@ export const menuItems: MenuItem[] = [
     tipo: "Entrante",
     nombre: "Buñuelos de vaca madurada",
     descripcion:
-      "Masa de buñuelo valenciano relleno de vaca madurada y queso de tetilla, 2 unidades.",
+      "Masa de buñuelo valenciano relleno de vaca madurada y queso de tetilla con reducción de Pedro Ximénez, 2 unidades.",
     precio: "10€",
     detalle: "2 unidades",
   },
@@ -179,25 +179,55 @@ export const menuItems: MenuItem[] = [
     id: "ham-0",
     categoria: "Hamburguesas",
     tipo: "Suplemento",
-    nombre: "LO MEJOR DE LO MEJOR",
-    descripcion: "Suplemento Carne de Buey 500 Días LYO.\nPara paladares exigentes.",
+    nombre: "Mejora a Carne de Buey 500 Días",
+    descripcion:
+      "Sustituye la carne de vaca de la hamburguesa por carne de buey madurada 500 días LYO.",
     precio: "5€",
     unidad: true,
+  },
+    {
+    id: "ham-9",
+    categoria: "Hamburguesas",
+    tipo: "Suplemento",
+    nombre: "Carne extra de vaca (200 días)",
+    descripcion:
+      "Añade 180 g extra de carne de vaca madurada 200 días.",
+    precio: "5€",
+    unidad: true,
+  },
+    {
+    id: "ham-10",
+    categoria: "Hamburguesas",
+    tipo: "Suplemento",
+    nombre: "Carne extra de buey (500 días)",
+    descripcion:
+      "Añade 180 g extra de carne de buey madurado 500 días.",
+    precio: "8€",
+    unidad: true,
+  },
+  {
+    id: "ham-8",
+    categoria: "Hamburguesas",
+    tipo: "Hamburguesa",
+    nombre: "LOS CUÑAOS",
+    descripcion:
+      "Carne de vaca 150 días y carne de buey 500 días. Mayonesa de tuétano. Secreto de buey gallego 200 días de maduración. Demiglace de buey caramelizada. Queso chedar madurado picante.",
+    precio: "20€",
   },
   {
     id: "ham-1",
     categoria: "Hamburguesas",
     tipo: "Hamburguesa",
-    nombre: "Hamburguesa BÚFALO",
+    nombre: "BÚFALO",
     descripcion:
       "180gr de carne de vaca rubia gallega con +150 días de maduración (selección especial LYO), costilla de vaca rubia gallega, queso ahumado y glaseado de barbacoa de Coca-Cola.",
-    precio: "17€",
+    precio: "18€",
   },
   {
     id: "ham-2",
     categoria: "Hamburguesas",
     tipo: "Hamburguesa",
-    nombre: "Hamburguesa EsMMY BUEY",
+    nombre: "EsMMY BUEY",
     descripcion:
       "180gr de carne de vaca rubia gallega con +150 días de maduración (selección especial LYO), cebolla caramelizada, queso ahumado, salsa EMMY, envuelta en picaña de buey gallego con 500 días de maduración.",
     precio: "18€",
@@ -206,7 +236,7 @@ export const menuItems: MenuItem[] = [
     id: "ham-3",
     categoria: "Hamburguesas",
     tipo: "Hamburguesa",
-    nombre: "Hamburguesa LA SUPREMA",
+    nombre: "LA SUPREMA",
     descripcion:
       "180gr de carne de vaca rubia gallega con +150 días de maduración (selección especial LYO), cecina de buey, queso de tetilla estilo raclette y mayonesa de ajo puerro y cecina.",
     precio: "18€",
@@ -215,16 +245,16 @@ export const menuItems: MenuItem[] = [
     id: "ham-4",
     categoria: "Hamburguesas",
     tipo: "Hamburguesa",
-    nombre: "Hamburguesa BUEY",
+    nombre: "BUEY",
     descripcion:
       "180gr de carne de vaca rubia gallega con +150 días de maduración (selección especial LYO), pastrami de vaca selección LYO, queso cheddar inglés madurado y crema de trufa negra.",
-    precio: "17€",
+    precio: "18€",
   },
   {
     id: "ham-5",
     categoria: "Hamburguesas",
     tipo: "Hamburguesa",
-    nombre: "Hamburguesa DORITOS CHEESE LOVER",
+    nombre: "DORITOS CHEESE LOVER",
     descripcion:
       "180gr de carne de vaca rubia gallega con +150 días de maduración (selección especial LYO), tortita de queso mozzarella, queso ahumado, crema de queso azul, mayonesa de chili dulce y topping de doritos.",
     precio: "16€",
@@ -233,7 +263,7 @@ export const menuItems: MenuItem[] = [
     id: "ham-6",
     categoria: "Hamburguesas",
     tipo: "Hamburguesa",
-    nombre: "Hamburguesa CARLOS CATALÁ",
+    nombre: "CARLOS CATALÁ",
     descripcion:
       "180gr de carne de vaca rubia gallega con +150 días de maduración (selección especial LYO), panceta cocinada a baja temperatura y ahumada, queso ahumado, salsa hotney y relish de pepinillo.",
     precio: "18€",
@@ -243,7 +273,7 @@ export const menuItems: MenuItem[] = [
     id: "ham-7",
     categoria: "Hamburguesas",
     tipo: "Hamburguesa",
-    nombre: " 👑 The Golden Burger",
+    nombre: "👑 The Golden Burger",
     descripcion:
       "180gr de auténtico buey gallego (cárnicas LYO) con maduración extrema de 500 días, auténtico wagyu japonés A5, queso ahumado, toque de mayonesa yakitori con grasa de vaca madurada, brioche envuelto en oro de 24k.",
     precio: "28€",
@@ -273,18 +303,36 @@ export const menuItems: MenuItem[] = [
   {
     id: "car-3",
     categoria: "Carnes",
-    nombre: "Chuletón de vaca madurada (60 días)",
-    descripcion: "Chuletón de vaca madurada con 60 días de maduración.",
-    precio: "60€",
-    detalle: "€/kg",
+    nombre: "Entrecot buey de wagyu",
+    descripcion: "Entrecot exclusivo hasta fin de existencias. 500gr aprox.",
+    precio: "50€",
+    detalle: "50€",
   },
   {
     id: "car-4",
     categoria: "Carnes",
-    nombre: "Chuletón de vaca rubia gallega Old Especial Beef PREMIUM (120 días)",
+    nombre: "Chuletón GOLD (50 días)",
     descripcion:
-      "Chuletón de vaca rubia gallega Old Especial Beef PREMIUM con 120 días de maduración.",
-    precio: "100€",
+      "Chuletón de vaca Simmental con 50 días de maduración. Selección especial Juan Navarro.",
+    precio: "70€/kg",
+    detalle: "€/kg",
+  },
+  {
+    id: "car-5",
+    categoria: "Carnes",
+    nombre: "Chuletón ESMERALDA (90 días)",
+    descripcion:
+      "Chuletón de vaca rubia gallega con 90 días de maduración. Selección especial Juan Navarro.",
+    precio: "100€/kg",
+    detalle: "€/kg",
+  },
+  {
+    id: "car-6",
+    categoria: "Carnes",
+    nombre: "Chuletón DIAMANTE TOP (150 días)",
+    descripcion:
+      "Chuletón de vaca Simmental con 150 días de maduración. Selección especial Juan Navarro.",
+    precio: "120€/kg",
     detalle: "€/kg",
   },
 
@@ -293,8 +341,9 @@ export const menuItems: MenuItem[] = [
   {
     id: "pos-1",
     categoria: "Postres",
-    nombre: "Tarta de queso de dulce de leche",
-    descripcion: "⭐ Tarta del mes · Cremosa y suave, con un irresistible toque de dulce de leche.",
+    nombre: "Tarta de queso con cazalla y naranja",
+    descripcion:
+      "⭐ Tarta del mes de marzo · Tarta de queso con cazalla y naranja con topping de chocolate blanco.",
     precio: "7.5€",
   },
   {
@@ -314,12 +363,12 @@ export const menuItems: MenuItem[] = [
   {
     id: "pos-4",
     categoria: "Postres",
-    nombre: "Tarta de queso TostaRica",
-    descripcion: "Con un delicado aroma y sabor a galleta TostaRica.",
+    nombre: "Tarta de queso Nutella",
+    descripcion:
+      "Base cremosa con el intenso e irresistible sabor de Nutella.",
     precio: "7.5€",
   },
-
-    // =========================
+  // =========================
   // BEBIDAS
   // =========================
 
@@ -483,22 +532,13 @@ export const menuItems: MenuItem[] = [
 
   // Botella - Tinto
   {
-    id: "beb-vin-6",
+    id: "beb-vin-9",
     categoria: "Bebidas",
     subcategoria: "Vinos",
     tipo: "Tinto",
-    nombre: "Protos 27",
-    descripcion: "Ribera del Duero · Botella, tinto.",
-    precio: "33€",
-  },
-  {
-    id: "beb-vin-7",
-    categoria: "Bebidas",
-    subcategoria: "Vinos",
-    tipo: "Tinto",
-    nombre: "Abadía San Quirce (Crianza)",
-    descripcion: "Ribera del Duero · Botella, tinto.",
-    precio: "30€",
+    nombre: "Bordón (Crianza)",
+    descripcion: "Rioja · Botella, tinto.",
+    precio: "16€",
   },
   {
     id: "beb-vin-8",
@@ -510,16 +550,95 @@ export const menuItems: MenuItem[] = [
     precio: "28€",
   },
   {
-    id: "beb-vin-9",
+    id: "beb-vin-7",
     categoria: "Bebidas",
     subcategoria: "Vinos",
     tipo: "Tinto",
-    nombre: "Bordón (Crianza)",
-    descripcion: "Rioja · Botella, tinto.",
-    precio: "16€",
+    nombre: "Abadía San Quirce (Crianza)",
+    descripcion: "Ribera del Duero · Botella, tinto.",
+    precio: "30€",
   },
-
-
+  {
+    id: "beb-vin-6",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "Pago de Fuentecojo",
+    descripcion: "Ribera del Duero · Tempranillo 2021 · Botella, tinto.",
+    precio: "28€",
+  },
+  {
+    id: "beb-vin-10",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "BAI GORRI 2023",
+    descripcion: "Rioja · Botella, tinto.",
+    precio: "35€",
+  },
+  {
+    id: "beb-vin-13",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "Bordón Reserva",
+    descripcion: "Rioja · Botella, tinto.",
+    precio: "35€",
+  },
+  {
+    id: "beb-vin-11",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "Valparaíso Raíces",
+    descripcion: "Ribera del Duero · Botella, tinto.",
+    precio: "45€",
+  },
+  {
+    id: "beb-vin-12",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "Pálpito",
+    descripcion: "Bodegas Franco Españolas · Botella, tinto.",
+    precio: "60€",
+  },
+  {
+    id: "beb-vin-15",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "Clio 2023",
+    descripcion: "Juan Gil Jumilla · Botella, tinto.",
+    precio: "75€",
+  },
+  {
+    id: "beb-vin-14",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "Macán Clásico 2021",
+    descripcion: "Rioja · Botella, tinto.",
+    precio: "95€",
+  },
+  {
+    id: "beb-vin-16",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "El Nido 2023",
+    descripcion: "Juan Gil Jumilla· Botella, tinto.",
+    precio: "180€",
+  },
+  {
+    id: "beb-vin-17",
+    categoria: "Bebidas",
+    subcategoria: "Vinos",
+    tipo: "Tinto",
+    nombre: "Vega Sicilia UNICO 2015",
+    descripcion: "Botella, tinto.",
+    precio: "475€",
+  },
 ];
 
 export const getMenuByCategory = (categoria: MenuItem["categoria"]) => {

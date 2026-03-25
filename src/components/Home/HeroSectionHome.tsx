@@ -1,4 +1,7 @@
 // components/Home/HeroSectionHome.tsx
+'use client';
+
+
 import Link from 'next/link';
 import Button from '../ui/Button';
 
@@ -13,8 +16,7 @@ export default function HeroSectionHome() {
           muted
           loop
           playsInline
-          preload="none"
-          poster="/assets/images/carne1.jpeg"
+          preload="metadata"
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/hero.mp4" type="video/mp4" />
