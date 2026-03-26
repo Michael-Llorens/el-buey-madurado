@@ -1,4 +1,3 @@
-// components/Home/Marquee.tsx
 'use client';
 
 export default function Marquee() {
@@ -7,16 +6,23 @@ export default function Marquee() {
       <div className="marquee">
         <div className="marquee-track">
           <span>
-            ✨ TARTA DEL MES ✨
-            🍰 Tarta de queso con dulce de leche
-            Suave, cremosa y adictiva
-            👉 No te la pierdas
+            🍔 BURGER DEL MES 🍔
+            LOS CUÑAOS 🔥
+            Carne de vaca 150 días + buey 500 días · 
+            mayonesa de tuétano · 
+            secreto de buey gallego 200 días · 
+            demiglace de buey caramelizada · 
+            queso cheddar madurado picante
           </span>
+
           <span>
-            ✨ TARTA DEL MES ✨
-            🍰 Tarta de queso con dulce de leche
-            Suave, cremosa y adictiva
-            👉 No te la pierdas
+            🍔 BURGER DEL MES 🍔
+            LOS CUÑAOS 🔥
+            Carne de vaca 150 días + buey 500 días · 
+            mayonesa de tuétano · 
+            secreto de buey gallego 200 días · 
+            demiglace de buey caramelizada · 
+            queso cheddar madurado picante
           </span>
         </div>
       </div>

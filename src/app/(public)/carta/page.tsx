@@ -131,6 +131,29 @@ export default function CartaPage() {
             <div className="carta-decorative-line"></div>
           </div>
 
+          {/* 🍰 BLOQUE COLABORACIÓN LETI'S (solo Postres) */}
+          {_categoria === 'Postres' && (
+            <div className="carta-letis-block">
+              <img
+                src="/assets/images/letis.webp"
+                alt="Leti’s Pastelería"
+                className="carta-letis-logo"
+                loading="lazy"
+              />
+
+              <div className="carta-letis-text">
+                <span className="carta-letis-title">
+                  Postres de autor by Leti’s Atelier Gourmet
+                </span>
+
+                <p className="carta-letis-description">
+                  Tartas de queso elaboradas artesanalmente en Xàtiva.
+                </p>
+              </div>
+            </div>
+          )}
+
+
           {/* ✅ BLOQUE ÚNICO DE GUARNICIÓN (solo Burgers) */}
           {_categoria === 'Hamburguesas' && (
             <div className="carta-guarnicion">

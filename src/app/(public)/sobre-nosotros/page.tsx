@@ -3,15 +3,18 @@
 import HeroSectionSobreNosotros from '@/components/SobreNosotros/HeroSectionSobreNosotros';
 import MuseoCarne from '@/components/SobreNosotros/MuseoCarne';
 import HistoriaYValores from '@/components/SobreNosotros/HistoriaYValores';
-import Equipo from '@/components/SobreNosotros/Equipo';
+import Equipo from '@/components/SobreNosotros/Esquipo';
+import GoogleReviews from '@/components/SobreNosotros/GoogleReviews';
 
 export default function SobreNosotrosPage() {
   return (
-    <main className="bg-black">
+    <main className="bg-black overflow-x-hidden">
       <HeroSectionSobreNosotros />
-      <MuseoCarne />
       <HistoriaYValores />
+      <MuseoCarne />
       <Equipo />
+      <GoogleReviews/>
     </main>
   );
 }
+

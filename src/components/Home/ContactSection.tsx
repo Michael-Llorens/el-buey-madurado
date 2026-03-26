@@ -84,11 +84,11 @@ const ContactSection = () => {
             <p>
               <strong className="text-gray-200">Teléfono:</strong>{" "}
               <a
-                href="tel:+34670777586"
-                aria-label="Llamar al 670 77 75 86"
+                href="tel:+34670775786"
+                aria-label="Llamar al 670 77 57 86"
                 className="text-amber-500 hover:underline"
               >
-                +34 670 77 75 86
+                +34 670 77 57 86
               </a>
             </p>
 
