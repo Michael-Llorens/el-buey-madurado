@@ -133,7 +133,7 @@ export default function MesaMapView({ mesas, onHacerPedido, onCambiarEstado }: M
 
   return (
     <div className="bg-gray-900/30 rounded-2xl border border-gray-700/40 p-6 sm:p-8 lg:p-10">
-      <div className="flex flex-wrap justify-center gap-10 sm:gap-12 lg:gap-14">
+      <div className="flex flex-wrap justify-center gap-6 sm:gap-8 md:gap-10 lg:gap-14">
         {mesasOrdenadas.map((mesa) => {
           const style = ESTADO_STYLE[mesa.estado];
           const { shape, size } = getMesaShape(mesa.capacidad);
@@ -183,14 +183,14 @@ export default function MesaMapView({ mesas, onHacerPedido, onCambiarEstado }: M
 
                 {/* Badge de tiempo semáforo */}
                 {timeBadge && (
-                  <span className={`absolute -top-2.5 -right-2.5 ${timeBadge.color} text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-lg whitespace-nowrap`}>
+                  <span className={`absolute -top-2.5 -right-2.5 ${timeBadge.color} text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full shadow-lg whitespace-nowrap`}>
                     {timeBadge.text}
                   </span>
                 )}
 
                 {/* Badge estado pedido */}
                 {mesa.estado === 'ocupada' && mesa.pedidoActual?.estado && mesa.pedidoActual.estado !== 'pendiente' && (
-                  <span className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[8px] sm:text-[9px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+                  <span className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
                     mesa.pedidoActual.estado === 'preparando' ? 'bg-blue-500 text-white' :
                     mesa.pedidoActual.estado === 'listo' ? 'bg-emerald-500 text-white' :
                     mesa.pedidoActual.estado === 'servido' ? 'bg-purple-500 text-white' :

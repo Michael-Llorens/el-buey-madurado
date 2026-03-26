@@ -8,7 +8,7 @@ import Button from '../ui/Button';
 
 export default function HeroSectionHome() {
   return (
-    <section className="relative w-full flex items-center justify-start overflow-hidden" style={{ height: 'calc(100vh - 80px)' }}>
+    <section className="relative w-full flex items-center justify-start overflow-hidden h-[calc(100vh-64px)] min-h-[500px]">
       {/* Video de fondo */}
       <div className="absolute top-0 left-0 w-full h-full z-0">
         <video
@@ -56,7 +56,7 @@ export default function HeroSectionHome() {
           <Link href="/carta">
             <Button
               variant="secondary"
-              className="px-6 md:px-8 py-2 md:py-3 text-sm md:text-base font-semibold rounded-full"
+              className="px-6 md:px-8 py-3 md:py-3 text-sm md:text-base font-semibold rounded-full"
             >
               Nuestra Carta
             </Button>

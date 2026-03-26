@@ -221,16 +221,16 @@ export default function PedidoForm({
         {formData.tipo === 'domicilio' && (
           <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 space-y-2">
             <p className="text-xs font-semibold text-amber-400 mb-1">📍 Dirección de entrega</p>
-            <div className="grid grid-cols-4 gap-2">
-              <input type="text" name="calle" value={formData.direccionEntrega.calle} onChange={handleDireccionChange} required placeholder="Calle *" className="col-span-3 px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
-              <input type="text" name="numero" value={formData.direccionEntrega.numero} onChange={handleDireccionChange} required placeholder="Nº *" className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <input type="text" name="calle" value={formData.direccionEntrega.calle} onChange={handleDireccionChange} required placeholder="Calle *" className="col-span-2 sm:col-span-3 px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+              <input type="text" name="numero" value={formData.direccionEntrega.numero} onChange={handleDireccionChange} required placeholder="Nº *" className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <input type="text" name="piso" value={formData.direccionEntrega.piso} onChange={handleDireccionChange} placeholder="Piso" className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
-              <input type="text" name="ciudad" value={formData.direccionEntrega.ciudad} onChange={handleDireccionChange} required placeholder="Ciudad *" className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
-              <input type="text" name="codigoPostal" value={formData.direccionEntrega.codigoPostal} onChange={handleDireccionChange} required placeholder="CP *" maxLength={5} className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input type="text" name="piso" value={formData.direccionEntrega.piso} onChange={handleDireccionChange} placeholder="Piso" className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+              <input type="text" name="ciudad" value={formData.direccionEntrega.ciudad} onChange={handleDireccionChange} required placeholder="Ciudad *" className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+              <input type="text" name="codigoPostal" value={formData.direccionEntrega.codigoPostal} onChange={handleDireccionChange} required placeholder="CP *" maxLength={5} className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
             </div>
-            <input type="tel" name="telefono" value={formData.direccionEntrega.telefono} onChange={handleDireccionChange} required placeholder="Teléfono de contacto *" className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+            <input type="tel" name="telefono" value={formData.direccionEntrega.telefono} onChange={handleDireccionChange} required placeholder="Teléfono de contacto *" className="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
           </div>
         )}
       </div>
@@ -306,7 +306,7 @@ export default function PedidoForm({
             )}
 
             {/* Grid de productos */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[260px] overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[35vh] sm:max-h-[260px] overflow-y-auto pr-1">
               {productosFiltrados.length === 0 ? (
                 <p className="col-span-full text-center text-gray-500 text-sm py-6">
                   {busquedaProducto ? `Sin resultados para "${busquedaProducto}"` : 'No hay productos en esta categoría'}
@@ -364,9 +364,9 @@ export default function PedidoForm({
                   <div className="flex items-center gap-2">
                     {/* +/- */}
                     <div className="flex items-center gap-1 shrink-0">
-                      <button type="button" onClick={() => handleDecrementarCantidad(idx)} className="w-9 h-9 flex items-center justify-center bg-gray-700 hover:bg-red-600/80 text-white rounded-lg text-base font-bold transition active:scale-90" style={{ minWidth: '36px', minHeight: '36px' }}>−</button>
+                      <button type="button" onClick={() => handleDecrementarCantidad(idx)} className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-red-600/80 text-white rounded-lg text-base font-bold transition active:scale-90" style={{ minWidth: '40px', minHeight: '40px' }}>−</button>
                       <span className="w-7 text-center text-white text-sm font-bold">{item.cantidad}</span>
-                      <button type="button" onClick={() => handleIncrementarCantidad(idx)} className="w-9 h-9 flex items-center justify-center bg-gray-700 hover:bg-green-600/80 text-white rounded-lg text-base font-bold transition active:scale-90" style={{ minWidth: '36px', minHeight: '36px' }}>+</button>
+                      <button type="button" onClick={() => handleIncrementarCantidad(idx)} className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-green-600/80 text-white rounded-lg text-base font-bold transition active:scale-90" style={{ minWidth: '40px', minHeight: '40px' }}>+</button>
                     </div>
 
                     {/* Info */}

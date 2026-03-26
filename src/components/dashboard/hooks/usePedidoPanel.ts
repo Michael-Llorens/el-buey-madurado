@@ -112,6 +112,8 @@ export function usePedidoPanel() {
     const [busqueda, setBusqueda] = useState<string>('');
     const [filtroTiempo, setFiltroTiempo] = useState<string>('todos');
     const [ordenar, setOrdenar] = useState<'recientes' | 'urgencia'>('recientes');
+    const [vistaHistorial, setVistaHistorial] = useState(false);
+    const [historialFecha, setHistorialFecha] = useState<string>('');
 
     const cargarPedidoPorId = async (id: string) => {
         return authFetcher(`/api/pedidos/${id}`);
@@ -189,8 +191,53 @@ export function usePedidoPanel() {
     }, [searchParams]);
 
 
+    // Calcular inicio del turno actual (comida 12:00-17:00, cena 19:00-01:00)
+    const inicioTurno = useMemo(() => {
+        const ahora = new Date();
+        const hora = ahora.getHours();
+
+        if (hora >= 12 && hora < 17) {
+            // Turno comida: desde las 12:00 de hoy
+            const inicio = new Date(ahora);
+            inicio.setHours(12, 0, 0, 0);
+            return inicio.getTime();
+        } else if (hora >= 19 || hora < 1) {
+            // Turno cena: desde las 19:00 de hoy (o ayer si pasada medianoche)
+            const inicio = new Date(ahora);
+            if (hora < 1) {
+                inicio.setDate(inicio.getDate() - 1);
+            }
+            inicio.setHours(19, 0, 0, 0);
+            return inicio.getTime();
+        } else {
+            // Fuera de turno (1:00-12:00 o 17:00-19:00): mostrar desde las 00:00 de hoy
+            const inicio = new Date(ahora);
+            inicio.setHours(0, 0, 0, 0);
+            return inicio.getTime();
+        }
+    }, [pedidos]); // recalcular cuando llegan pedidos nuevos
+
     const pedidosFiltrados = useMemo(() => {
         let resultado = pedidos;
+
+        // En vista normal: solo pedidos del turno actual
+        // En vista historial: filtrar por fecha seleccionada
+        if (vistaHistorial) {
+            if (historialFecha) {
+                const inicio = new Date(historialFecha);
+                inicio.setHours(0, 0, 0, 0);
+                const fin = new Date(historialFecha);
+                fin.setHours(23, 59, 59, 999);
+                resultado = resultado.filter((p) => {
+                    const t = new Date(p.createdAt).getTime();
+                    return t >= inicio.getTime() && t <= fin.getTime();
+                });
+            }
+            // En historial no aplicamos filtro de turno
+        } else {
+            // Vista normal: solo pedidos del turno actual
+            resultado = resultado.filter((p) => new Date(p.createdAt).getTime() >= inicioTurno);
+        }
 
         // Filtro por estado (multi-selección)
         if (filtroEstado.length > 0) resultado = resultado.filter((p) => filtroEstado.includes(p.estado));
@@ -198,14 +245,14 @@ export function usePedidoPanel() {
         // Filtro por tipo (multi-selección)
         if (filtroTipo.length > 0) resultado = resultado.filter((p) => filtroTipo.includes(p.tipo));
 
-        // Filtro por tiempo
-        if (filtroTiempo !== 'todos') {
+        // Filtro por tiempo (solo en modo normal)
+        if (!vistaHistorial && filtroTiempo !== 'todos') {
             const ahora = Date.now();
             const limites: Record<string, number> = {
                 '30min': 30 * 60_000,
                 '1h': 60 * 60_000,
                 '3h': 3 * 60 * 60_000,
-                'hoy': 0, // caso especial
+                'hoy': 0,
             };
             if (filtroTiempo === 'hoy') {
                 const hoy = new Date();
@@ -273,7 +320,7 @@ export function usePedidoPanel() {
         }
 
         return resultado;
-    }, [filtroEstado, filtroTipo, filtroTiempo, busqueda, ordenar, pedidos]);
+    }, [filtroEstado, filtroTipo, filtroTiempo, busqueda, ordenar, pedidos, vistaHistorial, historialFecha, inicioTurno]);
 
     const handleCambiarEstado = async (id: string, nuevoEstado: string) => {
         try {
@@ -397,14 +444,15 @@ export function usePedidoPanel() {
         );
     };
 
+    const pedidosTurno = pedidos.filter((p) => new Date(p.createdAt).getTime() >= inicioTurno);
     const stats = {
-        total: pedidos.length,
-        pendientes: pedidos.filter((p) => p.estado === 'pendiente').length,
-        preparando: pedidos.filter((p) => p.estado === 'preparando').length,
-        listos: pedidos.filter((p) => p.estado === 'listo').length,
-        servidos: pedidos.filter((p) => p.estado === 'servido').length,
-        pagados: pedidos.filter((p) => p.estado === 'pagado').length,
-        totalRecaudado: pedidos.filter((p) => p.estado === 'pagado').reduce((sum, p) => sum + p.total, 0),
+        total: pedidosTurno.length,
+        pendientes: pedidosTurno.filter((p) => p.estado === 'pendiente').length,
+        preparando: pedidosTurno.filter((p) => p.estado === 'preparando').length,
+        listos: pedidosTurno.filter((p) => p.estado === 'listo').length,
+        servidos: pedidosTurno.filter((p) => p.estado === 'servido').length,
+        pagados: pedidosTurno.filter((p) => p.estado === 'pagado').length,
+        totalRecaudado: pedidosTurno.filter((p) => p.estado === 'pagado').reduce((sum, p) => sum + p.total, 0),
     };
 
     return {
@@ -438,6 +486,10 @@ export function usePedidoPanel() {
         handleEditar,
         handleVerDetalle,
         cerrarDetalle,
+        vistaHistorial,
+        setVistaHistorial,
+        historialFecha,
+        setHistorialFecha,
         confirmProps,
         mutate,
     };
