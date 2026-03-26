@@ -130,10 +130,26 @@ function buildWhatsAppUrl(pedido: Pedido): string | null {
   const numero = /^[679]\d{8}$/.test(clean) ? `34${clean}` : clean.replace(/^\+/, '');
 
   const nombre = pedido.cliente || 'cliente';
-  const tipo = pedido.tipo === 'recoger' ? 'recoger' : 'recibir en su domicilio';
-  const mensaje = encodeURIComponent(
-    `¡Hola ${nombre}! 👋\n\nLe informamos desde *El Buey Madurado* que su pedido #${pedido._id.slice(-4).toUpperCase()} ya está *listo* para ${tipo}.\n\n¡Le esperamos! 🥩`
-  );
+  const id = pedido._id.slice(-4).toUpperCase();
+
+  let mensaje: string;
+  if (pedido.tipo === 'recoger') {
+    mensaje = encodeURIComponent(
+      `¡Hola ${nombre}! 👋\n\n` +
+      `Desde *El Buey Madurado* 🥩 le informamos de que su pedido *#${id}* ya está *listo para recoger*.\n\n` +
+      `Puede pasar a recogerlo cuando desee. Estaremos encantados de atenderle.\n\n` +
+      `📍 Carrer de la Reina, 41, 46800 Xàtiva, Valencia\n` +
+      `📞 670 775 786\n\n` +
+      `¡Gracias por confiar en nosotros! 🙏`
+    );
+  } else {
+    mensaje = encodeURIComponent(
+      `¡Hola ${nombre}! 👋\n\n` +
+      `Desde *El Buey Madurado* 🥩 le informamos de que su pedido *#${id}* ya está *preparado* y *en camino* a su domicilio.\n\n` +
+      `Si tiene cualquier consulta, no dude en contactarnos al 📞 670 775 786.\n\n` +
+      `¡Gracias por confiar en nosotros! 🙏`
+    );
+  }
   return `https://wa.me/${numero}?text=${mensaje}`;
 }
 

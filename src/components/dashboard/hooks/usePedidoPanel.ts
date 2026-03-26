@@ -45,6 +45,68 @@ export function usePedidoPanel() {
         prevCountRef.current = pedidos.length;
     }, [pedidos.length]);
 
+    // Alerta cuando un pedido pasa a "listo" (cocina terminó → hay que servir/entregar)
+    const prevEstadosRef = useRef<Record<string, string>>({});
+    useEffect(() => {
+        if (!pedidos.length) return;
+        const prevEstados = prevEstadosRef.current;
+        const hayPrevios = Object.keys(prevEstados).length > 0;
+
+        if (hayPrevios) {
+            const recienListos = pedidos.filter(
+                (p: any) => p.estado === 'listo' && prevEstados[p._id] && prevEstados[p._id] !== 'listo'
+            );
+
+            for (const p of recienListos) {
+                const mesa = (p as any).mesa?.nombre ?? (p as any).mesa?.numero;
+                const cliente = (p as any).cliente;
+                const id = p._id.slice(-4).toUpperCase();
+
+                // Sonido de alerta (doble tono más alto y largo que el de nuevo pedido)
+                try {
+                    const ctx = new AudioContext();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 1200;
+                    osc.type = 'triangle';
+                    gain.gain.value = 0.4;
+                    osc.start();
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                    osc.stop(ctx.currentTime + 0.15);
+                    // Segundo tono
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.frequency.value = 1500;
+                    osc2.type = 'triangle';
+                    gain2.gain.value = 0.4;
+                    osc2.start(ctx.currentTime + 0.2);
+                    gain2.gain.setValueAtTime(0.4, ctx.currentTime + 0.2);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                    osc2.stop(ctx.currentTime + 0.5);
+                    setTimeout(() => ctx.close(), 700);
+                } catch { /* audio no disponible */ }
+
+                // Notificación visual
+                if ((p as any).tipo === 'local' && mesa) {
+                    toast.success(`🍽️ Pedido #${id} LISTO para servir — ${mesa}`, { duration: 8000 });
+                } else if ((p as any).tipo === 'recoger') {
+                    toast.success(`🛍️ Pedido #${id} LISTO para recoger — ${cliente || 'Cliente'}`, { duration: 8000 });
+                } else if ((p as any).tipo === 'domicilio') {
+                    toast.success(`🛵 Pedido #${id} LISTO para enviar — ${cliente || 'Cliente'}`, { duration: 8000 });
+                }
+            }
+        }
+
+        // Actualizar snapshot de estados
+        const nuevosEstados: Record<string, string> = {};
+        pedidos.forEach((p: any) => { nuevosEstados[p._id] = p.estado; });
+        prevEstadosRef.current = nuevosEstados;
+    }, [pedidos]);
+
     const [filtroEstado, setFiltroEstado] = useState<string[]>([]);
     const [filtroTipo, setFiltroTipo] = useState<string[]>([]);
     const [busqueda, setBusqueda] = useState<string>('');
@@ -158,6 +220,8 @@ export function usePedidoPanel() {
         if (busqueda.trim()) {
             const q = busqueda.toLowerCase().trim();
             resultado = resultado.filter((p) => {
+                // ID del pedido (últimos 4 caracteres, como se muestra en la card y en el WhatsApp)
+                if (p._id?.toLowerCase().includes(q) || p._id?.slice(-4).toLowerCase().includes(q)) return true;
                 // Mesa
                 const mesa = (p.mesa as any)?.nombre ?? (p.mesa as any)?.numero ?? '';
                 if (String(mesa).toLowerCase().includes(q)) return true;
@@ -176,21 +240,36 @@ export function usePedidoPanel() {
             });
         }
 
-        // Ordenar
+        // Ordenar: siempre por prioridad de estado + tipo, luego por fecha
+        const PRIORIDAD_ESTADO: Record<string, number> = {
+            listo: 0, preparando: 1, pendiente: 2, en_camino: 3,
+            servido: 4, entregado: 5, pagado: 6, cancelado: 7,
+        };
+        const PRIORIDAD_TIPO: Record<string, number> = {
+            local: 0, recoger: 0, domicilio: 1,
+        };
+
         if (ordenar === 'urgencia') {
-            const PRIORIDAD_ESTADO: Record<string, number> = {
-                pendiente: 0, preparando: 1, listo: 2, en_camino: 3,
-                servido: 4, entregado: 5, pagado: 6, cancelado: 7,
-            };
             resultado.sort((a, b) => {
-                const pa = PRIORIDAD_ESTADO[a.estado] ?? 99;
-                const pb = PRIORIDAD_ESTADO[b.estado] ?? 99;
-                if (pa !== pb) return pa - pb;
+                const ea = PRIORIDAD_ESTADO[a.estado] ?? 99;
+                const eb = PRIORIDAD_ESTADO[b.estado] ?? 99;
+                if (ea !== eb) return ea - eb;
+                const ta = PRIORIDAD_TIPO[a.tipo] ?? 99;
+                const tb = PRIORIDAD_TIPO[b.tipo] ?? 99;
+                if (ta !== tb) return ta - tb;
                 return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
             });
         } else {
-            // Recientes primero (orden natural)
-            resultado.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            // Recientes primero, pero agrupados por prioridad
+            resultado.sort((a, b) => {
+                const ea = PRIORIDAD_ESTADO[a.estado] ?? 99;
+                const eb = PRIORIDAD_ESTADO[b.estado] ?? 99;
+                if (ea !== eb) return ea - eb;
+                const ta = PRIORIDAD_TIPO[a.tipo] ?? 99;
+                const tb = PRIORIDAD_TIPO[b.tipo] ?? 99;
+                if (ta !== tb) return ta - tb;
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            });
         }
 
         return resultado;
