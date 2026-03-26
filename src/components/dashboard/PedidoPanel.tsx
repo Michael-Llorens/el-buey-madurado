@@ -173,6 +173,10 @@ export default function PedidosPanel() {
         handleEditar,
         handleVerDetalle,
         cerrarDetalle,
+        vistaHistorial,
+        setVistaHistorial,
+        historialFecha,
+        setHistorialFecha,
         confirmProps,
         mutate,
     } = usePedidoPanel();
@@ -201,7 +205,7 @@ export default function PedidosPanel() {
         <div className="w-full min-w-0 space-y-4 sm:space-y-6">
             {modo === 'view' && (
                 <>
-                    {/* ── Barra superior: Nuevo + Búsqueda + Filtros ── */}
+                    {/* ── Barra superior: Nuevo + Búsqueda + Turno/Historial + Filtros ── */}
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
                         <button
                             onClick={() => setModo('add')}
@@ -228,6 +232,35 @@ export default function PedidosPanel() {
                                 </button>
                             )}
                         </div>
+
+                        {/* Toggle Turno / Historial */}
+                        <div className="flex items-center gap-1 shrink-0">
+                            <button
+                                onClick={() => { setVistaHistorial(false); setHistorialFecha(''); }}
+                                className={`px-3 py-2.5 rounded-l-lg text-xs font-semibold transition whitespace-nowrap ${
+                                    !vistaHistorial ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700'
+                                }`}
+                            >
+                                Turno
+                            </button>
+                            <button
+                                onClick={() => setVistaHistorial(true)}
+                                className={`px-3 py-2.5 rounded-r-lg text-xs font-semibold transition whitespace-nowrap ${
+                                    vistaHistorial ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700'
+                                }`}
+                            >
+                                Historial
+                            </button>
+                        </div>
+
+                        {vistaHistorial && (
+                            <input
+                                type="date"
+                                value={historialFecha}
+                                onChange={(e) => setHistorialFecha(e.target.value)}
+                                className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:border-amber-500 focus:outline-none shrink-0"
+                            />
+                        )}
 
                         {/* Botón Filtros con dropdown */}
                         <div className="relative shrink-0" ref={filtrosRef}>
@@ -645,7 +678,7 @@ export default function PedidosPanel() {
                             </button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                             {pedidosFiltrados.map((pedido) => (
                                 <PedidoCard
                                     key={pedido._id}

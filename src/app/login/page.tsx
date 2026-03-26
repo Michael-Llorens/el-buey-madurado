@@ -62,7 +62,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-3 text-white focus:outline-none focus:border-amber-400"
               required
             />
           </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-3 text-white focus:outline-none focus:border-amber-400"
               required
             />
           </div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded transition"
+            className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded transition"
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>

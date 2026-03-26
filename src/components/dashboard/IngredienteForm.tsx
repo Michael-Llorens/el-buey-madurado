@@ -191,7 +191,7 @@ export default function IngredienteForm({
           value={formData.nombre}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="Ej: Carne de res"
         />
       </div>
@@ -204,7 +204,7 @@ export default function IngredienteForm({
           value={formData.categoria}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
         >
           <option value="">-- Selecciona una categoría --</option>
           <option value="Carnes">Carnes</option>
@@ -223,7 +223,7 @@ export default function IngredienteForm({
           name="descripcion"
           value={formData.descripcion}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           rows={3}
           placeholder="Describe el ingrediente"
         />
@@ -240,7 +240,7 @@ export default function IngredienteForm({
             onChange={handleChange}
             required
             step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             placeholder="0.00"
           />
         </div>
@@ -252,7 +252,7 @@ export default function IngredienteForm({
             value={formData.precioExtra}
             onChange={handleChange}
             step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             placeholder="0.00"
           />
         </div>
@@ -269,7 +269,7 @@ export default function IngredienteForm({
             onChange={handleChange}
             required
             step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             placeholder="0"
           />
         </div>
@@ -279,7 +279,7 @@ export default function IngredienteForm({
             name="inventario.unidad"
             value={formData.inventario.unidad}
             onChange={handleChange}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           >
             <option value="kg">kg</option>
             <option value="g">g</option>

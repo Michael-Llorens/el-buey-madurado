@@ -20,6 +20,9 @@ export default function RootLayoutContent({
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
+    // No registrar SW en desarrollo para evitar cache de HTML viejo
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+
     navigator.serviceWorker.register('/sw.js').catch(() => {});
 
     // Escuchar mensajes del SW sobre actualizaciones
