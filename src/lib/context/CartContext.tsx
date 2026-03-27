@@ -18,6 +18,8 @@ interface CartItem {
   notas?: string;
 }
 
+type TipoPedido = 'recoger' | 'domicilio' | null;
+
 interface CartContextType {
   items: CartItem[];
   addItem: (item: Omit<CartItem, 'cantidad'> & { cantidad?: number }) => void;
@@ -26,6 +28,8 @@ interface CartContextType {
   clearCart: () => void;
   total: number;
   itemCount: number;
+  tipoPedido: TipoPedido;
+  setTipoPedido: (tipo: TipoPedido) => void;
 }
 
 const STORAGE_KEY = 'buey_cart';
@@ -52,6 +56,7 @@ function personalizacionesMatch(
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [tipoPedido, setTipoPedido] = useState<TipoPedido>(null);
   const [hydrated, setHydrated] = useState(false);
 
   // Load from localStorage on mount (SSR guard)
@@ -122,6 +127,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = useCallback(() => {
     setItems([]);
+    setTipoPedido(null);
+  }, []);
+
+  const changeTipoPedido = useCallback((tipo: TipoPedido) => {
+    setTipoPedido(tipo);
   }, []);
 
   const total = items.reduce(
@@ -134,7 +144,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount }}
+      value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, tipoPedido, setTipoPedido: changeTipoPedido }}
     >
       {children}
     </CartContext.Provider>

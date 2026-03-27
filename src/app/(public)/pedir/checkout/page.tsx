@@ -6,12 +6,11 @@ import Link from 'next/link';
 import { useCart } from '@/lib/context/CartContext';
 import { toast } from 'sonner';
 
-type TipoPedido = 'recoger' | 'domicilio';
-
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, total, clearCart } = useCart();
-  const [tipo, setTipo] = useState<TipoPedido>('recoger');
+  const { items, total, clearCart, tipoPedido, setTipoPedido } = useCart();
+  const tipo = tipoPedido || 'recoger';
+  const setTipo = setTipoPedido;
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     cliente: '',

@@ -12,7 +12,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  void pathname; // used for NavLink active state
+  void pathname;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
