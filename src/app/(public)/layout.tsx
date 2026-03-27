@@ -1,11 +1,17 @@
+'use client';
+
+import { CartProvider } from '@/lib/context/CartContext';
+
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="public-layout">
-      {children}
-    </div>
+    <CartProvider>
+      <div className="public-layout">
+        {children}
+      </div>
+    </CartProvider>
   );
 }

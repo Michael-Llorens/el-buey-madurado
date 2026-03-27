@@ -2,13 +2,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Logo from './Logo';
 import NavLink from './NavLink';
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  void pathname;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -40,6 +44,9 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-10 text-gray-200 font-semibold text-lg md:text-xl lg:text-xl flex-1 justify-center">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/carta">Carta</NavLink>
+          <Link href="/pedir" className="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-base font-bold transition">
+            Pedir Online
+          </Link>
           <NavLink href="/reservas">Reservar</NavLink>
           <NavLink href="/sobre-nosotros">Sobre Nosotros</NavLink>
           <NavLink href="/contacto">Contacto</NavLink>
@@ -69,6 +76,9 @@ export default function Navbar() {
         <ul className="flex flex-col items-start p-6 space-y-4" onClick={() => setMenuOpen(false)}>
           <NavLink href="/">Home</NavLink>
           <NavLink href="/carta">Carta</NavLink>
+          <Link href="/pedir" className="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-base font-bold transition">
+            Pedir Online
+          </Link>
           <NavLink href="/reservas">Reservar</NavLink>
           <NavLink href="/sobre-nosotros">Sobre Nosotros</NavLink>
           <NavLink href="/contacto">Contacto</NavLink>
