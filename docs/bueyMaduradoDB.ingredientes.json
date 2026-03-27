@@ -1,0 +1,1333 @@
+[{
+  "_id": {
+    "$oid": "69c62cce0a1b93d6b3055465"
+  },
+  "nombre": "Carne de buey gallego LYO (maduración extrema 500 días)",
+  "categoria": "Carnes",
+  "descripcion": "Carne de auténtico buey gallego selección LYO con maduración extrema de 500 días",
+  "precioBase": 28,
+  "precioExtra": 8,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 15,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055468"
+  },
+  "nombre": "Carne de vaca rubia gallega LYO (+150 días)",
+  "categoria": "Carnes",
+  "descripcion": "Carne de vaca rubia gallega selección especial LYO con más de 150 días de maduración. Base de todas las hamburguesas",
+  "precioBase": 16,
+  "precioExtra": 5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 30,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055469"
+  },
+  "nombre": "Carne de vaca rubia gallega (50 días)",
+  "categoria": "Carnes",
+  "descripcion": "Entrecot de vaca rubia gallega con 50 días de maduración",
+  "precioBase": 14,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 20,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305546a"
+  },
+  "nombre": "Vaca Old Especial Beef PREMIUM (70 días)",
+  "categoria": "Carnes",
+  "descripcion": "Entrecot Old Especial Beef PREMIUM con 70 días de maduración",
+  "precioBase": 20,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 15,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305546b"
+  },
+  "nombre": "Vaca Simmental (50 días)",
+  "categoria": "Carnes",
+  "descripcion": "Chuletón de vaca Simmental con 50 días de maduración. Selección Juan Navarro",
+  "precioBase": 18,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 20,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305546c"
+  },
+  "nombre": "Vaca rubia gallega (90 días)",
+  "categoria": "Carnes",
+  "descripcion": "Chuletón de vaca rubia gallega con 90 días de maduración. Selección Juan Navarro",
+  "precioBase": 26,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 12,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305546d"
+  },
+  "nombre": "Vaca Simmental (150 días)",
+  "categoria": "Carnes",
+  "descripcion": "Chuletón de vaca Simmental con 150 días de maduración. Selección Juan Navarro",
+  "precioBase": 32,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 10,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305546e"
+  },
+  "nombre": "Wagyu japonés A5",
+  "categoria": "Carnes",
+  "descripcion": "Auténtico wagyu japonés A5 con máxima infiltración",
+  "precioBase": 110,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305546f"
+  },
+  "nombre": "Entrecot de buey wagyu",
+  "categoria": "Carnes",
+  "descripcion": "Entrecot exclusivo de buey wagyu, hasta fin de existencias",
+  "precioBase": 38,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055470"
+  },
+  "nombre": "Secreto de buey gallego LYO (500 días)",
+  "categoria": "Carnes",
+  "descripcion": "Secreto de buey gallego selección LYO con 500 días de maduración",
+  "precioBase": 26,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 8,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055471"
+  },
+  "nombre": "Picaña de buey gallego LYO (500 días)",
+  "categoria": "Carnes",
+  "descripcion": "Picaña de buey gallego selección LYO con 500 días de maduración",
+  "precioBase": 24,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 8,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055472"
+  },
+  "nombre": "Cecina de wagyu",
+  "categoria": "Carnes",
+  "descripcion": "Cecina de auténtico wagyu",
+  "precioBase": 35,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055473"
+  },
+  "nombre": "Cecina de buey",
+  "categoria": "Carnes",
+  "descripcion": "Cecina de buey gallego curada",
+  "precioBase": 22,
+  "precioExtra": 5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 8,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055474"
+  },
+  "nombre": "Costilla de vaca rubia gallega",
+  "categoria": "Carnes",
+  "descripcion": "Costilla de vaca rubia gallega deshuesada y cocinada",
+  "precioBase": 10,
+  "precioExtra": 4,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 10,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055475"
+  },
+  "nombre": "Panceta ahumada baja temperatura",
+  "categoria": "Carnes",
+  "descripcion": "Panceta cocinada a baja temperatura y ahumada",
+  "precioBase": 8,
+  "precioExtra": 3,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 8,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055476"
+  },
+  "nombre": "Pastrami de vaca madurada LYO",
+  "categoria": "Carnes",
+  "descripcion": "Pastrami de vaca madurada premium selección LYO",
+  "precioBase": 18,
+  "precioExtra": 5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 6,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055477"
+  },
+  "nombre": "Vaca madurada (para buñuelos/gyozas)",
+  "categoria": "Carnes",
+  "descripcion": "Carne de vaca madurada para rellenos (buñuelos, gyozas)",
+  "precioBase": 14,
+  "precioExtra": 4,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 10,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055478"
+  },
+  "nombre": "Secreto de buey gallego (200 días)",
+  "categoria": "Carnes",
+  "descripcion": "Secreto de buey gallego con 200 días de maduración. Usado en hamburguesa LOS CUÑAOS",
+  "precioBase": 22,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 8,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055479"
+  },
+  "nombre": "Foie fresco",
+  "categoria": "Carnes",
+  "descripcion": "Foie fresco rallado para quesadilla",
+  "precioBase": 30,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305547a"
+  },
+  "nombre": "Pulpo",
+  "categoria": "Mariscos",
+  "descripcion": "Tentáculos de pulpo para brasa",
+  "precioBase": 14,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 10,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "moluscos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305547b"
+  },
+  "nombre": "Calamar de playa XXL",
+  "categoria": "Mariscos",
+  "descripcion": "Calamar de playa XXL en dos texturas",
+  "precioBase": 10,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 8,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "moluscos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305547c"
+  },
+  "nombre": "Gamba roja",
+  "categoria": "Mariscos",
+  "descripcion": "Gamba roja al ajillo para croquetas",
+  "precioBase": 22,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "crustaceos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305547d"
+  },
+  "nombre": "Queso de leche cruda de oveja",
+  "categoria": "Lácteos",
+  "descripcion": "Queso de leche cruda de oveja con virutas de cecina en su interior",
+  "precioBase": 12,
+  "precioExtra": 3,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305547e"
+  },
+  "nombre": "Queso cheddar madurado picante",
+  "categoria": "Lácteos",
+  "descripcion": "Queso cheddar inglés madurado, variante picante para LOS CUÑAOS",
+  "precioBase": 9,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305547f"
+  },
+  "nombre": "Queso cheddar inglés madurado",
+  "categoria": "Lácteos",
+  "descripcion": "Queso cheddar inglés madurado para hamburguesa BUEY",
+  "precioBase": 9,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055480"
+  },
+  "nombre": "Queso ahumado",
+  "categoria": "Lácteos",
+  "descripcion": "Queso ahumado para hamburguesas BÚFALO, EsMMY, CARLOS CATALÁ, DORITOS y Golden Burger",
+  "precioBase": 8,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055481"
+  },
+  "nombre": "Queso de tetilla",
+  "categoria": "Lácteos",
+  "descripcion": "Queso de tetilla estilo raclette para hamburguesa LA SUPREMA y buñuelos",
+  "precioBase": 8,
+  "precioExtra": 2.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 4,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055482"
+  },
+  "nombre": "Queso mozzarella",
+  "categoria": "Lácteos",
+  "descripcion": "Tortita de queso mozzarella para hamburguesa DORITOS CHEESE LOVER",
+  "precioBase": 6,
+  "precioExtra": 1.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055483"
+  },
+  "nombre": "Crema de queso azul",
+  "categoria": "Lácteos",
+  "descripcion": "Crema de queso azul para hamburguesa DORITOS CHEESE LOVER",
+  "precioBase": 10,
+  "precioExtra": 2.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055484"
+  },
+  "nombre": "Queso parmesano",
+  "categoria": "Lácteos",
+  "descripcion": "Queso parmesano rallado para Patatas EL BUEY y quesadilla",
+  "precioBase": 14,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055485"
+  },
+  "nombre": "Leche de oveja",
+  "categoria": "Lácteos",
+  "descripcion": "Leche de oveja para la croqueta del buey",
+  "precioBase": 2.5,
+  "precioExtra": 1,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 10,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055486"
+  },
+  "nombre": "Yema de huevo",
+  "categoria": "Otros",
+  "descripcion": "Yema de huevo para emulsión del tartar",
+  "precioBase": 0.15,
+  "precioExtra": 0.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 200,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055487"
+  },
+  "nombre": "Grasa de buey",
+  "categoria": "Otros",
+  "descripcion": "Grasa de buey para emulsión del tartar",
+  "precioBase": 4,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055488"
+  },
+  "nombre": "Salsa de trufa negra",
+  "categoria": "Salsas",
+  "descripcion": "Crema de trufa negra para Patatas EL BUEY, quesadilla y hamburguesa BUEY",
+  "precioBase": 18,
+  "precioExtra": 3,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 2,
+    "unidad": "l"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055489"
+  },
+  "nombre": "Mayonesa de tuétano",
+  "categoria": "Salsas",
+  "descripcion": "Mayonesa de tuétano para hamburguesa LOS CUÑAOS",
+  "precioBase": 5,
+  "precioExtra": 1.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305548a"
+  },
+  "nombre": "Mayonesa de ajo puerro y cecina",
+  "categoria": "Salsas",
+  "descripcion": "Mayonesa de ajo puerro y cecina para LA SUPREMA y calamar XXL",
+  "precioBase": 5,
+  "precioExtra": 1.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305548b"
+  },
+  "nombre": "Mayonesa de chili dulce",
+  "categoria": "Salsas",
+  "descripcion": "Mayonesa de chili dulce para hamburguesa DORITOS CHEESE LOVER",
+  "precioBase": 4,
+  "precioExtra": 1.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305548c"
+  },
+  "nombre": "Mayonesa yakitori con grasa de vaca madurada",
+  "categoria": "Salsas",
+  "descripcion": "Mayonesa yakitori con grasa de vaca madurada para The Golden Burger",
+  "precioBase": 6,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 2,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "huevos",
+    "soja"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305548d"
+  },
+  "nombre": "Salsa EMMY",
+  "categoria": "Salsas",
+  "descripcion": "Salsa EMMY para hamburguesa EsMMY BUEY",
+  "precioBase": 4,
+  "precioExtra": 1.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305548e"
+  },
+  "nombre": "Salsa hotney",
+  "categoria": "Salsas",
+  "descripcion": "Salsa hotney (miel picante) para hamburguesa CARLOS CATALÁ",
+  "precioBase": 4,
+  "precioExtra": 1.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305548f"
+  },
+  "nombre": "Glaseado de barbacoa de Coca-Cola",
+  "categoria": "Salsas",
+  "descripcion": "Glaseado de barbacoa con Coca-Cola para hamburguesa BÚFALO",
+  "precioBase": 3,
+  "precioExtra": 1,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055490"
+  },
+  "nombre": "Demiglace de buey caramelizada",
+  "categoria": "Salsas",
+  "descripcion": "Demiglace de buey caramelizada para hamburguesa LOS CUÑAOS",
+  "precioBase": 6,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 2,
+    "unidad": "l"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055491"
+  },
+  "nombre": "Demiglace de Pedro Ximénez",
+  "categoria": "Salsas",
+  "descripcion": "Demiglace con reducción de Pedro Ximénez para gyozas",
+  "precioBase": 7,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 2,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "sulfitos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055492"
+  },
+  "nombre": "Reducción de Pedro Ximénez",
+  "categoria": "Salsas",
+  "descripcion": "Reducción de Pedro Ximénez para buñuelos de vaca madurada",
+  "precioBase": 6,
+  "precioExtra": 2,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 2,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "sulfitos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055493"
+  },
+  "nombre": "Relish de pepinillo",
+  "categoria": "Salsas",
+  "descripcion": "Relish de pepinillo para hamburguesa CARLOS CATALÁ",
+  "precioBase": 3,
+  "precioExtra": 1,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055494"
+  },
+  "nombre": "Kimchi",
+  "categoria": "Verduras",
+  "descripcion": "Kimchi fermentado para croquetas de gamba roja y tentáculos del buey",
+  "precioBase": 6,
+  "precioExtra": 1.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055495"
+  },
+  "nombre": "Cebolla caramelizada",
+  "categoria": "Verduras",
+  "descripcion": "Cebolla caramelizada para hamburguesa EsMMY BUEY",
+  "precioBase": 3,
+  "precioExtra": 1,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055496"
+  },
+  "nombre": "Patata natural",
+  "categoria": "Verduras",
+  "descripcion": "Patata natural para Patatas EL BUEY",
+  "precioBase": 1.2,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 30,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055497"
+  },
+  "nombre": "Parmentier de patata",
+  "categoria": "Verduras",
+  "descripcion": "Puré parmentier de patata para tentáculos del buey",
+  "precioBase": 3,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055498"
+  },
+  "nombre": "Doritos (topping)",
+  "categoria": "Otros",
+  "descripcion": "Topping de doritos para quesadilla y hamburguesa DORITOS CHEESE LOVER",
+  "precioBase": 2.5,
+  "precioExtra": 0.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "gluten"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b3055499"
+  },
+  "nombre": "Palomitas de torrezno deshidratado",
+  "categoria": "Otros",
+  "descripcion": "Palomitas de torrezno deshidratado para la croqueta del buey",
+  "precioBase": 5,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305549a"
+  },
+  "nombre": "Pan brioche",
+  "categoria": "Panadería",
+  "descripcion": "Pan brioche para hamburguesas",
+  "precioBase": 0.5,
+  "precioExtra": 1,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 50,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten",
+    "huevos",
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305549b"
+  },
+  "nombre": "Pan brioche envuelto en oro 24k",
+  "categoria": "Panadería",
+  "descripcion": "Pan brioche envuelto en oro comestible de 24 quilates para The Golden Burger",
+  "precioBase": 3,
+  "precioExtra": 3,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 20,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten",
+    "huevos",
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305549c"
+  },
+  "nombre": "Pan de tomate",
+  "categoria": "Panadería",
+  "descripcion": "Pan de tomate para cesta de panes gourmet",
+  "precioBase": 0.35,
+  "precioExtra": 0.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 30,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305549d"
+  },
+  "nombre": "Pan de cereales",
+  "categoria": "Panadería",
+  "descripcion": "Pan de cereales para cesta de panes gourmet",
+  "precioBase": 0.4,
+  "precioExtra": 0.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 30,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305549e"
+  },
+  "nombre": "Pan tradicional",
+  "categoria": "Panadería",
+  "descripcion": "Pan tradicional para cesta de panes gourmet",
+  "precioBase": 0.25,
+  "precioExtra": 0.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 50,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b305549f"
+  },
+  "nombre": "Pan de aceitunas",
+  "categoria": "Panadería",
+  "descripcion": "Pan de aceitunas para cesta de panes gourmet",
+  "precioBase": 0.4,
+  "precioExtra": 0.5,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 30,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a0"
+  },
+  "nombre": "Masa de croqueta de cecina",
+  "categoria": "Elaboraciones",
+  "descripcion": "Masa de croqueta de cecina de buey con leche de oveja",
+  "precioBase": 0.6,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 100,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten",
+    "lacteos",
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a1"
+  },
+  "nombre": "Masa de croqueta de gamba roja",
+  "categoria": "Elaboraciones",
+  "descripcion": "Masa de croqueta de gamba roja al ajillo",
+  "precioBase": 0.5,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 100,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten",
+    "crustaceos",
+    "lacteos",
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a2"
+  },
+  "nombre": "Masa de gyoza",
+  "categoria": "Elaboraciones",
+  "descripcion": "Masa de gyoza para relleno de vaca rubia gallega",
+  "precioBase": 0.15,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 200,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a3"
+  },
+  "nombre": "Masa de buñuelo valenciano",
+  "categoria": "Elaboraciones",
+  "descripcion": "Masa de buñuelo valenciano para relleno de vaca madurada",
+  "precioBase": 0.3,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 100,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten",
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a4"
+  },
+  "nombre": "Tortilla de trigo (quesadilla)",
+  "categoria": "Elaboraciones",
+  "descripcion": "Tortilla de trigo para quesadilla de buey gallego",
+  "precioBase": 0.2,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 50,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a5"
+  },
+  "nombre": "Base de tarta de queso",
+  "categoria": "Postres",
+  "descripcion": "Base cremosa de tarta de queso artesanal (Leti's)",
+  "precioBase": 2,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 20,
+    "unidad": "unidades"
+  },
+  "alergenos": [
+    "gluten",
+    "lacteos",
+    "huevos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a6"
+  },
+  "nombre": "Topping de chocolate Kinder",
+  "categoria": "Postres",
+  "descripcion": "Topping de chocolate Kinder para tarta de queso",
+  "precioBase": 8,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 5,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a7"
+  },
+  "nombre": "Topping de Nutella",
+  "categoria": "Postres",
+  "descripcion": "Topping de Nutella para tarta de queso",
+  "precioBase": 7,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos",
+    "frutos_secos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a8"
+  },
+  "nombre": "Topping de Donuts",
+  "categoria": "Postres",
+  "descripcion": "Topping inspirado en el clásico Donuts para tarta de queso",
+  "precioBase": 6,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "gluten",
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554a9"
+  },
+  "nombre": "Cazalla y naranja",
+  "categoria": "Postres",
+  "descripcion": "Mezcla de cazalla y naranja para tarta de queso del mes",
+  "precioBase": 5,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "l"
+  },
+  "alergenos": [
+    "sulfitos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554aa"
+  },
+  "nombre": "Topping de chocolate blanco",
+  "categoria": "Postres",
+  "descripcion": "Chocolate blanco para topping de tarta de queso con cazalla y naranja",
+  "precioBase": 7,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 3,
+    "unidad": "kg"
+  },
+  "alergenos": [
+    "lacteos"
+  ],
+  "disponible": true,
+  "activo": true
+},
+{
+  "_id": {
+    "$oid": "69c62d200a1b93d6b30554ab"
+  },
+  "nombre": "Oro comestible 24k (lámina)",
+  "categoria": "Otros",
+  "descripcion": "Lámina de oro comestible de 24 quilates para The Golden Burger",
+  "precioBase": 8,
+  "precioExtra": 0,
+  "imagen": "",
+  "inventario": {
+    "cantidad": 50,
+    "unidad": "unidades"
+  },
+  "alergenos": [],
+  "disponible": true,
+  "activo": true
+}]

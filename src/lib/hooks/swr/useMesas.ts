@@ -10,7 +10,7 @@ export function useMesas() {
   const { data, error, isLoading, mutate } = useSWR<any[]>(
     '/api/mesas',
     authFetcher,
-    { refreshInterval: 10000 }
+    { refreshInterval: 5_000 }
   );
 
   return {

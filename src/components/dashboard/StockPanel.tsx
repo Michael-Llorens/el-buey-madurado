@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import ProductoForm from '@/components/dashboard/ProductoForm';
 import IngredienteForm from '@/components/dashboard/IngredienteForm';
@@ -26,6 +26,42 @@ export default function StockPanel() {
   const [ingredienteEditar, setIngredienteEditar] = useState<any>(null);
   const [productoEditar, setProductoEditar] = useState<any>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+
+  // Filtros
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroCategoriaIng, setFiltroCategoriaIng] = useState('todas');
+  const [filtroCategoriaProd, setFiltroCategoriaProd] = useState('todas');
+  const [filtroDisponible, setFiltroDisponible] = useState<'todos' | 'si' | 'no'>('todos');
+
+  // Categorías dinámicas
+  const categoriasIng = useMemo(() => [...new Set(ingredientes.map((i: any) => i.categoria))].sort(), [ingredientes]);
+  const categoriasProd = useMemo(() => [...new Set(productos.map((p: any) => p.categoria))].sort(), [productos]);
+
+  // Filtrado ingredientes
+  const ingredientesFiltrados = useMemo(() => {
+    let result = ingredientes;
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase();
+      result = result.filter((i: any) => i.nombre.toLowerCase().includes(q) || i.categoria?.toLowerCase().includes(q));
+    }
+    if (filtroCategoriaIng !== 'todas') result = result.filter((i: any) => i.categoria === filtroCategoriaIng);
+    if (filtroDisponible === 'si') result = result.filter((i: any) => i.disponible);
+    if (filtroDisponible === 'no') result = result.filter((i: any) => !i.disponible);
+    return result;
+  }, [ingredientes, busqueda, filtroCategoriaIng, filtroDisponible]);
+
+  // Filtrado productos
+  const productosFiltrados = useMemo(() => {
+    let result = productos;
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase();
+      result = result.filter((p: any) => p.nombre.toLowerCase().includes(q) || p.categoria?.toLowerCase().includes(q));
+    }
+    if (filtroCategoriaProd !== 'todas') result = result.filter((p: any) => p.categoria === filtroCategoriaProd);
+    if (filtroDisponible === 'si') result = result.filter((p: any) => p.disponible);
+    if (filtroDisponible === 'no') result = result.filter((p: any) => !p.disponible);
+    return result;
+  }, [productos, busqueda, filtroCategoriaProd, filtroDisponible]);
 
   // ✅ Guardar ingrediente
   const handleGuardarIngrediente = async () => {
@@ -163,50 +199,89 @@ export default function StockPanel() {
   // 📊 VISTA PRINCIPAL
   return (
     <div className="space-y-6">
-      {/* ============ TABS + BOTÓN NUEVO ============ */}
+      {/* ============ TABS + BÚSQUEDA + FILTROS + BOTÓN NUEVO ============ */}
       {modo === 'view' && (
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center border-b border-gray-700 pb-4">
-          {/* 📦 TAB PRODUCTOS */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center flex-wrap border-b border-gray-700 pb-4">
+          {/* Tabs */}
           <button
             onClick={() => setTabActivo('productos')}
-            className={`px-4 sm:px-6 py-3 font-semibold transition ${
+            className={`px-4 py-2.5 font-semibold transition text-sm rounded-lg ${
               tabActivo === 'productos'
-                ? 'bg-amber-600 text-white rounded-t-lg'
+                ? 'bg-amber-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:text-white'
             }`}
           >
             📦 Productos
           </button>
-
-          {/* 🥘 TAB INGREDIENTES */}
           <button
             onClick={() => setTabActivo('ingredientes')}
-            className={`px-4 sm:px-6 py-3 font-semibold transition ${
+            className={`px-4 py-2.5 font-semibold transition text-sm rounded-lg ${
               tabActivo === 'ingredientes'
-                ? 'bg-amber-600 text-white rounded-t-lg'
+                ? 'bg-amber-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:text-white'
             }`}
           >
             🥘 Ingredientes
           </button>
 
-          {/* ➕ BOTÓN NUEVO */}
-          <div className="ml-auto">
-            <button
-              onClick={() => {
-                if (tabActivo === 'productos') {
-                  setProductoEditar(null);
-                  setModo('add-product');
-                } else {
-                  setIngredienteEditar(null);
-                  setModo('add-ingredient');
-                }
-              }}
-              className="px-4 sm:px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition"
-            >
-              ➕ Nuevo {tabActivo === 'productos' ? 'Producto' : 'Ingrediente'}
-            </button>
+          {/* Búsqueda */}
+          <div className="relative flex-1 min-w-[150px]">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
+            <input
+              type="text"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder={`Buscar ${tabActivo === 'productos' ? 'producto' : 'ingrediente'}...`}
+              className="w-full pl-9 pr-9 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none"
+            />
+            {busqueda && (
+              <button onClick={() => setBusqueda('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-sm">✕</button>
+            )}
           </div>
+
+          {/* Filtro categoría */}
+          <select
+            value={tabActivo === 'productos' ? filtroCategoriaProd : filtroCategoriaIng}
+            onChange={(e) => tabActivo === 'productos' ? setFiltroCategoriaProd(e.target.value) : setFiltroCategoriaIng(e.target.value)}
+            className="px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:border-amber-500 focus:outline-none shrink-0"
+          >
+            <option value="todas">Todas</option>
+            {(tabActivo === 'productos' ? categoriasProd : categoriasIng).map((cat: string) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+
+          {/* Filtro disponible */}
+          <select
+            value={filtroDisponible}
+            onChange={(e) => setFiltroDisponible(e.target.value as 'todos' | 'si' | 'no')}
+            className="px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:border-amber-500 focus:outline-none shrink-0"
+          >
+            <option value="todos">Todos</option>
+            <option value="si">Disponibles</option>
+            <option value="no">No disponibles</option>
+          </select>
+
+          {/* Contador */}
+          <span className="text-xs text-gray-500 shrink-0 self-center hidden sm:inline">
+            {tabActivo === 'productos' ? productosFiltrados.length : ingredientesFiltrados.length}/{tabActivo === 'productos' ? productos.length : ingredientes.length}
+          </span>
+
+          {/* Botón nuevo */}
+          <button
+            onClick={() => {
+              if (tabActivo === 'productos') {
+                setProductoEditar(null);
+                setModo('add-product');
+              } else {
+                setIngredienteEditar(null);
+                setModo('add-ingredient');
+              }
+            }}
+            className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition text-sm whitespace-nowrap shrink-0 sm:ml-auto"
+          >
+            + Nuevo {tabActivo === 'productos' ? 'Producto' : 'Ingrediente'}
+          </button>
         </div>
       )}
 
@@ -249,13 +324,13 @@ export default function StockPanel() {
 
           {loadingProd ? (
             <div className="text-center text-gray-400 py-8">⏳ Cargando productos...</div>
-          ) : productos.length === 0 ? (
+          ) : productosFiltrados.length === 0 ? (
             <div className="bg-gray-800 rounded-lg p-8 text-center">
-              <p className="text-gray-400">No hay productos aún. ¡Crea el primero!</p>
+              <p className="text-gray-400">{productos.length === 0 ? 'No hay productos aún. ¡Crea el primero!' : 'No se encontraron productos con estos filtros.'}</p>
             </div>
           ) : (
             <ProductCardGrid
-              productos={productos}
+              productos={productosFiltrados}
               onEditar={handleEditarProducto}
               onEliminar={handleEliminarProducto}
               eliminandoId={eliminandoId}
@@ -275,13 +350,13 @@ export default function StockPanel() {
 
           {loadingIng ? (
             <div className="text-center text-gray-400 py-8">⏳ Cargando ingredientes...</div>
-          ) : ingredientes.length === 0 ? (
+          ) : ingredientesFiltrados.length === 0 ? (
             <div className="bg-gray-800 rounded-lg p-8 text-center">
-              <p className="text-gray-400">No hay ingredientes aún. ¡Crea el primero!</p>
+              <p className="text-gray-400">{ingredientes.length === 0 ? 'No hay ingredientes aún. ¡Crea el primero!' : 'No se encontraron ingredientes con estos filtros.'}</p>
             </div>
           ) : (
             <IngredientCardGrid
-              ingredientes={ingredientes}
+              ingredientes={ingredientesFiltrados}
               onEditar={handleEditarIngrediente}
               onEliminar={handleEliminarIngrediente}
               eliminandoId={eliminandoId}

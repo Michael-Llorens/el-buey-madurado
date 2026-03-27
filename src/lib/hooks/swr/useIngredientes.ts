@@ -10,7 +10,8 @@ import { authFetcher } from './fetcher';
 export function useIngredientes() {
   const { data, error, isLoading, mutate } = useSWR<any[]>(
     '/api/ingredientes',
-    authFetcher
+    authFetcher,
+    { refreshInterval: 5_000 }
   );
 
   return {

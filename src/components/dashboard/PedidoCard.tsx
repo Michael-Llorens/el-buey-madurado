@@ -235,7 +235,7 @@ export default function PedidoCard({
         {pedido.productos.slice(0, 3).map((item, i) => (
           <p key={i} className="text-xs text-gray-300 truncate">
             <span className="text-amber-400 font-semibold">{item.cantidad}x</span>{' '}
-            {item.producto.nombre}
+            {item.producto?.nombre ?? 'Producto eliminado'}
           </p>
         ))}
         {pedido.productos.length > 3 && (
