@@ -20,7 +20,7 @@ export function usePedidos() {
   const { data, error, isLoading, mutate } = useSWR<any[]>(
     '/api/pedidos',
     pedidosFetcher,
-    { refreshInterval: 30_000 }
+    { refreshInterval: 5_000 }
   );
 
   return {

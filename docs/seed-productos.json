@@ -1,0 +1,1674 @@
+[
+  {
+    "nombre": "Tartar de auténtico buey gallego LYO",
+    "descripcion": "Carne de auténtico buey gallego selección LYO con maduración extrema, fusionado con emulsión de yema y grasa de buey.",
+    "precio": 24,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62cce0a1b93d6b3055465"
+        },
+        "cantidad": 150,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055486"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055487"
+        },
+        "cantidad": 15,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Trilogía del buey",
+    "descripcion": "Secreto de buey gallego selección LYO con 500 días de maduración, picaña de buey gallego selección LYO con 500 días de maduración y cecina de wagyu.",
+    "precio": 28,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055470"
+        },
+        "cantidad": 80,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055471"
+        },
+        "cantidad": 80,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055472"
+        },
+        "cantidad": 60,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tabla de picaña",
+    "descripcion": "Picaña de buey selección LYO con 500 días de maduración, atemperada a 60 grados.",
+    "precio": 28,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055471"
+        },
+        "cantidad": 200,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tabla de cecina de wagyu",
+    "descripcion": "Cecina de auténtico wagyu.",
+    "precio": 27,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055472"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Rueda de queso",
+    "descripcion": "Queso de leche cruda de oveja con virutas de cecina en su interior.",
+    "precio": 12,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305547d"
+        },
+        "cantidad": 200,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055473"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Secreto de buey gallego selección LYO",
+    "descripcion": "Secreto de buey gallego selección LYO con 500 días de maduración. 150g.",
+    "precio": 25,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055470"
+        },
+        "cantidad": 150,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Trinchado de wagyu japonés A5",
+    "descripcion": "Trinchado de wagyu japonés A5 (máxima infiltración). 100g.",
+    "precio": 27,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305546e"
+        },
+        "cantidad": 100,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "La croqueta del buey",
+    "descripcion": "Croqueta de cecina de buey con leche de oveja envuelta con cecina de buey, sobre palomitas de torrezno deshidratado. Mínimo 2 unidades.",
+    "precio": 4,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a0"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055473"
+        },
+        "cantidad": 20,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055499"
+        },
+        "cantidad": 15,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Croquetas de gamba roja al ajillo con kimchi",
+    "descripcion": "Croquetas de gamba roja al ajillo con kimchi. Mínimo 2 unidades.",
+    "precio": 3,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a1"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055494"
+        },
+        "cantidad": 10,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Gyozas de vaca rubia gallega con demiglace",
+    "descripcion": "Gyozas de vaca rubia gallega con demiglace de Pedro Ximénez. 4 unidades.",
+    "precio": 12,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a2"
+        },
+        "cantidad": 4,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055477"
+        },
+        "cantidad": 120,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055491"
+        },
+        "cantidad": 30,
+        "unidad": "ml"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Patatas EL BUEY",
+    "descripcion": "Patata natural, pastrami de vaca madurada premium selección LYO, salsa de trufa negra y queso parmesano.",
+    "precio": 15,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055496"
+        },
+        "cantidad": 300,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055476"
+        },
+        "cantidad": 50,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055488"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055484"
+        },
+        "cantidad": 20,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Buñuelos de vaca madurada",
+    "descripcion": "Masa de buñuelo valenciano relleno de vaca madurada y queso de tetilla con reducción de Pedro Ximénez. 2 unidades.",
+    "precio": 10,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a3"
+        },
+        "cantidad": 2,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055477"
+        },
+        "cantidad": 60,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055481"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055492"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Quesadilla de buey gallego",
+    "descripcion": "Carne de buey gallego con 500 días de maduración, salsa de trufa negra, queso parmesano, topping de doritos y foie fresco rallado.",
+    "precio": 15,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a4"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62cce0a1b93d6b3055465"
+        },
+        "cantidad": 80,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055488"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055484"
+        },
+        "cantidad": 20,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055498"
+        },
+        "cantidad": 15,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055479"
+        },
+        "cantidad": 20,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tentáculos del buey",
+    "descripcion": "Tentáculos de pulpo a la brasa sobre parmentier de patata y kimchi, fusionados con picaña de buey de 500 días de maduración.",
+    "precio": 28,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305547a"
+        },
+        "cantidad": 200,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055497"
+        },
+        "cantidad": 100,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055494"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055471"
+        },
+        "cantidad": 40,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Calamar de playa XXL",
+    "descripcion": "Calamar de playa XXL en dos texturas, acompañado con mayonesa de ajo puerro y cecina.",
+    "precio": 19,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305547b"
+        },
+        "cantidad": 300,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305548a"
+        },
+        "cantidad": 30,
+        "unidad": "ml"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Cesta de panes gourmet",
+    "descripcion": "Pan de tomate. Pan de cereales. Pan tradicional. Pan de aceitunas.",
+    "precio": 6,
+    "categoria": "Entrantes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549c"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549d"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549e"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549f"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "LOS CUÑAOS",
+    "descripcion": "Carne de vaca 150 días y carne de buey 500 días. Mayonesa de tuétano. Secreto de buey gallego 200 días. Demiglace de buey caramelizada. Queso cheddar madurado picante.",
+    "precio": 20,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055468"
+        },
+        "cantidad": 90,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62cce0a1b93d6b3055465"
+        },
+        "cantidad": 90,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549a"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055489"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055478"
+        },
+        "cantidad": 40,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055490"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305547e"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "BÚFALO",
+    "descripcion": "180g de carne de vaca rubia gallega con +150 días de maduración, costilla de vaca rubia gallega, queso ahumado y glaseado de barbacoa de Coca-Cola.",
+    "precio": 18,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055468"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549a"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055474"
+        },
+        "cantidad": 50,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055480"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305548f"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "EsMMY BUEY",
+    "descripcion": "180g de carne de vaca rubia gallega, cebolla caramelizada, queso ahumado, salsa EMMY, envuelta en picaña de buey gallego con 500 días de maduración.",
+    "precio": 18,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055468"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549a"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055495"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055480"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305548d"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055471"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "LA SUPREMA",
+    "descripcion": "180g de carne de vaca rubia gallega, cecina de buey, queso de tetilla estilo raclette y mayonesa de ajo puerro y cecina.",
+    "precio": 18,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055468"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549a"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055473"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055481"
+        },
+        "cantidad": 40,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305548a"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "BUEY",
+    "descripcion": "180g de carne de vaca rubia gallega, pastrami de vaca selección LYO, queso cheddar inglés madurado y crema de trufa negra.",
+    "precio": 18,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055468"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549a"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055476"
+        },
+        "cantidad": 40,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305547f"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055488"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "DORITOS CHEESE LOVER",
+    "descripcion": "180g de carne de vaca rubia gallega, tortita de queso mozzarella, queso ahumado, crema de queso azul, mayonesa de chili dulce y topping de doritos.",
+    "precio": 16,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055468"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549a"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055482"
+        },
+        "cantidad": 40,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055480"
+        },
+        "cantidad": 20,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055483"
+        },
+        "cantidad": 15,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305548b"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055498"
+        },
+        "cantidad": 15,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "CARLOS CATALÁ",
+    "descripcion": "180g de carne de vaca rubia gallega, panceta ahumada a baja temperatura, queso ahumado, salsa hotney y relish de pepinillo.",
+    "precio": 18,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055468"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549a"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055475"
+        },
+        "cantidad": 40,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055480"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305548e"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055493"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "The Golden Burger",
+    "descripcion": "180g de auténtico buey gallego con maduración extrema de 500 días, auténtico wagyu japonés A5, queso ahumado, mayonesa yakitori con grasa de vaca madurada, brioche envuelto en oro de 24k.",
+    "precio": 28,
+    "categoria": "Hamburguesas",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62cce0a1b93d6b3055465"
+        },
+        "cantidad": 180,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305549b"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305546e"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055480"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305548c"
+        },
+        "cantidad": 20,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554ab"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": true,
+    "permitirExtras": true,
+    "permitirRemover": true,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Entrecot de vaca rubia gallega (50 días)",
+    "descripcion": "Entrecot de vaca rubia gallega con 50 días de maduración. 300-350g.",
+    "precio": 28,
+    "categoria": "Carnes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b3055469"
+        },
+        "cantidad": 325,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Entrecot Old Especial Beef PREMIUM (70 días)",
+    "descripcion": "Entrecot Old Especial Beef PREMIUM con 70 días de maduración. 300-350g.",
+    "precio": 38,
+    "categoria": "Carnes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305546a"
+        },
+        "cantidad": 325,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Entrecot buey de wagyu",
+    "descripcion": "Entrecot exclusivo hasta fin de existencias. 500g aprox.",
+    "precio": 50,
+    "categoria": "Carnes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305546f"
+        },
+        "cantidad": 500,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Chuletón GOLD (50 días)",
+    "descripcion": "Chuletón de vaca Simmental con 50 días de maduración. Selección especial Juan Navarro. Precio por kg.",
+    "precio": 70,
+    "categoria": "Carnes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305546b"
+        },
+        "cantidad": 1000,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Chuletón ESMERALDA (90 días)",
+    "descripcion": "Chuletón de vaca rubia gallega con 90 días de maduración. Selección especial Juan Navarro. Precio por kg.",
+    "precio": 100,
+    "categoria": "Carnes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305546c"
+        },
+        "cantidad": 1000,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Chuletón DIAMANTE TOP (150 días)",
+    "descripcion": "Chuletón de vaca Simmental con 150 días de maduración. Selección especial Juan Navarro. Precio por kg.",
+    "precio": 120,
+    "categoria": "Carnes",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b305546d"
+        },
+        "cantidad": 1000,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tarta de queso con cazalla y naranja",
+    "descripcion": "Tarta del mes de marzo. Tarta de queso con cazalla y naranja con topping de chocolate blanco.",
+    "precio": 7.5,
+    "categoria": "Postres",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a5"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a9"
+        },
+        "cantidad": 30,
+        "unidad": "ml"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554aa"
+        },
+        "cantidad": 20,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tarta de queso Kinder",
+    "descripcion": "Base cremosa con el inconfundible sabor a chocolate Kinder.",
+    "precio": 7.5,
+    "categoria": "Postres",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a5"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a6"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tarta de queso Donuts",
+    "descripcion": "Inspirada en el clásico Donuts, dulce y sorprendente.",
+    "precio": 7.5,
+    "categoria": "Postres",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a5"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a8"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tarta de queso Nutella",
+    "descripcion": "Base cremosa con el intenso e irresistible sabor de Nutella.",
+    "precio": 7.5,
+    "categoria": "Postres",
+    "imagen": "",
+    "ingredientes": [
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a5"
+        },
+        "cantidad": 1,
+        "unidad": "unidades"
+      },
+      {
+        "ingrediente": {
+          "$oid": "69c62d200a1b93d6b30554a7"
+        },
+        "cantidad": 30,
+        "unidad": "gramos"
+      }
+    ],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Founders Porter",
+    "descripcion": "Cerveza negra.",
+    "precio": 4.3,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Mahou Maestra Doble Lúpulo",
+    "descripcion": "Cerveza.",
+    "precio": 3.2,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Mahou Barrica Bourbon",
+    "descripcion": "Cerveza.",
+    "precio": 4.3,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Mahou 5 Estrellas",
+    "descripcion": "Cerveza.",
+    "precio": 2.8,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Mahou 0,0 Tostada",
+    "descripcion": "Cerveza sin alcohol.",
+    "precio": 2.8,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Mahou Sin Gluten",
+    "descripcion": "Cerveza sin gluten.",
+    "precio": 2.8,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Mahou Radler",
+    "descripcion": "Cerveza con limón.",
+    "precio": 2.8,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Mahou Rosé (fresa)",
+    "descripcion": "Cerveza con fresa.",
+    "precio": 3.2,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Agua",
+    "descripcion": "Agua mineral.",
+    "precio": 2.2,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Agua con gas",
+    "descripcion": "Agua con gas.",
+    "precio": 2.5,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Refrescos",
+    "descripcion": "Coca-Cola, Fanta, etc.",
+    "precio": 2.8,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tónica Royal Bliss",
+    "descripcion": "Tónica premium.",
+    "precio": 2.5,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Tónica Royal Bliss Berry",
+    "descripcion": "Tónica con frutos rojos.",
+    "precio": 2.5,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Vino Portia Verdejo (Rueda)",
+    "descripcion": "Copa, blanco.",
+    "precio": 3.5,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Vino Mucho Más",
+    "descripcion": "Copa, tinto.",
+    "precio": 3.5,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Castillo de Miraflores (Verdejo)",
+    "descripcion": "Botella, blanco.",
+    "precio": 16,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Quinta do Sil (Godello)",
+    "descripcion": "Botella, blanco.",
+    "precio": 22,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Gran Bazán Etiqueta Verde (Albariño)",
+    "descripcion": "D.O. Rías Baixas · 100% Albariño · Botella, blanco.",
+    "precio": 25,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Bordón (Crianza)",
+    "descripcion": "Rioja · Botella, tinto.",
+    "precio": 16,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Álvarez Nölting",
+    "descripcion": "Utiel, Requena · Botella, tinto.",
+    "precio": 28,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Abadía San Quirce (Crianza)",
+    "descripcion": "Ribera del Duero · Botella, tinto.",
+    "precio": 30,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Pago de Fuentecojo",
+    "descripcion": "Ribera del Duero · Tempranillo 2021 · Botella, tinto.",
+    "precio": 28,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "BAI GORRI 2023",
+    "descripcion": "Rioja · Botella, tinto.",
+    "precio": 35,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Bordón Reserva",
+    "descripcion": "Rioja · Botella, tinto.",
+    "precio": 35,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Valparaíso Raíces",
+    "descripcion": "Ribera del Duero · Botella, tinto.",
+    "precio": 45,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Pálpito",
+    "descripcion": "Bodegas Franco Españolas · Botella, tinto.",
+    "precio": 60,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Clio 2023",
+    "descripcion": "Juan Gil Jumilla · Botella, tinto.",
+    "precio": 75,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Macán Clásico 2021",
+    "descripcion": "Rioja · Botella, tinto.",
+    "precio": 95,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "El Nido 2023",
+    "descripcion": "Juan Gil Jumilla · Botella, tinto.",
+    "precio": 180,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  },
+  {
+    "nombre": "Vega Sicilia UNICO 2015",
+    "descripcion": "Botella, tinto.",
+    "precio": 475,
+    "categoria": "Bebidas",
+    "imagen": "",
+    "ingredientes": [],
+    "ingredientesExtra": [],
+    "permitirPersonalizacion": false,
+    "permitirExtras": false,
+    "permitirRemover": false,
+    "disponible": true,
+    "activo": true
+  }
+]

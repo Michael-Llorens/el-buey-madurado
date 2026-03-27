@@ -38,7 +38,7 @@ export function useReportes() {
   const { data, error, isLoading, mutate } = useSWR<ReportesData>(
     '/api/reportes',
     authFetcher,
-    { refreshInterval: 60_000 }
+    { refreshInterval: 5_000 }
   );
 
   return {

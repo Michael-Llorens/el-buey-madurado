@@ -6,6 +6,35 @@
 
 ---
 
+## Roadmap de nuevas funcionalidades
+
+### Funcionalidad (alto impacto)
+- [ ] **Pedidos online desde la web pública** — Que el cliente pueda pedir para recoger/domicilio directamente desde la carta, sin llamar
+- [ ] **Impresión de tickets** — Generar ticket de cocina y ticket de cobro (PDF o impresora térmica)
+- [ ] **Gestión de reservas integrada** — Reservas propias vinculadas a las mesas del dashboard (sustituir iframe CoverManager)
+- [ ] **Notificaciones push reales** — Con Web Push API (gratis), avisar al camarero cuando un pedido está listo aunque tenga la pantalla apagada
+
+### Dashboard
+- [ ] **Reportes mejorados** — Gráficas de ventas por día/semana, platos más vendidos, ticket medio, horas punta
+- [ ] **Gestión de stock real** — Al hacer un pedido descuenta ingredientes del inventario y avisa cuando quede poco
+- [ ] **Pantalla de cocina dedicada** — Vista fullscreen para tablet de cocina con letras grandes y temporizadores
+
+### Web pública
+- [ ] **Galería mejorada** — Fotos del local, platos, equipo con lightbox
+- [ ] **SEO y rendimiento** — Meta tags dinámicos, sitemap, optimización de imágenes
+- [ ] **Opiniones/reseñas propias** — Mostrar reseñas de Google directamente en la web
+
+### Completadas
+- [x] **Botón WhatsApp para pedidos recoger/domicilio** — Mensaje pre-escrito al cliente cuando el pedido está listo
+- [x] **Búsqueda de pedidos por ID** — Buscar por #78B2 en la barra de búsqueda
+- [x] **Alerta de pedidos listos** — Sonido + notificación cuando un pedido pasa a "listo"
+- [x] **Ordenación por prioridad** — Pedidos ordenados por estado y tipo (listo > preparando > pendiente)
+- [x] **Cards compactas** — Grid de 5 columnas con cards más pequeñas y mejor layout
+- [x] **Filtro por turno** — Solo muestra pedidos del turno actual (comida/cena) con historial por fecha
+- [x] **Auditoría responsive completa** — Touch targets 44px, breakpoints tablet, formularios responsive
+
+---
+
 ## 1. Objetivo del documento
 
 Este documento transforma los hallazgos de la auditoría técnica del proyecto El Buey Madurado en un **plan de implementación priorizado y ejecutable**. No es una copia de la auditoría — es su traducción operativa.

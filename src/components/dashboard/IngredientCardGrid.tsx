@@ -1,5 +1,17 @@
 'use client';
 
+const CATEGORIA_ICON: Record<string, string> = {
+  Carnes: '🥩',
+  Mariscos: '🦐',
+  Lácteos: '🧀',
+  Salsas: '🫙',
+  Verduras: '🥬',
+  Panadería: '🍞',
+  Elaboraciones: '👨‍🍳',
+  Postres: '🍰',
+  Otros: '📦',
+};
+
 interface Ingrediente {
   _id: string;
   nombre: string;
@@ -50,11 +62,16 @@ export default function IngredientCardGrid({
           >
             {/* Header */}
             <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="text-lg font-bold text-white">{ingrediente.nombre}</h3>
-                <p className="text-gray-400 text-sm">{ingrediente.categoria}</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-lg font-bold text-white truncate">{ingrediente.nombre}</h3>
+                <p className="text-gray-400 text-sm flex items-center gap-1">
+                  <span>{CATEGORIA_ICON[ingrediente.categoria] ?? '📦'}</span>
+                  {ingrediente.categoria}
+                </p>
               </div>
-              <span className="text-lg sm:text-2xl">{ingrediente.disponible ? '✅' : '❌'}</span>
+              {!ingrediente.disponible && (
+                <span className="text-xs bg-red-600/20 text-red-400 px-2 py-0.5 rounded-full font-semibold shrink-0 ml-2">No disponible</span>
+              )}
             </div>
 
             {/* Información */}
