@@ -105,7 +105,7 @@ export default function CheckoutPage() {
         </Link>
         <h1 className="text-2xl font-bold text-amber-500 mb-6">Finalizar pedido</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Tipo de pedido */}
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Tipo de pedido</p>
@@ -132,7 +132,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Datos del cliente */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Tus datos</p>
             <input
               type="text"
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
 
           {/* Dirección (solo domicilio) */}
           {tipo === 'domicilio' && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">📍 Dirección de entrega</p>
               <div className="grid grid-cols-3 gap-2">
                 <input type="text" name="calle" value={form.calle} onChange={handleChange} required placeholder="Calle *" className="col-span-2 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
@@ -185,12 +185,23 @@ export default function CheckoutPage() {
           </div>
 
           {/* Resumen */}
-          <div className="bg-gray-800/60 border border-gray-700/50 rounded-xl p-4 space-y-2">
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Resumen</p>
+          <div className="bg-gray-800/80 border border-gray-600/50 rounded-xl p-5 space-y-3">
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Resumen del pedido</p>
             {items.map((item, idx) => (
-              <div key={idx} className="flex justify-between text-sm text-gray-300">
-                <span className="truncate flex-1">{item.cantidad}x {item.nombre}</span>
-                <span className="shrink-0 ml-2">{((item.precio + (item.personalizaciones?.precioExtras ?? 0)) * item.cantidad).toFixed(2)}€</span>
+              <div key={idx} className="space-y-0.5">
+                <div className="flex justify-between text-sm text-gray-200">
+                  <span className="truncate flex-1 font-medium">{item.cantidad}x {item.nombre}</span>
+                  <span className="shrink-0 ml-2 text-amber-400">{((item.precio + (item.personalizaciones?.precioExtras ?? 0)) * item.cantidad).toFixed(2)}€</span>
+                </div>
+                {item.personalizaciones?.ingredientesExtra && item.personalizaciones.ingredientesExtra.length > 0 && (
+                  <p className="text-xs text-gray-500 pl-4">+ {item.personalizaciones.ingredientesExtra.join(', ')}</p>
+                )}
+                {item.personalizaciones?.ingredientesRemovidos && item.personalizaciones.ingredientesRemovidos.length > 0 && (
+                  <p className="text-xs text-red-400/60 pl-4">- {item.personalizaciones.ingredientesRemovidos.join(', ')}</p>
+                )}
+                {item.notas && (
+                  <p className="text-xs text-gray-500 pl-4 italic">Nota: {item.notas}</p>
+                )}
               </div>
             ))}
             {tipo === 'domicilio' && (
@@ -209,7 +220,7 @@ export default function CheckoutPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white rounded-xl font-bold text-base transition active:scale-[0.98]"
+            className="w-full py-5 bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white rounded-2xl font-bold text-lg transition active:scale-[0.98] shadow-lg shadow-green-600/20"
           >
             {loading ? 'Enviando pedido...' : `Confirmar pedido — ${totalFinal.toFixed(2)}€`}
           </button>

@@ -59,18 +59,8 @@ export default function PedirPage() {
   [items]);
 
   const handleAnadir = (producto: ProductoPublico) => {
-    // Siempre abrir modal para productos personalizables
-    if (producto.permitirExtras || producto.permitirRemover ||
-        (producto.ingredientes && producto.ingredientes.length > 0)) {
-      setProductoModal(producto);
-    } else {
-      addItem({
-        productoId: producto._id,
-        nombre: producto.nombre,
-        precio: producto.precio,
-        imagen: producto.imagen,
-      });
-    }
+    // Siempre abrir modal para personalizar (cantidad, notas, extras)
+    setProductoModal(producto);
   };
 
   const handleIncrementar = (productoId: string) => {
@@ -133,26 +123,26 @@ export default function PedirPage() {
             <p className="text-gray-500 text-sm">Elige cómo quieres recibir tu pedido</p>
           </div>
 
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4 items-center">
             <button
               onClick={() => setTipoPedido('recoger')}
-              className="w-full flex items-center gap-4 p-5 bg-gradient-to-r from-gray-800/80 to-gray-800/40 border border-gray-700/50 rounded-2xl hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/5 transition-all group"
+              className="inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-750 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-200 group active:scale-[0.98]"
             >
-              <span className="text-4xl group-hover:scale-110 transition-transform">🛍️</span>
+              <span className="text-3xl bg-amber-600/20 rounded-xl p-3 group-hover:bg-amber-600/30 transition-colors">🛍️</span>
               <div className="text-left">
                 <p className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Recoger en restaurante</p>
-                <p className="text-sm text-gray-500">Te avisamos cuando esté listo</p>
+                <p className="text-sm text-gray-400">Te avisamos cuando esté listo</p>
               </div>
             </button>
 
             <button
               onClick={() => setTipoPedido('domicilio')}
-              className="w-full flex items-center gap-4 p-5 bg-gradient-to-r from-gray-800/80 to-gray-800/40 border border-gray-700/50 rounded-2xl hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/5 transition-all group"
+              className="inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-750 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-200 group active:scale-[0.98]"
             >
-              <span className="text-4xl group-hover:scale-110 transition-transform">🛵</span>
+              <span className="text-3xl bg-purple-600/20 rounded-xl p-3 group-hover:bg-purple-600/30 transition-colors">🛵</span>
               <div className="text-left">
                 <p className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Entrega a domicilio</p>
-                <p className="text-sm text-gray-500">Te lo llevamos a casa · +3.50€</p>
+                <p className="text-sm text-gray-400">Te lo llevamos a casa · <span className="text-amber-500 font-semibold">+3.50€</span></p>
               </div>
             </button>
           </div>
@@ -169,25 +159,19 @@ export default function PedirPage() {
 
   // Paso 2: Elegir productos
   return (
-    <div className="min-h-screen bg-[#160a00] pb-24">
+    <div className="min-h-screen bg-[#160a00] pb-12">
       {/* Header compacto pegado al navbar */}
       <div className="sticky top-[80px] z-30 bg-[#160a00]/95 backdrop-blur-md border-b border-gray-800/30">
         <div className="max-w-6xl mx-auto px-4 py-2">
           {/* Fila 1: Tipo pedido + carrito */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setTipoPedido(null)}
-                className="text-gray-500 hover:text-white text-sm transition"
-              >
-                ←
-              </button>
-              <span className="text-sm font-semibold text-white">
+              <span className="text-base font-bold text-white">
                 {tipoPedido === 'recoger' ? '🛍️ Para recoger' : '🛵 A domicilio'}
               </span>
               <button
                 onClick={() => setTipoPedido(null)}
-                className="text-xs text-gray-500 hover:text-amber-400 transition"
+                className="text-xs font-semibold text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-lg transition"
               >
                 Cambiar
               </button>
@@ -223,13 +207,13 @@ export default function PedirPage() {
           </div>
 
           {/* Fila 3: Categorías */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4">
             <button
               onClick={() => setCategoriaActiva('todas')}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 categoriaActiva === 'todas'
-                  ? 'bg-amber-600 text-white'
-                  : 'bg-gray-800/60 text-gray-400 hover:text-white'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
+                  : 'bg-gray-800/60 text-gray-400 hover:text-white border border-gray-700/50'
               }`}
             >
               Todos
@@ -238,10 +222,10 @@ export default function PedirPage() {
               <button
                 key={cat}
                 onClick={() => setCategoriaActiva(cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                   categoriaActiva === cat
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-gray-800/60 text-gray-400 hover:text-white'
+                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
+                    : 'bg-gray-800/60 text-gray-400 hover:text-white border border-gray-700/50'
                 }`}
               >
                 {CATEGORIA_ICON[cat]} {cat}
@@ -258,13 +242,13 @@ export default function PedirPage() {
             const prods = productosFiltrados.filter((p) => p.categoria === cat);
             if (prods.length === 0) return null;
             return (
-              <div key={cat} className="mb-6">
-                <h2 className="text-base font-bold text-white mb-2 flex items-center gap-2">
+              <div key={cat} className="mb-8">
+                <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-3 border-l-4 border-amber-500 pl-3">
                   <span>{CATEGORIA_ICON[cat]}</span>
                   <span>{cat}</span>
-                  <span className="text-xs text-gray-600 font-normal">({prods.length})</span>
+                  <span className="text-xs text-gray-500 font-normal">({prods.length})</span>
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {prods.map((p) => (
                     <ProductoCard
                       key={p._id}
@@ -280,7 +264,7 @@ export default function PedirPage() {
             );
           })
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {productosFiltrados.map((p) => (
               <ProductoCard
                 key={p._id}
@@ -302,25 +286,6 @@ export default function PedirPage() {
         )}
       </div>
 
-      {/* Barra inferior - ver pedido */}
-      {itemCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-md border-t border-amber-600/20 px-4 py-3">
-          <div className="max-w-6xl mx-auto">
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="flex items-center justify-between w-full bg-amber-600 hover:bg-amber-700 text-white rounded-2xl px-5 py-3.5 font-bold transition active:scale-[0.99] shadow-lg shadow-amber-600/20"
-            >
-              <div className="flex items-center gap-3">
-                <span className="bg-white/20 text-white text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">
-                  {itemCount}
-                </span>
-                <span className="text-sm">Ver pedido</span>
-              </div>
-              <span>{total.toFixed(2)}€</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Modal personalización */}
       {productoModal && (

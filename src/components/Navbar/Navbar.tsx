@@ -44,23 +44,27 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-10 text-gray-200 font-semibold text-lg md:text-xl lg:text-xl flex-1 justify-center">
           <NavLink href="/">Home</NavLink>
           <NavLink href="/carta">Carta</NavLink>
-          <Link href="/pedir" className="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-base font-bold transition">
-            Pedir Online
-          </Link>
           <NavLink href="/reservas">Reservar</NavLink>
           <NavLink href="/sobre-nosotros">Sobre Nosotros</NavLink>
           <NavLink href="/contacto">Contacto</NavLink>
         </ul>
 
-        {/* Botón hamburguesa móvil */}
-        <div className="md:hidden">
-          <button
-            className="text-white hover:text-amber-500 transition-colors duration-200 text-4xl md:text-5xl p-4"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <span className="text-amber-500">✕</span> : '☰'}
-          </button>
+        {/* Pedir Online - Derecha */}
+        <div className="flex items-center gap-2">
+          <Link href="/pedir" className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-[#1a1410] rounded-full text-sm font-semibold shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">
+            🛒 Pedir Online
+          </Link>
+
+          {/* Botón hamburguesa móvil */}
+          <div className="md:hidden">
+            <button
+              className="text-white hover:text-amber-500 transition-colors duration-200 text-4xl md:text-5xl p-4"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <span className="text-amber-500">✕</span> : '☰'}
+            </button>
+          </div>
         </div>
       </div>
 

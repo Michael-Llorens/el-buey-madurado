@@ -10,7 +10,7 @@ interface ProductoPublico {
   disponible: boolean;
   permitirExtras: boolean;
   permitirRemover: boolean;
-  ingredientes?: Array<{ ingrediente?: { _id: string; nombre: string }; cantidad: number; unidad: string }>;
+  ingredientes?: Array<{ ingrediente?: { _id: string; nombre: string; precioExtra?: number; alergenos?: string[] }; cantidad: number; unidad: string }>;
   ingredientesExtra?: Array<{ nombre: string; precio: number }>;
 }
 
@@ -27,13 +27,21 @@ export type { ProductoPublico };
 export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecrementar, enCarrito }: ProductoCardProps) {
   const tienePersonalizacion = producto.permitirExtras || producto.permitirRemover;
 
+  const CATEGORIA_ICON: Record<string, string> = {
+    Entrantes: '🍽️',
+    Hamburguesas: '🍔',
+    Carnes: '🥩',
+    Postres: '🍰',
+    Bebidas: '🥤',
+  };
+
   return (
-    <div className={`group relative bg-gradient-to-br from-gray-800/80 to-gray-800/40 backdrop-blur-sm border rounded-2xl overflow-hidden transition-all duration-200 ${
+    <div className={`group relative bg-gray-800/90 backdrop-blur-sm border rounded-2xl overflow-hidden transition-all duration-200 ${
       !producto.disponible
         ? 'opacity-40 pointer-events-none border-gray-700/30'
         : enCarrito && enCarrito > 0
-          ? 'border-amber-500/50 shadow-amber-500/10 shadow-lg'
-          : 'border-gray-700/40 hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5'
+          ? 'border-amber-500 shadow-amber-500/10 shadow-lg'
+          : 'border-gray-600/50 hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/5'
     }`}>
       {!producto.disponible && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 rounded-2xl">
@@ -41,9 +49,16 @@ export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecr
         </div>
       )}
 
+      {/* Category badge */}
+      <div className="absolute top-2.5 right-2.5 z-[5]">
+        <span className="text-[10px] font-semibold text-gray-400 bg-gray-900/80 px-2 py-0.5 rounded-full">
+          {CATEGORIA_ICON[producto.categoria] || '📦'} {producto.categoria}
+        </span>
+      </div>
+
       <div className="p-4">
         {/* Nombre + descripción */}
-        <div className="mb-3">
+        <div className="mb-3 pr-20">
           <h3 className="text-base font-bold text-white leading-tight group-hover:text-amber-300 transition-colors">
             {producto.nombre}
           </h3>
@@ -84,7 +99,7 @@ export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecr
             <button
               onClick={() => onAnadir(producto)}
               disabled={!producto.disponible}
-              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-700 text-white text-sm font-semibold rounded-full transition active:scale-95 flex items-center gap-1.5"
+              className="px-5 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 text-white text-sm font-bold rounded-full transition active:scale-95 flex items-center gap-1.5 shadow-lg shadow-amber-600/20"
             >
               <span className="text-base leading-none">+</span>
               Añadir
@@ -94,7 +109,7 @@ export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecr
 
         {/* Badge personalizable */}
         {tienePersonalizacion && producto.disponible && (
-          <p className="text-[10px] text-gray-500 mt-2 flex items-center gap-1">
+          <p className="text-xs text-amber-500/70 mt-2.5 flex items-center gap-1 font-medium">
             <span>✨</span> Personalizable
           </p>
         )}

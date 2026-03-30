@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "cross-env TURBOPACK=0 next dev",
+    "dev": "cross-env TURBOPACK=0 next dev -p 3333",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
