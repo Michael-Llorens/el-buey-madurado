@@ -115,8 +115,8 @@ export default function PedirPage() {
   if (!tipoPedido) {
     return (
       <div className="min-h-screen bg-[#160a00] pt-20">
-        <div className="max-w-lg mx-auto px-4 pt-8 sm:pt-16">
-          <div className="text-center mb-8">
+        <div className="max-w-lg mx-auto px-4 pt-8 sm:pt-16 animate-[fadeIn_0.4s_ease-out]">
+          <div className="text-center mb-10">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
               Pedir <span className="text-amber-500">Online</span>
             </h1>
@@ -126,30 +126,35 @@ export default function PedirPage() {
           <div className="flex flex-col gap-4 items-center">
             <button
               onClick={() => setTipoPedido('recoger')}
-              className="inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-750 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-200 group active:scale-[0.98]"
+              className="w-full max-w-sm inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-800/80 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 group active:scale-[0.98]"
             >
               <span className="text-3xl bg-amber-600/20 rounded-xl p-3 group-hover:bg-amber-600/30 transition-colors">🛍️</span>
               <div className="text-left">
                 <p className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Recoger en restaurante</p>
                 <p className="text-sm text-gray-400">Te avisamos cuando esté listo</p>
+                <p className="text-xs text-green-500/70 mt-0.5">Tiempo estimado: 20–30 min</p>
               </div>
             </button>
 
             <button
               onClick={() => setTipoPedido('domicilio')}
-              className="inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-750 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-200 group active:scale-[0.98]"
+              className="w-full max-w-sm inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-800/80 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 group active:scale-[0.98]"
             >
               <span className="text-3xl bg-purple-600/20 rounded-xl p-3 group-hover:bg-purple-600/30 transition-colors">🛵</span>
               <div className="text-left">
                 <p className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Entrega a domicilio</p>
                 <p className="text-sm text-gray-400">Te lo llevamos a casa · <span className="text-amber-500 font-semibold">+3.50€</span></p>
+                <p className="text-xs text-green-500/70 mt-0.5">Tiempo estimado: 35–50 min</p>
               </div>
             </button>
           </div>
 
-          <div className="text-center mt-8">
+          <div className="text-center mt-10 space-y-2">
             <p className="text-xs text-gray-600">
               📍 Carrer de la Reina, 41, Xàtiva · 📞 670 775 786
+            </p>
+            <p className="text-xs text-gray-700">
+              Zona de reparto: Xàtiva y alrededores (máx. 5 km)
             </p>
           </div>
         </div>
@@ -193,16 +198,17 @@ export default function PedirPage() {
 
           {/* Fila 2: Buscador */}
           <div className="relative mb-2">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm" aria-hidden="true">🔍</span>
             <input
-              type="text"
+              type="search"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar plato..."
+              aria-label="Buscar platos en el menú"
               className="w-full pl-9 pr-9 py-2.5 bg-gray-800/60 border border-gray-700/50 rounded-xl text-sm text-white placeholder-gray-500 focus:border-amber-500/50 focus:outline-none transition"
             />
             {busqueda && (
-              <button onClick={() => setBusqueda('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-sm">✕</button>
+              <button onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white text-sm transition">✕</button>
             )}
           </div>
 
@@ -279,9 +285,26 @@ export default function PedirPage() {
         )}
 
         {productosFiltrados.length === 0 && (
-          <div className="text-center py-12">
-            <span className="text-3xl mb-2 block opacity-30">🔍</span>
-            <p className="text-gray-500 text-sm">No se encontraron productos</p>
+          <div className="text-center py-16">
+            <span className="text-5xl mb-4 block opacity-30">🔍</span>
+            <p className="text-gray-400 text-base font-medium mb-1">
+              {busqueda.trim()
+                ? `No encontramos resultados para "${busqueda}"`
+                : 'No hay productos disponibles en esta categoría'}
+            </p>
+            <p className="text-gray-600 text-sm mb-4">
+              {busqueda.trim()
+                ? 'Prueba con otro nombre o revisa la ortografía'
+                : 'Prueba seleccionando otra categoría'}
+            </p>
+            {(busqueda.trim() || categoriaActiva !== 'todas') && (
+              <button
+                onClick={() => { setBusqueda(''); setCategoriaActiva('todas'); }}
+                className="px-5 py-2.5 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 text-sm font-semibold rounded-xl transition"
+              >
+                Ver todos los productos
+              </button>
+            )}
           </div>
         )}
       </div>

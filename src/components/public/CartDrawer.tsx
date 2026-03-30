@@ -34,6 +34,9 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
 
       {/* Drawer */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Carrito de compras"
         className={`fixed top-0 right-0 z-50 h-full w-full sm:w-[420px] bg-gray-900 border-l border-gray-700/50 shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -47,7 +50,7 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
               <span className="bg-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">{itemCount}</span>
             )}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl leading-none transition">&times;</button>
+          <button onClick={onClose} aria-label="Cerrar carrito" className="text-gray-400 hover:text-white text-2xl leading-none transition">&times;</button>
         </div>
 
         {/* Contenido */}
@@ -69,6 +72,12 @@ export default function CartDrawer({ open, onClose }: CartDrawerProps) {
                 return (
                   <div key={idx} className="bg-gray-800/50 rounded-xl p-3 border border-gray-700/30">
                     <div className="flex items-start gap-3">
+                      {/* Thumbnail */}
+                      {item.imagen && (
+                        <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-700">
+                          <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                      )}
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white truncate">{item.nombre}</p>

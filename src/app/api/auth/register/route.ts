@@ -3,7 +3,7 @@ import { connectDB } from '@/lib/db';
 import Usuario from '@/lib/models/Usuario';
 import { ApiResponse } from '@/lib/types';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
-import { sanitizeBody } from '@/lib/utils/sanitize';
+
 import { checkRateLimit } from '@/lib/utils/rateLimiter';
 
 export async function POST(request: NextRequest) {
@@ -35,7 +35,10 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
 
-    const { email, password, rol } = sanitizeBody(await request.json());
+    const body = await request.json();
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const password = typeof body.password === 'string' ? body.password : '';
+    const rol = typeof body.rol === 'string' ? body.rol.trim() : '';
 
     // Validaciones
     if (!email || !password) {

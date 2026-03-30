@@ -84,7 +84,7 @@ export default function PersonalizarModal({ producto, onConfirm, onClose }: Pers
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose} role="dialog" aria-modal="true" aria-label={`Personalizar ${producto.nombre}`}>
       <div
         className="w-full sm:max-w-lg bg-gray-900 border border-gray-700 rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
@@ -98,7 +98,7 @@ export default function PersonalizarModal({ producto, onConfirm, onClose }: Pers
               <p className="text-xs text-gray-400 mt-1 line-clamp-3">{producto.descripcion}</p>
             )}
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl leading-none shrink-0 mt-1">&times;</button>
+          <button onClick={onClose} aria-label="Cerrar personalización" className="text-gray-400 hover:text-white text-2xl leading-none shrink-0 mt-1">&times;</button>
         </div>
 
         <div className="p-5 space-y-5">
@@ -202,14 +202,18 @@ export default function PersonalizarModal({ producto, onConfirm, onClose }: Pers
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                className="w-10 h-10 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-bold text-lg transition active:scale-90"
+                aria-label="Reducir cantidad"
+                disabled={cantidad <= 1}
+                className="w-10 h-10 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-white rounded-xl font-bold text-lg transition active:scale-90"
               >
                 −
               </button>
-              <span className="text-white font-bold text-xl w-8 text-center">{cantidad}</span>
+              <span className="text-white font-bold text-xl w-8 text-center" aria-live="polite" aria-label={`Cantidad: ${cantidad}`}>{cantidad}</span>
               <button
                 onClick={() => setCantidad(Math.min(20, cantidad + 1))}
-                className="w-10 h-10 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-lg transition active:scale-90"
+                aria-label="Aumentar cantidad"
+                disabled={cantidad >= 20}
+                className="w-10 h-10 bg-amber-600 hover:bg-amber-700 disabled:opacity-40 text-white rounded-xl font-bold text-lg transition active:scale-90"
               >
                 +
               </button>

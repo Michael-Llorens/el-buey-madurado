@@ -1,0 +1,121 @@
+# generated: 2026-03-25
+# last_updated: 2026-03-25
+# project: el-buey-madurado
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-25
+last_updated: 2026-03-25
+project: el-buey-madurado
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ============================================================
+  # Epic 1: Alergenos y Modelo de Datos (MVP)
+  # ============================================================
+  epic-1: backlog
+  1-1-constantes-y-utilidades-de-alergenos: backlog
+  1-2-campo-alergenos-en-modelo-ingrediente: backlog
+  1-3-ui-de-asignacion-de-alergenos-en-ingredienteform: backlog
+  epic-1-retrospective: optional
+
+  # ============================================================
+  # Epic 2: Mapa de Mesas Profesional (MVP)
+  # ============================================================
+  epic-2: backlog
+  2-1-mapa-de-mesas-con-estados-visuales-en-tiempo-real: backlog
+  2-2-interaccion-tactil-con-mesas: backlog
+  2-3-indicador-de-tiempo-en-mesas-ocupadas: backlog
+  2-4-gestion-de-mesas-admin: backlog
+  epic-2-retrospective: optional
+
+  # ============================================================
+  # Epic 3: Toma de Comandas Rapida (MVP)
+  # ============================================================
+  epic-3: backlog
+  3-1-grid-de-productos-por-categorias-tactil: backlog
+  3-2-personalizacion-de-producto-en-comanda: backlog
+  3-3-resumen-de-comanda-con-totales-en-tiempo-real: backlog
+  3-4-busqueda-rapida-de-productos: backlog
+  3-5-segunda-ronda-anadir-a-pedido-existente: backlog
+  epic-3-retrospective: optional
+
+  # ============================================================
+  # Epic 4: Cocina en Tiempo Real (MVP)
+  # ============================================================
+  epic-4: backlog
+  4-1-alergenos-visibles-en-tickets-de-cocina: backlog
+  4-2-indicadores-de-tiempo-por-ticket: backlog
+  4-3-sonido-y-notificacion-de-nuevo-ticket: backlog
+  epic-4-retrospective: optional
+
+  # ============================================================
+  # Epic 5: Cobro y Cuentas Divididas (MVP)
+  # ============================================================
+  epic-5: backlog
+  5-1-modal-de-cobro-de-pedido: backlog
+  5-2-endpoint-api-de-cobro: backlog
+  5-3-division-de-cuenta-a-partes-iguales: backlog
+  5-4-division-de-cuenta-por-productos: backlog
+  5-5-backend-de-cuentas-divididas: backlog
+  epic-5-retrospective: optional
+
+  # ============================================================
+  # Epic 6: PWA Completa (MVP)
+  # ============================================================
+  epic-6: backlog
+  6-1-manifest-y-meta-tags-pwa-completos: backlog
+  6-2-service-worker-con-cache-inteligente: backlog
+  6-3-prompt-de-actualizacion: backlog
+  epic-6-retrospective: optional
+
+  # ============================================================
+  # Epic 7: Turnos y Cierre de Caja (Crecimiento)
+  # ============================================================
+  epic-7: backlog
+  7-1-modelo-turno-y-api: backlog
+  7-2-ui-apertura-cierre-de-turno: backlog
+  7-3-panel-de-cierre-de-caja: backlog
+  7-4-historial-de-turnos: backlog
+  epic-7-retrospective: optional
+
+  # ============================================================
+  # Epic 8: Reportes Avanzados (Crecimiento)
+  # ============================================================
+  epic-8: backlog
+  8-1-filtro-de-reportes-por-rango-de-fechas: backlog
+  8-2-rendimiento-por-camarero: backlog
+  8-3-exportacion-de-reportes-a-pdf: backlog
+  epic-8-retrospective: optional
