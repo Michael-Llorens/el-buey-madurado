@@ -64,7 +64,7 @@ export default function RootLayoutContent({
         {children}
       </main>
       {!shouldHideLayout && <Footer />}
-      {!shouldHideLayout && <WhatsAppButton />}
+      {!shouldHideLayout && !pathname.startsWith('/pedir') && <WhatsAppButton />}
       {!shouldHideLayout && <FirstVisitNotice />}
       <OfflineBanner />
     </>

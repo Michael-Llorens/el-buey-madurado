@@ -3,7 +3,7 @@ import { connectDB } from '@/lib/db';
 import Usuario from '@/lib/models/Usuario';
 import { generarToken } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
-import { sanitizeBody } from '@/lib/utils/sanitize';
+
 import { checkRateLimit } from '@/lib/utils/rateLimiter';
 
 export async function POST(request: NextRequest) {
@@ -22,7 +22,9 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     
-    const { email, password } = sanitizeBody(await request.json());
+    const body = await request.json();
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const password = typeof body.password === 'string' ? body.password : '';
 
     // Validar entrada
     if (!email || !password) {

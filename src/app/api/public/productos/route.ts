@@ -12,8 +12,8 @@ export async function GET() {
     await connectDB();
 
     const productos = await Producto.find({ disponible: true, activo: true })
-      .populate('ingredientes.ingrediente', 'nombre alergenos')
-      .sort({ createdAt: -1 });
+      .populate('ingredientes.ingrediente', 'nombre alergenos precioExtra')
+      .sort({ categoria: 1, nombre: 1 });
 
     return NextResponse.json<ApiResponse>(
       {
