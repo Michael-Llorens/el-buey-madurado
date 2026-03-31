@@ -2,11 +2,11 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useCart } from '@/lib/context/CartContext';
-import { usePublicProductos } from '@/lib/hooks/swr/usePublicProductos';
 import ProductoCard from '@/components/public/ProductoCard';
 import PersonalizarModal from '@/components/public/PersonalizarModal';
 import CartDrawer from '@/components/public/CartDrawer';
 import type { ProductoPublico } from '@/components/public/ProductoCard';
+import productosData from '@/../public/data/productos.json';
 
 const CATEGORIA_ICON: Record<string, string> = {
   Entrantes: '🍽️',
@@ -19,7 +19,8 @@ const CATEGORIA_ICON: Record<string, string> = {
 const CATEGORIAS_ORDEN = ['Entrantes', 'Hamburguesas', 'Carnes', 'Postres', 'Bebidas'];
 
 export default function PedirPage() {
-  const { productos, isLoading } = usePublicProductos();
+  const productos = productosData as unknown as ProductoPublico[];
+  const isLoading = false;
   const cart = useCart();
   const { addItem, items, total, itemCount, updateQuantity, removeItem } = cart;
   const [localTipo, setLocalTipo] = useState<'recoger' | 'domicilio' | null>(null);
@@ -33,7 +34,7 @@ export default function PedirPage() {
   const [busqueda, setBusqueda] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const productosTyped = productos as unknown as ProductoPublico[];
+  const productosTyped = productos;
 
   const categorias = useMemo(() => {
     const cats = [...new Set(productosTyped.map((p) => p.categoria))];

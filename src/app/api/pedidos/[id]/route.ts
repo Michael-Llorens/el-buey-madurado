@@ -103,6 +103,53 @@ export async function PUT(req: NextRequest, context: Ctx) {
       pedido.productos = productosConPrecios;
     }
 
+    // Actualizar estado de un producto individual (solo para pedidos locales)
+    if (body.productoIndex !== undefined && body.estadoProducto) {
+      const idx = Number(body.productoIndex);
+      if (idx >= 0 && idx < pedido.productos.length) {
+        (pedido.productos as any)[idx].estadoProducto = body.estadoProducto;
+        pedido.markModified('productos');
+
+        // Si el pedido está pendiente, pasarlo a preparando automáticamente
+        if (pedido.estado === 'pendiente') {
+          pedido.estado = 'preparando';
+        }
+
+        // Guardar primero para que el populate funcione con datos actualizados
+        await pedido.save();
+
+        // Si todos los productos de cocina (no bebidas) están listos, el pedido pasa a "listo"
+        const productosPoblados = await Pedido.findById(id).populate('productos.producto', 'categoria');
+        if (productosPoblados) {
+          const productosCocina = productosPoblados.productos.filter((p: any) => {
+            const cat = (p.producto as any)?.categoria?.toLowerCase() ?? '';
+            return cat !== 'bebidas';
+          });
+          const todosListos = productosCocina.length > 0 && productosCocina.every((p: any) => p.estadoProducto === 'listo');
+          if (todosListos) {
+            pedido.estado = 'listo';
+            await pedido.save();
+          }
+        }
+
+        // Devolver respuesta aquí (no seguir con el save de abajo)
+        const pedidoActualizado = await Pedido.findById(id)
+          .populate('mesa', 'nombre numero capacidad')
+          .populate({
+            path: 'productos.producto',
+            select: 'nombre precio imagen categoria ingredientes',
+            populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+          })
+          .populate('camarero', 'nombre email rol');
+
+        return NextResponse.json<ApiResponse>({
+          success: true,
+          data: normalizarPedido(pedidoActualizado),
+          message: 'Estado del plato actualizado',
+        });
+      }
+    }
+
     if (body.estado) pedido.estado = body.estado;
     if (body.cliente !== undefined) pedido.cliente = body.cliente;
     if (body.notas !== undefined) pedido.notas = body.notas;
@@ -125,7 +172,7 @@ export async function PUT(req: NextRequest, context: Ctx) {
       .populate('mesa', 'nombre numero capacidad')
       .populate({
         path: 'productos.producto',
-        select: 'nombre precio imagen ingredientes',
+        select: 'nombre precio imagen categoria ingredientes',
         populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
       })
       .populate('camarero', 'nombre email rol');
