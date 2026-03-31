@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       .populate('mesa', 'nombre numero capacidad estado')
       .populate({
         path: 'productos.producto',
-        select: 'nombre precio imagen ingredientes',
+        select: 'nombre precio imagen categoria ingredientes',
         populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
       })
       .populate('camarero', 'nombre email rol')
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
       .populate('mesa', 'nombre numero capacidad')
       .populate({
         path: 'productos.producto',
-        select: 'nombre precio imagen ingredientes',
+        select: 'nombre precio imagen categoria ingredientes',
         populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
       })
       .populate('camarero', 'nombre email rol');

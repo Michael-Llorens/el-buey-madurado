@@ -13,6 +13,7 @@ export interface IProductoPedido {
     ingredientesExtra?: string[];
     ingredientesRemovidos?: string[];
   };
+  estadoProducto?: 'pendiente' | 'preparando' | 'listo';
 }
 
 export interface IPedido extends Document {
@@ -71,6 +72,11 @@ const ProductoPedidoSchema = new Schema({
   personalizaciones: {
     ingredientesExtra: [String],
     ingredientesRemovidos: [String]
+  },
+  estadoProducto: {
+    type: String,
+    enum: ['pendiente', 'preparando', 'listo'],
+    default: 'pendiente'
   }
 }, { _id: false });
 

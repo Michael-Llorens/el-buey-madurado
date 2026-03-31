@@ -232,29 +232,38 @@ export default function IngredienteForm({
       {/* Precios */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Precio Base (€) *</label>
-          <input
-            type="number"
-            name="precioBase"
-            value={formData.precioBase}
-            onChange={handleChange}
-            required
-            step="0.01"
-            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-            placeholder="0.00"
-          />
+          <label className="block text-sm font-medium mb-2">Precio Base *</label>
+          <div className="relative">
+            <input
+              type="number"
+              name="precioBase"
+              value={formData.precioBase}
+              onChange={handleChange}
+              required
+              step="0.01"
+              min="0"
+              className="w-full px-4 py-2.5 pr-10 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+              placeholder="0.00"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">€</span>
+          </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Precio Extra (€)</label>
-          <input
-            type="number"
-            name="precioExtra"
-            value={formData.precioExtra}
-            onChange={handleChange}
-            step="0.01"
-            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-            placeholder="0.00"
-          />
+          <label className="block text-sm font-medium mb-2">Precio Extra</label>
+          <div className="relative">
+            <input
+              type="number"
+              name="precioExtra"
+              value={formData.precioExtra}
+              onChange={handleChange}
+              step="0.01"
+              min="0"
+              className="w-full px-4 py-2.5 pr-10 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+              placeholder="0.00"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">€</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Precio cuando se añade como extra</p>
         </div>
       </div>
 
@@ -295,10 +304,19 @@ export default function IngredienteForm({
         <label className="block text-sm font-medium mb-2">Imagen</label>
         <input
           type="file"
-          accept="image/*"
-          onChange={handleImageChange}
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && file.size > 5 * 1024 * 1024) {
+              alert('La imagen no puede superar 5MB');
+              e.target.value = '';
+              return;
+            }
+            handleImageChange(e);
+          }}
           className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white"
         />
+        <p className="text-xs text-gray-500 mt-1">JPG, PNG o WebP. Máximo 5MB.</p>
         {preview && (
           <div className="mt-4">
             <img src={preview} alt="Preview" className="w-24 sm:w-32 h-24 sm:h-32 object-cover rounded" />
