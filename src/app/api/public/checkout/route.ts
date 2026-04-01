@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { connectDB } from '@/lib/db';
 import '@/lib/models/Producto';
 import '@/lib/models/Ingrediente';
@@ -7,10 +6,11 @@ import { sanitizeBody } from '@/lib/utils/sanitize';
 import { validarProductosYObtenerPrecios } from '@/lib/services/pedidoService';
 import { ApiResponse } from '@/lib/types';
 
-function getStripe() {
+async function getStripe() {
+  const Stripe = (await import('stripe')).default;
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error('STRIPE_SECRET_KEY no configurada');
-  return new Stripe(key, { apiVersion: '2026-03-25.dahlia' });
+  return new Stripe(key, { apiVersion: '2026-03-25.dahlia' as const });
 }
 
 // Rate limiting simple
@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
     const totalCentimos = Math.round(totalFinal * 100);
 
     // Crear Payment Intent en Stripe (sin crear pedido)
-    const paymentIntent = await getStripe().paymentIntents.create({
+    const stripe = await getStripe();
+    const paymentIntent = await stripe.paymentIntents.create({
       amount: totalCentimos,
       currency: 'eur',
       metadata: {
