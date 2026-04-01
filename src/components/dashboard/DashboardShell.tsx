@@ -1,26 +1,29 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { CldImage } from 'next-cloudinary';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { usePedidos } from '@/lib/hooks/swr';
+import { IoReceiptOutline, IoFlameOutline, IoGridOutline, IoCubeOutline, IoBarChartOutline, IoPeopleOutline } from 'react-icons/io5';
+import type { IconType } from 'react-icons';
 
 type ModuloId = 'home' | 'stock' | 'mesas' | 'pedidos' | 'cocina' | 'reportes' | 'usuarios';
 
 interface SidebarItem {
   id: ModuloId;
   label: string;
-  icon: string;
+  icon: IconType;
   roles: string[];
 }
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
-  { id: 'pedidos', label: 'Pedidos', icon: 'P', roles: ['admin', 'camarero', 'cocinero'] },
-  { id: 'cocina', label: 'Cocina', icon: 'C', roles: ['admin', 'cocinero'] },
-  { id: 'mesas', label: 'Mesas', icon: 'M', roles: ['admin', 'camarero', 'cocinero'] },
-  { id: 'stock', label: 'Stock', icon: 'S', roles: ['admin'] },
-  { id: 'reportes', label: 'Reportes', icon: 'R', roles: ['admin'] },
-  { id: 'usuarios', label: 'Usuarios', icon: 'U', roles: ['admin'] },
+  { id: 'pedidos', label: 'Pedidos', icon: IoReceiptOutline, roles: ['admin', 'camarero', 'cocinero'] },
+  { id: 'cocina', label: 'Cocina', icon: IoFlameOutline, roles: ['admin', 'cocinero'] },
+  { id: 'mesas', label: 'Mesas', icon: IoGridOutline, roles: ['admin', 'camarero', 'cocinero'] },
+  { id: 'stock', label: 'Stock', icon: IoCubeOutline, roles: ['admin'] },
+  { id: 'reportes', label: 'Reportes', icon: IoBarChartOutline, roles: ['admin'] },
+  { id: 'usuarios', label: 'Usuarios', icon: IoPeopleOutline, roles: ['admin'] },
 ];
 
 const COLOR_MAP: Record<ModuloId, string> = {
@@ -44,7 +47,8 @@ export default function DashboardShell({
   moduloActivo = 'home',
   onModuloChange,
 }: DashboardShellProps) {
-  const { usuario } = useAuth();
+  const { usuario, logout } = useAuth();
+  const router = useRouter();
   const { pedidos } = usePedidos();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -118,11 +122,11 @@ export default function DashboardShell({
               >
                 <span
                   className={`
-                    w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold shrink-0 text-white
+                    w-8 h-8 rounded-md flex items-center justify-center shrink-0 text-white
                     ${isActive ? 'bg-white/20' : COLOR_MAP[item.id]}
                   `}
                 >
-                  {item.icon}
+                  <item.icon className="w-4 h-4" />
                 </span>
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.id === 'pedidos' && pendientesCount > 0 && (
@@ -148,8 +152,8 @@ export default function DashboardShell({
           </div>
           <button
             onClick={() => {
-              localStorage.removeItem('authToken');
-              window.location.href = '/login';
+              logout();
+              router.push('/login');
             }}
             className="w-full mt-3 px-3 py-2 bg-gray-800 hover:bg-red-600 text-gray-400 hover:text-white rounded-lg text-xs font-medium transition-all"
           >
@@ -165,6 +169,7 @@ export default function DashboardShell({
           <button
             className="lg:hidden min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 text-gray-400 hover:text-white"
             onClick={() => setSidebarOpen(true)}
+            aria-label="Abrir menú de navegación"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />

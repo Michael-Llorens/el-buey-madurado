@@ -1,8 +1,9 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
+import gsap from 'gsap';
 
 interface PedidoTracking {
   _id: string;
@@ -71,7 +72,12 @@ const ESTADO_BG: Record<string, string> = {
 export default function SeguimientoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { data: pedido, error } = useSWR(`/api/public/pedidos/${id}`, fetcher, {
-    refreshInterval: 10_000,
+    refreshInterval: (data) => {
+      if (!data) return 10_000;
+      const estado = (data as PedidoTracking).estado;
+      if (estado === 'entregado' || estado === 'pagado' || estado === 'cancelado') return 0;
+      return 10_000;
+    },
   });
 
   if (error) {
@@ -108,6 +114,32 @@ export default function SeguimientoPage({ params }: { params: Promise<{ id: stri
   const esCancelado = pedido.estado === 'cancelado';
   const esCompletado = pedido.estado === 'entregado' || pedido.estado === 'pagado';
 
+  const progressRef = useRef<HTMLDivElement>(null);
+  const dotsRef = useRef<HTMLDivElement>(null);
+  const prevEstadoRef = useRef(pedido.estado);
+
+  // Animate progress bar and dots on state change
+  useEffect(() => {
+    if (esCancelado || !progressRef.current || !dotsRef.current) return;
+
+    // Animate progress line width
+    gsap.to(progressRef.current, {
+      width: `${Math.max(0, (idxActual / (estados.length - 1)) * 80)}%`,
+      duration: 0.8,
+      ease: 'power2.out',
+    });
+
+    // Animate dots: bounce the active one on state change
+    if (prevEstadoRef.current !== pedido.estado) {
+      const dots = dotsRef.current.querySelectorAll('.progress-dot');
+      const activeDot = dots[idxActual];
+      if (activeDot) {
+        gsap.fromTo(activeDot, { scale: 0.5 }, { scale: 1, duration: 0.5, ease: 'back.out(2)' });
+      }
+      prevEstadoRef.current = pedido.estado;
+    }
+  }, [pedido.estado, idxActual, estados.length, esCancelado]);
+
   return (
     <div className="min-h-screen bg-[#160a00] pt-20 pb-8">
       <div className="max-w-lg mx-auto px-4 py-8">
@@ -140,22 +172,22 @@ export default function SeguimientoPage({ params }: { params: Promise<{ id: stri
         {/* Progress bar mejorada */}
         {!esCancelado && (
           <div className="mb-8 px-2">
-            <div className="flex items-center justify-between relative">
+            <div ref={dotsRef} className="flex items-center justify-between relative">
               {/* Línea de fondo */}
               <div className="absolute top-5 left-[10%] right-[10%] h-1 bg-gray-700/80 rounded-full" />
-              {/* Línea de progreso */}
+              {/* Línea de progreso — animada con GSAP */}
               <div
-                className="absolute top-5 left-[10%] h-1 bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-1000 ease-out"
-                style={{ width: `${Math.max(0, (idxActual / (estados.length - 1)) * 80)}%` }}
+                ref={progressRef}
+                className="absolute top-5 left-[10%] h-1 bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"
+                style={{ width: 0 }}
               />
 
               {estados.map((estado, idx) => {
                 const isActive = idx === idxActual;
                 const isCompleted = idx < idxActual;
-                const isPending = idx > idxActual;
                 return (
                   <div key={estado} className="relative z-10 flex flex-col items-center" style={{ width: `${100 / estados.length}%` }}>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
+                    <div className={`progress-dot w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
                       isCompleted
                         ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
                         : isActive
@@ -177,7 +209,6 @@ export default function SeguimientoPage({ params }: { params: Promise<{ id: stri
                     }`}>
                       {ESTADO_LABEL[estado]}
                     </span>
-                    {isPending ? null : null}
                   </div>
                 );
               })}

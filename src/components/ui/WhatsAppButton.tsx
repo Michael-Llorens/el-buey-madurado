@@ -9,7 +9,7 @@ export default function ReservasButton() {
       href="/reservas"
       aria-label="Reservar mesa"
       className="
-        fixed bottom-8 right-5 z-[1000]
+        fixed bottom-8 right-5 z-40
         flex items-center gap-2
         px-5 py-3
         rounded-full

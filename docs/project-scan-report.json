@@ -1,10 +1,11 @@
 {
   "workflow_version": "1.2.0",
   "timestamps": {
-    "started": "2026-03-25T09:00:00.000Z",
-    "last_updated": "2026-03-30T12:00:00.000Z"
+    "started": "2026-04-01T10:00:00.000Z",
+    "last_updated": "2026-04-01T10:45:00.000Z",
+    "completed": "2026-04-01T10:45:00.000Z"
   },
-  "mode": "deep_scan",
+  "mode": "full_rescan",
   "scan_level": "deep",
   "project_root": "c:/Users/micha/Desktop/2º DAW/PI/el-buey-madurado",
   "project_knowledge": "docs",
@@ -26,20 +27,27 @@
       "date": "2026-03-30",
       "type": "deep_scan",
       "level": "deep",
-      "summary": "Escaneo profundo: 41 endpoints, 6 modelos, ~59 componentes. Nuevos: sistema pedidos online, endpoints publicos, CartContext, WhatsApp, filtros stock, refresh 5s"
+      "summary": "Escaneo profundo: 41 endpoints, 6 modelos, ~59 componentes"
+    },
+    {
+      "date": "2026-04-01",
+      "type": "full_rescan",
+      "level": "deep",
+      "summary": "Re-escaneo profundo: 43 endpoints, 6 modelos, ~62 componentes, 14 hooks, 15 paginas. Nuevos: Stripe checkout (2 endpoints), GSAP, StripePaymentForm, /pedir/carrito"
     }
   ],
   "completed_steps": [
-    {"step": "step_1", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Escaneo completo de toda la estructura del proyecto"},
-    {"step": "step_2", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Lectura de todos los modelos Mongoose (6), API routes (17 archivos), componentes clave"},
-    {"step": "step_3", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: project-overview.md"},
-    {"step": "step_4", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: architecture.md"},
-    {"step": "step_5", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: data-models.md"},
-    {"step": "step_6", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: api-contracts.md (41 endpoints)"},
-    {"step": "step_7", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: component-inventory.md (~59 componentes)"},
-    {"step": "step_8", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: source-tree-analysis.md"},
-    {"step": "step_9", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: index.md (indice maestro)"},
-    {"step": "step_10", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "project-scan-report.json actualizado"}
+    {"step": "step_1", "status": "completed", "timestamp": "2026-04-01T10:05:00.000Z", "summary": "Clasificado como monolito web (Next.js 16 full-stack). project_type_id=web"},
+    {"step": "step_2", "status": "completed", "timestamp": "2026-04-01T10:06:00.000Z", "summary": "12 docs existentes en docs/, 1 CI workflow en .github/"},
+    {"step": "step_3", "status": "completed", "timestamp": "2026-04-01T10:08:00.000Z", "summary": "Stack: Next.js 16 + React 19 + TS + Tailwind + MongoDB/Mongoose + SWR + Stripe + GSAP + Framer Motion"},
+    {"step": "step_4", "status": "completed", "timestamp": "2026-04-01T10:25:00.000Z", "summary": "Deep scan: 43 endpoints (19 archivos), 6 modelos (12 indices), ~62 componentes, 14 hooks, 15 paginas, 7 layouts"},
+    {"step": "step_5", "status": "completed", "timestamp": "2026-04-01T10:30:00.000Z", "summary": "source-tree-analysis.md escrito (307 lineas)"},
+    {"step": "step_6", "status": "completed", "timestamp": "2026-04-01T10:32:00.000Z", "summary": "development-guide.md (192 lineas) y deployment-guide.md (163 lineas) escritos"},
+    {"step": "step_8", "status": "completed", "timestamp": "2026-04-01T10:35:00.000Z", "summary": "architecture.md escrito (275 lineas) con diagramas, auth, roles, SWR, Stripe, seguridad"},
+    {"step": "step_9", "status": "completed", "timestamp": "2026-04-01T10:38:00.000Z", "summary": "project-overview.md (141 lineas), api-contracts.md (346 lineas), data-models.md (318 lineas), component-inventory.md (262 lineas) escritos"},
+    {"step": "step_10", "status": "completed", "timestamp": "2026-04-01T10:40:00.000Z", "summary": "index.md (62 lineas) generado como indice maestro. Sin marcadores de documentacion incompleta"},
+    {"step": "step_11", "status": "completed", "timestamp": "2026-04-01T10:42:00.000Z", "summary": "Validacion completa: 9 archivos generados, 2066 lineas totales, sin marcadores TBD"},
+    {"step": "step_12", "status": "completed", "timestamp": "2026-04-01T10:45:00.000Z", "summary": "Workflow completado"}
   ],
   "current_step": "completed",
   "findings": {
@@ -52,7 +60,8 @@
       "database": "MongoDB 7 + Mongoose ^9.1.5",
       "data_fetching": "SWR ^2.4.1",
       "auth": "JWT (jose + jsonwebtoken) + bcryptjs",
-      "animations": "Framer Motion ^12.23.25",
+      "payments": "Stripe (react-stripe-js ^6.1.0 + stripe ^21.0.1)",
+      "animations": "Framer Motion ^12.23.25 + GSAP ^3.14.2",
       "images": "Cloudinary (next-cloudinary ^6.17.5)",
       "notifications": "Sonner ^2.0.7",
       "pdf": "jsPDF + html2canvas",
@@ -60,14 +69,14 @@
       "testing": "Vitest ^4.1.0 + Playwright ^1.58.2"
     },
     "api_endpoints": {
-      "total": 41,
+      "total": 43,
       "groups": {
         "auth": 4,
-        "productos": 7,
         "ingredientes": 5,
         "mesas": 5,
         "pedidos": 7,
-        "public": 3,
+        "productos": 7,
+        "public": 5,
         "tickets_cocina": 4,
         "usuarios": 5,
         "reportes": 1
@@ -76,30 +85,31 @@
     "data_models": {
       "total": 6,
       "models": ["Usuario", "Producto", "Pedido", "Mesa", "Ingrediente", "TicketCocina"],
-      "indices": 11
+      "indices": 12
     },
     "ui_components": {
-      "total": 59,
-      "dashboard": 22,
-      "public_ordering": 4,
+      "total": 62,
+      "dashboard": 21,
+      "dashboard_hooks": 4,
+      "public_ordering": 5,
       "home": 4,
       "navbar": 3,
-      "footer": 6,
+      "footer": 7,
       "sobre_nosotros": 6,
       "reservas": 1,
       "ui_reusable": 5,
       "protection": 1,
-      "layouts": 3,
-      "hooks_dashboard": 4,
-      "hooks_swr": 7,
-      "hooks_global": 1,
+      "hooks_swr": 9,
+      "hooks_auth": 1,
       "contexts": 1
     },
     "pages": {
-      "public": 10,
-      "dashboard": 7,
-      "login": 1,
-      "total": 18
+      "public": 11,
+      "dashboard": 4,
+      "placeholder": 3,
+      "layouts": 7,
+      "total_pages": 15,
+      "total_layouts": 7
     },
     "seed_data": {
       "ingredientes": 68,
@@ -110,41 +120,39 @@
     "swr_refresh_intervals": {
       "dashboard_hooks": "5s (ingredientes, productos, mesas, pedidos, reportes)",
       "public_productos": "60s",
-      "usuarios": "sin refresh"
+      "usuarios": "sin refresh",
+      "cocina_panel": "5s (fetch directo, sin hook SWR dedicado)"
     },
     "security": {
       "auth": "JWT (cookie httpOnly + localStorage)",
       "middleware": "Edge Runtime (jose) en /dashboard/*",
       "api_protection": "protegerRuta + verificarRol",
-      "rate_limiting": "Login (5/min), Register (5/min), Public orders (10/15min)",
-      "sanitization": "sanitizeBody en todas las API routes",
-      "id_validation": "validarObjectId en todas las rutas con [id]"
+      "rate_limiting": "Login (5/min), Register (5/min), Public orders (10/15min), Checkout (10/15min)",
+      "sanitization": "sanitizeBody en todas las API routes POST/PUT",
+      "id_validation": "validarObjectId en todas las rutas con [id]",
+      "payments": "Stripe PaymentIntent server-side con confirmacion verificada"
     },
     "changes_since_last_scan": [
-      "Sistema completo de pedidos online (/pedir con 5 paginas)",
-      "3 endpoints publicos sin autenticacion (/api/public/*)",
-      "CartContext con persistencia localStorage y personalizaciones",
-      "4 componentes public/ (ProductoCard, PersonalizarModal, CartDrawer, CartSummaryBar)",
-      "Boton WhatsApp en PedidoCard para pedidos listos",
-      "PedidoCard compacto con 2 filas de acciones e indicador de urgencia",
-      "Filtrado por turno actual/historial en panel de pedidos",
-      "StockPanel con filtros por categoria, busqueda y disponibilidad",
-      "Refresh automatico 5s en todos los hooks SWR del dashboard",
-      "Rate limiting por IP en endpoint publico de pedidos",
-      "68 ingredientes + 64 productos seeded del menu real",
-      "CobrarModal para proceso de cobro con calculo de cambio",
-      "Responsive audit en todas las paginas"
+      "Stripe integrado: @stripe/stripe-js, @stripe/react-stripe-js, stripe server SDK",
+      "2 nuevos endpoints: POST /api/public/checkout, POST /api/public/checkout/confirm",
+      "StripePaymentForm: nuevo componente con Stripe Elements",
+      "GSAP: nueva dependencia de animacion (gsap ^3.14.2)",
+      "/pedir/carrito: nueva pagina como redirect inteligente",
+      "CobrarModal: modal de cobro con efectivo/tarjeta/mixto y subcuentas",
+      "Total endpoints: 41 → 43"
     ]
   },
   "outputs_generated": [
     "project-scan-report.json",
+    "index.md",
     "project-overview.md",
     "architecture.md",
     "source-tree-analysis.md",
     "api-contracts.md",
     "data-models.md",
     "component-inventory.md",
-    "index.md"
+    "development-guide.md",
+    "deployment-guide.md"
   ],
-  "resume_instructions": "Deep scan completado el 2026-03-30. Todas las 8 documentaciones actualizadas."
+  "resume_instructions": "Full rescan completado el 2026-04-01. 9 documentaciones actualizadas (2066 lineas totales)."
 }

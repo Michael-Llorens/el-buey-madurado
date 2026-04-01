@@ -1,263 +1,275 @@
 # Arquitectura - El Buey Madurado
 
-**Fecha de generacion:** 2026-03-30
-**Tipo:** Monolito web full-stack
-**Patron de arquitectura:** Next.js App Router (MVC implicito con Route Handlers)
+> Actualizado: 2026-04-01 | Escaneo profundo (full rescan)
+
+## Resumen Ejecutivo
+
+Aplicacion web full-stack para la gestion integral de un restaurante de carne madurada, incluyendo:
+- **Sitio web publico:** Home, carta, reservas, "Sobre nosotros", contacto
+- **Sistema de pedidos online:** Catalogo, carrito, checkout con Stripe, seguimiento
+- **Dashboard de administracion:** Mesas, pedidos (Kanban), stock, cocina, reportes, usuarios
 
 ---
 
-## 1. Resumen Ejecutivo
+## Stack Tecnologico
 
-Aplicacion monolitica Next.js 16 que combina frontend React 19 y backend API en un mismo despliegue. Utiliza el App Router con soporte para Server Components, middleware de autenticacion JWT en el edge y MongoDB como base de datos. La aplicacion sirve dos audiencias: clientes publicos (web + pedidos online) y personal del restaurante (dashboard de gestion).
+| Categoria | Tecnologia | Version |
+|---|---|---|
+| **Framework** | Next.js (App Router) | ^16.0.7 |
+| **UI** | React | ^19.2.3 |
+| **Lenguaje** | TypeScript (strict) | ^5.9.3 |
+| **Estilos** | Tailwind CSS | ^3.4.18 |
+| **Base de datos** | MongoDB | 7 |
+| **ODM** | Mongoose | ^9.1.5 |
+| **Data fetching** | SWR | ^2.4.1 |
+| **Auth** | JWT (jose + jsonwebtoken) + bcryptjs | — |
+| **Pagos** | Stripe (react-stripe-js + stripe) | ^9.0.1 / ^21.0.1 |
+| **Animaciones** | Framer Motion + GSAP | ^12.23.25 / ^3.14.2 |
+| **Imagenes** | Cloudinary (next-cloudinary) | ^6.17.5 |
+| **Notificaciones** | Sonner | ^2.0.7 |
+| **PDF** | jsPDF + html2canvas | — |
+| **Analytics** | Vercel Analytics | ^1.6.1 |
+| **Testing** | Vitest + Playwright | ^4.1.0 / ^1.58.2 |
+| **Contenedor** | Docker (node:20-alpine) | — |
 
 ---
 
-## 2. Diagrama Arquitectonico
+## Patron de Arquitectura
 
 ```
-┌────────────────────────────────────────────────────────┐
-│                   CLIENTE (Browser)                     │
-│  React 19 + Tailwind + Framer Motion + SWR             │
-│  CartContext (localStorage) | useAuth (JWT localStorage)│
-└───────────────────────┬────────────────────────────────┘
-                        │ HTTP/HTTPS
-┌───────────────────────▼────────────────────────────────┐
-│              NEXT.JS MIDDLEWARE (Edge Runtime)           │
-│  JWT verification (jose) → protege /dashboard/*         │
-└───────────────────────┬────────────────────────────────┘
-                        │
-┌───────────────────────▼────────────────────────────────┐
-│              NEXT.JS APP ROUTER                         │
-│                                                         │
-│  ┌──────────────────┐  ┌─────────────────────────────┐ │
-│  │ Paginas          │  │ API Route Handlers           │ │
-│  │                  │  │                              │ │
-│  │ (public)/        │  │ /api/auth/*      (4 rutas)  │ │
-│  │   carta          │  │ /api/productos/* (5 metodos)│ │
-│  │   contacto       │  │ /api/ingredientes/* (5)     │ │
-│  │   pedir/*        │  │ /api/mesas/*     (5+seed)   │ │
-│  │   reservas       │  │ /api/pedidos/*   (6+abrir)  │ │
-│  │   sobre-nosotros │  │ /api/public/*    (3 rutas)  │ │
-│  │                  │  │ /api/tickets-cocina/* (4)    │ │
-│  │ (dashboard)/     │  │ /api/reportes    (1)        │ │
-│  │   pedidos        │  │ /api/usuarios/*  (5)        │ │
-│  │   mesas          │  │                              │ │
-│  │   stock          │  │                              │ │
-│  │   cocina         │  │                              │ │
-│  │   reportes       │  │                              │ │
-│  │   usuarios       │  │                              │ │
-│  └──────────────────┘  └─────────────────────────────┘ │
-│                                                         │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │          CAPA DE SERVICIOS                        │  │
-│  │  pedidoService.ts                                 │  │
-│  │  - normalizarPedido, ocuparMesa, liberarMesa      │  │
-│  │  - abrirPedidoParaMesa, validarProductosYPrecios  │  │
-│  └───────────────────────────────────────────────────┘  │
-│                                                         │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │          UTILIDADES DE SEGURIDAD                  │  │
-│  │  middlewareAuth.ts (protegerRuta, verificarRol)   │  │
-│  │  sanitize.ts, validateId.ts, rateLimiter.ts       │  │
-│  └───────────────────────────────────────────────────┘  │
-│                                                         │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │          MODELOS MONGOOSE (6)                     │  │
-│  │  Usuario, Producto, Pedido, Mesa,                 │  │
-│  │  Ingrediente, TicketCocina                        │  │
-│  └───────────────────────────────────────────────────┘  │
-└───────────────────────┬────────────────────────────────┘
-                        │ Mongoose ODM
-┌───────────────────────▼────────────────────────────────┐
-│              MONGODB                                    │
-│  Atlas (produccion) / Docker (desarrollo)               │
-└────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│                    Next.js App Router                          │
+│                                                                │
+│  ┌─────────────────┐    ┌──────────────────┐                   │
+│  │  Route Groups    │    │   API Routes     │                   │
+│  │                  │    │                  │                   │
+│  │ (public)/        │    │ /api/auth/*      │                   │
+│  │   carta          │    │ /api/ingredientes│                   │
+│  │   pedir/*        │◄──►│ /api/mesas       │                   │
+│  │   reservas       │    │ /api/pedidos     │                   │
+│  │   sobre-nosotros │    │ /api/productos   │                   │
+│  │                  │    │ /api/public/*    │                   │
+│  │ (dashboard)/     │    │ /api/tickets-*   │                   │
+│  │   mesas          │◄──►│ /api/usuarios    │                   │
+│  │   pedidos        │    │ /api/reportes    │                   │
+│  │   stock          │    └────────┬─────────┘                   │
+│  │   cocina         │             │                             │
+│  │   reportes       │             │ Mongoose                    │
+│  │   usuarios       │             ▼                             │
+│  └─────────────────┘    ┌──────────────────┐                   │
+│                          │   MongoDB 7      │                   │
+│                          │   6 colecciones  │                   │
+│                          └──────────────────┘                   │
+└────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## 3. Grupos de Rutas (App Router)
-
-### (public) - Paginas Publicas
-
-| Ruta | Pagina | Descripcion |
-|------|--------|-------------|
-| `/` | `page.tsx` | Landing page del restaurante |
-| `/carta` | `carta/page.tsx` | Carta digital interactiva |
-| `/contacto` | `contacto/page.tsx` | Pagina de contacto |
-| `/reservas` | `reservas/page.tsx` | Reservas (enlace TheFork) |
-| `/sobre-nosotros` | `sobre-nosotros/page.tsx` | Historia, equipo, resenas |
-| `/pedir` | `pedir/page.tsx` | Catalogo de pedidos online |
-| `/pedir/carrito` | `pedir/carrito/page.tsx` | Vista del carrito de compra |
-| `/pedir/checkout` | `pedir/checkout/page.tsx` | Formulario de checkout |
-| `/pedir/confirmacion/[id]` | `pedir/confirmacion/[id]/page.tsx` | Confirmacion del pedido |
-| `/pedir/seguimiento/[id]` | `pedir/seguimiento/[id]/page.tsx` | Seguimiento en tiempo real |
-
-**Layout publico:** Navbar + Footer + CartProvider
-
-### (dashboard) - Panel de Gestion (Protegido)
-
-| Ruta | Pagina | Descripcion |
-|------|--------|-------------|
-| `/dashboard` | `dashboard/page.tsx` | Home del dashboard |
-| `/dashboard/pedidos` | `dashboard/pedidos/page.tsx` | Gestion de pedidos |
-| `/dashboard/mesas` | `dashboard/mesas/page.tsx` | Gestion de mesas |
-| `/dashboard/ingredientes` | `dashboard/ingredientes/layout.tsx` | Stock de ingredientes |
-| `/dashboard/productos` | `dashboard/productos/layout.tsx` | Stock de productos |
-| `/dashboard/tickets-cocina` | `dashboard/tickets-cocina/layout.tsx` | Panel de cocina |
-| `/dashboard/usuarios` | `dashboard/usuarios/page.tsx` | Gestion de usuarios |
-
-**Layout dashboard:** DashboardShell (sidebar + header)
-
-### login - Inicio de Sesion
-
-| Ruta | Pagina | Descripcion |
-|------|--------|-------------|
-| `/login` | `login/page.tsx` | Formulario de login |
+### Monolito Next.js con:
+- **SSR + CSR hibrido:** Paginas publicas con SSR, dashboard full CSR
+- **API Routes RESTful:** 43 endpoints en 9 grupos
+- **SWR auto-refresh:** 5s en dashboard, 60s en publico
+- **Edge Middleware:** Proteccion de rutas `/dashboard/*` con jose
 
 ---
 
-## 4. Autenticacion y Autorizacion
+## Autenticacion y Autorizacion
 
-### Flujo de Autenticacion
-1. Usuario envia credenciales a `POST /api/auth/login`
-2. Backend valida con bcryptjs (salt 12) y genera JWT (jsonwebtoken)
-3. Token se almacena en cookie `auth_token` (httpOnly, secure, sameSite: lax, 7 dias)
-4. Token tambien se devuelve en body para almacenar en localStorage
-5. Frontend usa localStorage para inyectar `Authorization: Bearer` en peticiones SWR
+### Flujo de Auth
 
-### Middleware Edge (`src/middleware.ts`)
-- Intercepta todas las rutas `/dashboard/*`
-- Usa `jose` (compatible con Edge Runtime) para verificar JWT
-- Si token invalido/expirado: borra cookie y redirige a `/login`
-
-### Middleware de API (`src/lib/middlewareAuth.ts`)
-- `protegerRuta(req)`: Verifica JWT desde cookie o header Authorization
-- `verificarRol(payload, roles[])`: Comprueba que el usuario tiene el rol necesario
-
-### Rate Limiting
-- **Login:** 5 intentos/minuto por IP (`src/lib/utils/rateLimiter.ts`)
-- **Registro:** 5 intentos/minuto por IP
-- **Pedidos publicos:** 10 pedidos/15 min por IP (rate limiter inline en ruta)
+```
+┌─────────┐    POST /api/auth/login    ┌────────────┐
+│ Cliente  │ ──────────────────────────►│ API Login  │
+│ (Login)  │◄────────────────────────── │            │
+│          │   JWT en body + cookie     │ bcrypt +   │
+└────┬─────┘   httpOnly (7d)            │ JWT sign   │
+     │                                  └────────────┘
+     │
+     │  Peticiones autenticadas
+     │  (header Bearer / cookie)
+     │
+     ▼
+┌─────────────────────┐
+│ Edge Middleware      │ → /dashboard/* → Verifica JWT (jose)
+│ (src/middleware.ts)  │ → Redirige a /login si invalido
+└─────────────────────┘
+     │
+     ▼
+┌─────────────────────┐
+│ API Middleware       │ → protegerRuta() → extrae payload JWT
+│ (middlewareAuth.ts)  │ → verificarRol() → compara contra roles permitidos
+└─────────────────────┘
+```
 
 ### Roles y Permisos
 
-| Accion | admin | camarero | cocinero |
-|---|---|---|---|
-| CRUD usuarios | Si | No | No |
-| Crear/editar ingredientes | Si | No | Si |
-| Eliminar ingredientes | Si | No | No |
-| Crear/editar productos | Si | No | Si |
-| Eliminar productos | Si | No | No |
-| Crear/editar pedidos | Si | Si | No |
-| Ver pedidos | Si | Si | Si |
-| Crear tickets cocina | Si | Si | No |
-| Ver/actualizar tickets | Si | No | Si |
-| Reportes | Si | Si | Si |
-| Mesas | Si | Si | Si |
+| Recurso | admin | camarero | cocinero | Publico |
+|---|---|---|---|---|
+| Usuarios (CRUD) | ✅ | ❌ | ❌ | ❌ |
+| Registro usuarios | ✅ | ❌ | ❌ | ❌ |
+| Mesas (CRUD) | ✅ | ✅ | ✅ | ❌ |
+| Pedidos (CRUD) | ✅ | ✅ | ✅ | ❌ |
+| Productos (crear) | ✅ | ✅ | ✅ | ❌ |
+| Productos (editar) | ✅ | ❌ | ✅ | ❌ |
+| Productos (eliminar) | ✅ | ❌ | ❌ | ❌ |
+| Ingredientes (crear/editar) | ✅ | ❌ | ✅ | ❌ |
+| Ingredientes (eliminar) | ✅ | ❌ | ❌ | ❌ |
+| Tickets cocina (ver) | ✅ | ❌ | ✅ | ❌ |
+| Tickets cocina (crear) | ✅ | ✅ | ❌ | ❌ |
+| Tickets cocina (editar) | ✅ | ❌ | ✅ | ❌ |
+| Reportes | ✅ | ✅ | ✅ | ❌ |
+| Pedidos online | ❌ | ❌ | ❌ | ✅ |
+| Ver productos publicos | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
-## 5. Gestion de Estado (Frontend)
+## Data Fetching (SWR)
 
-### SWR Hooks (Data Fetching con Auto-refresh)
+### Dashboard (autenticado)
 
-| Hook | Endpoint | Intervalo | Descripcion |
-|---|---|---|---|
-| `useIngredientes()` | `/api/ingredientes` | 5s | Lista de ingredientes |
-| `useProductos()` | `/api/productos` | 5s | Lista de productos |
-| `useMesas()` | `/api/mesas` | 5s | Lista de mesas con pedido actual |
-| `usePedidos()` | `/api/pedidos` | 5s | Lista de pedidos (paginada) |
-| `useReportes()` | `/api/reportes` | 5s | Metricas agregadas |
-| `useUsuarios()` | `/api/usuarios` | Sin refresh | Lista de usuarios |
-| `usePublicProductos()` | `/api/public/productos` | 60s | Catalogo publico |
+```
+useIngredientes()  ──► /api/ingredientes  ──► refresh 5s
+useProductos()     ──► /api/productos     ──► refresh 5s
+useMesas()         ──► /api/mesas         ──► refresh 5s
+usePedidos()       ──► /api/pedidos       ──► refresh 5s (paginado)
+useReportes()      ──► /api/reportes      ──► refresh 5s
+useUsuarios()      ──► /api/usuarios      ──► sin refresh
+```
 
-**Fetcher autenticado** (`authFetcher`): Inyecta token JWT desde localStorage automaticamente.
+Todos usan `authFetcher<T>` que inyecta token JWT de localStorage.
 
-### Contextos React
+### Publico (sin auth)
 
-- **CartContext** (`src/lib/context/CartContext.tsx`)
-  - Estado del carrito de compras con persistencia en localStorage
-  - Operaciones: `addItem`, `removeItem`, `updateQuantity`, `clearCart`
-  - Soporte para personalizaciones (extras, ingredientes removidos, precio extras)
-  - Control de tipo de pedido: `recoger` | `domicilio`
-  - Deduplicacion inteligente: agrupa items identicos (mismo producto + mismas personalizaciones)
+```
+usePublicProductos() ──► /api/public/productos ──► refresh 60s (cache s-maxage=60)
+```
 
-- **useAuth** (`src/lib/hooks/useAuth.ts`)
-  - Estado de autenticacion global: login, logout, usuario actual
-  - Almacena token en localStorage y cookie
+### CocinaPanel (caso especial)
 
-### Custom Hooks (Dashboard)
-
-| Hook | Archivo | Descripcion |
-|---|---|---|
-| `usePedidoForm` | `hooks/usePedidoForm.ts` | Logica del formulario de pedidos (productos, totales, validacion) |
-| `usePedidoPanel` | `hooks/usePedidoPanel.ts` | Logica del panel de pedidos (filtros por turno/tipo/estado) |
-| `useProductoForm` | `hooks/useProductoForm.ts` | Logica del formulario de productos |
-| `useConfirm` | `hooks/useConfirm.ts` | Modal de confirmacion reutilizable |
+Realiza 3 fetches paralelos directos (sin hooks SWR dedicados) con refresh 5s: pedidos, productos e ingredientes.
 
 ---
 
-## 6. Capa de Servicios
+## Flujo de Pedidos Online (Stripe)
 
-### PedidoService (`src/lib/services/pedidoService.ts`)
+```
+┌──────────────┐     ┌───────────────┐     ┌─────────────────┐
+│ /pedir       │     │ /pedir/       │     │ /pedir/         │
+│ (Catalogo)   │────►│ checkout      │────►│ confirmacion/id │
+│              │     │               │     │                 │
+│ CartContext   │     │ 1. Datos      │     │ Pedido creado   │
+│ + Drawer     │     │ 2. Stripe Pay │     │ + tracking      │
+└──────────────┘     └───────┬───────┘     └─────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │ POST /api/public│
+                    │ /checkout       │
+                    │ → PaymentIntent │
+                    └────────┬────────┘
+                             │ succeeded
+                    ┌────────▼────────┐
+                    │ POST /api/public│
+                    │ /checkout/confirm│
+                    │ → Crear pedido  │
+                    └─────────────────┘
+```
 
-Centraliza logica de negocio de pedidos:
+---
 
-| Funcion | Descripcion |
+## Seguridad
+
+| Capa | Implementacion |
 |---|---|
-| `normalizarPedido(doc)` | Mapea campo BD `camarero` a `creadoPor` para el frontend |
-| `ocuparMesa(mesaId, pedidoId)` | Marca mesa como ocupada con pedido actual |
-| `liberarMesa(mesaId)` | Libera mesa (estado libre, pedidoActual null) |
-| `abrirPedidoParaMesa(mesaId, userId)` | Abre o recupera pedido activo de una mesa |
-| `validarProductosYObtenerPrecios(productos)` | Valida existencia/disponibilidad y calcula precios desde BD |
+| **Edge Middleware** | jose verifica JWT en cookie para `/dashboard/*` |
+| **API Auth** | protegerRuta() + verificarRol() por endpoint |
+| **Rate Limiting** | In-memory por IP (login 5/min, public 10/15min) |
+| **Sanitizacion** | sanitizeBody() recursivo anti-XSS en POST/PUT |
+| **Validacion ID** | validarObjectId() en rutas con `:id` |
+| **Password** | bcrypt salt 12, campo `select: false` |
+| **CORS** | Manejado por Next.js (mismo origen) |
+| **Stripe** | PaymentIntent server-side, confirmacion verificada |
 
 ---
 
-## 7. Utilidades y Seguridad
+## Arquitectura de Componentes (Dashboard)
 
-| Utilidad | Ubicacion | Funcion |
-|----------|-----------|---------|
-| `rateLimiter` | `src/lib/utils/rateLimiter.ts` | Limitacion de tasa por IP (en memoria) |
-| `sanitize` | `src/lib/utils/sanitize.ts` | Sanitizacion de entrada de usuario |
-| `validateId` | `src/lib/utils/validateId.ts` | Validacion de ObjectIds de MongoDB |
-| `pagination` | `src/lib/utils/pagination.ts` | Paginacion de resultados (page, limit, sort) |
-| `logger` | `src/lib/utils/logger.ts` | Logging estructurado |
-| `alergenos` | `src/lib/constants/alergenos.ts` | 14 alergenos UE con labels, iconos y colores |
-
----
-
-## 8. Integraciones Externas
-
-| Servicio | Proposito | Configuracion |
-|----------|-----------|---------------|
-| MongoDB Atlas | Base de datos en produccion | `MONGODB_URI` |
-| Cloudinary | Almacenamiento de imagenes de productos | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` |
-| WhatsApp API | Notificacion de pedidos listos (link directo) | Integrado en PedidoCard |
-| Vercel | Hosting y despliegue automatico | Conectado a GitHub |
-| Vercel Analytics | Metricas de rendimiento | `@vercel/analytics` |
-| GitHub Actions | CI (typecheck + build) | `.github/workflows/ci.yml` |
-
----
-
-## 9. Estrategia de Testing
-
-| Tipo | Herramienta | Ubicacion | Cobertura |
-|------|-------------|-----------|-----------|
-| Unit tests | Vitest | `src/lib/**/__tests__/` | Servicios (pedidoService), utilidades (logger, pagination, rateLimiter, sanitize, validateId) |
-| Hook tests | Vitest + Testing Library | `src/components/dashboard/hooks/__tests__/` | usePedidoForm, usePedidoPanel, useProductoForm |
-| E2E tests | Playwright | `e2e/` | Autenticacion (auth.spec.ts) |
+```
+AdminPanel (page.tsx)
+├── DashboardShell (sidebar + navegacion)
+│   ├── StockPanel
+│   │   ├── ProductoForm ← useProductoForm
+│   │   ├── ProductCardGrid
+│   │   ├── IngredienteForm
+│   │   ├── IngredientCardGrid
+│   │   └── ConfirmModal ← useConfirm
+│   ├── MesasPanel
+│   │   ├── MesaGrid → MesaCard[]
+│   │   ├── MesaMapView
+│   │   └── MesaForm
+│   ├── PedidoPanel ← usePedidoPanel
+│   │   ├── PedidoCard[] (Kanban columns)
+│   │   ├── PedidoForm ← usePedidoForm
+│   │   ├── CobrarModal
+│   │   └── ConfirmModal
+│   ├── CocinaPanel (Kanban: pendiente/preparando/listo)
+│   ├── ReportesPanel (KPIs + graficos)
+│   └── UsuariosPanel (CRUD tabla)
+```
 
 ---
 
-## 10. PWA
+## Arquitectura de Componentes (Pedido Online)
 
-- **Service Worker:** `public/sw.js` (cache offline)
-- **Web Manifest:** `public/manifest.webmanifest` (iconos 192px, 512px, maskable)
-- **Favicon:** `public/logo-fondo-blanco.ico`
-- **OfflineBanner:** Componente que detecta estado de conexion
-- **FirstVisitNotice:** Aviso en primera visita
+```
+PublicLayout (CartProvider)
+├── /pedir → PedirPage
+│   ├── ProductoCard[]
+│   ├── PersonalizarModal
+│   ├── CartDrawer
+│   └── CartSummaryBar
+├── /pedir/checkout → CheckoutPage
+│   └── StripePaymentForm (Elements)
+├── /pedir/confirmacion/[id] → ConfirmacionPage
+└── /pedir/seguimiento/[id] → SeguimientoPage (SWR refresh)
+```
 
 ---
 
-*Actualizado el 2026-03-30 | Escaneo profundo (deep scan)*
+## CI/CD
+
+```yaml
+# .github/workflows/ci.yml
+Trigger: PR → main, push → develop
+Pipeline: checkout → Node 20 → npm ci → typecheck → build
+Environment: staging (secrets: MONGODB_URI, JWT_SECRET, CLOUDINARY)
+```
+
+---
+
+## Contenedores
+
+```yaml
+# docker-compose.yml
+services:
+  app:       Next.js standalone (port 3000)
+  mongo:     MongoDB 7 (port 27017)
+  mongo-express: Admin UI (port 8081)
+```
+
+**Dockerfile:** Multi-stage build con node:20-alpine. Copia standalone output.
+
+---
+
+## Cambios desde ultimo escaneo (30/03 → 01/04)
+
+| Area | Cambio |
+|---|---|
+| **Stripe** | Integracion completa: `@stripe/stripe-js`, `@stripe/react-stripe-js`, `stripe` server |
+| **GSAP** | Nueva dependencia de animacion (`gsap ^3.14.2`) |
+| **Checkout** | 2 nuevos endpoints: `POST /api/public/checkout`, `POST /api/public/checkout/confirm` |
+| **StripePaymentForm** | Nuevo componente public con Stripe Elements |
+| **Cobrar** | Endpoint `PUT /api/pedidos/[id]/cobrar` para cobro en dashboard |
+| **Carrito** | Nueva pagina `/pedir/carrito` como redirect inteligente |
+| **Total endpoints** | 41 → 43 (+2 de checkout Stripe) |
+
+---
+
+*Generado automaticamente el 2026-04-01 | Escaneo profundo (full rescan)*

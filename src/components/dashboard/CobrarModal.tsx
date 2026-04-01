@@ -225,26 +225,41 @@ export default function CobrarModal({ pedido, onClose, onCobrado }: CobrarModalP
                 <span className="text-white font-bold font-mono">{totalPorPersona.toFixed(2)} EUR</span>
               </div>
 
-              {/* Indicador de subcuentas cobradas */}
-              {subcuentasCobradas.length > 0 && (
-                <div className="mt-3 flex gap-1.5 flex-wrap">
-                  {Array.from({ length: numComensales }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                        subcuentasCobradas.includes(i)
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-700 text-gray-400'
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                  ))}
-                  <span className="text-xs text-gray-500 self-center ml-2">
-                    {subcuentasCobradas.length}/{numComensales} cobradas
-                  </span>
+              {/* Indicador de subcuentas cobradas — siempre visible en modo dividir */}
+              <div className="mt-3">
+                <p className="text-xs text-gray-400 mb-2">Progreso de cobro:</p>
+                <div className="flex gap-2 flex-wrap">
+                  {Array.from({ length: numComensales }).map((_, i) => {
+                    const cobrada = subcuentasCobradas.includes(i);
+                    const esLaSiguiente = !cobrada && subcuentasCobradas.length === i;
+                    return (
+                      <div
+                        key={i}
+                        className={`flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg border transition ${
+                          cobrada
+                            ? 'bg-green-900/30 border-green-600/50'
+                            : esLaSiguiente
+                              ? 'bg-blue-900/20 border-blue-500/50 ring-1 ring-blue-500/30'
+                              : 'bg-gray-800/50 border-gray-700/50'
+                        }`}
+                      >
+                        <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                          cobrada ? 'bg-green-600 text-white' : esLaSiguiente ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'
+                        }`}>
+                          {cobrada ? '✓' : i + 1}
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                          {cobrada ? 'Pagado' : esLaSiguiente ? 'Siguiente' : `P${i + 1}`}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
+                <p className="text-xs text-blue-300 mt-2 font-medium">
+                  {subcuentasCobradas.length}/{numComensales} subcuentas cobradas
+                  {subcuentasCobradas.length > 0 && ` — ${(totalPorPersona * subcuentasCobradas.length).toFixed(2)}€ recaudados`}
+                </p>
+              </div>
             </div>
           )}
         </div>

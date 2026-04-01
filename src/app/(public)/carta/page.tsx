@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import gsap from 'gsap';
 import { menuItems } from '@/data/menu';
 import './carta.css';
 
@@ -68,9 +69,16 @@ export default function CartaPage() {
       setAnimationDirection(null);
       setIsAnimating(false);
 
-      // ✅ Y AHORA subimos suave (después del cambio)
+      // Stagger de entrada en los nuevos items
       requestAnimationFrame(() => {
         scrollToTopSmooth();
+        const items = cartaWrapperRef.current?.querySelectorAll('.carta-product-item');
+        if (items?.length) {
+          gsap.fromTo(items,
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.4, stagger: 0.04, ease: 'power2.out', overwrite: true }
+          );
+        }
       });
     }, ANIMATION_MS);
   };
