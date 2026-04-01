@@ -9,6 +9,11 @@
   box-sizing: border-box;
 }
 
+/* Ocultar widget de Stripe test mode */
+iframe[src*="stripe.com/connect"] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }

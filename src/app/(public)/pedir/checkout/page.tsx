@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/lib/context/CartContext';
 import { toast } from 'sonner';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripePaymentForm from '@/components/public/StripePaymentForm';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 interface FormErrors {
   cliente?: string;
@@ -27,6 +32,9 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Set<string>>(new Set());
+  const [step, setStep] = useState<'datos' | 'pago'>('datos');
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [form, setForm] = useState({
     cliente: '',
     telefono: '',
@@ -45,7 +53,6 @@ export default function CheckoutPage() {
       case 'cliente':
         if (!value.trim()) return 'El nombre es obligatorio';
         if (value.trim().length < 2) return 'Mínimo 2 caracteres';
-        if (value.trim().length > 60) return 'Máximo 60 caracteres';
         return undefined;
       case 'telefono':
         if (!value.trim()) return 'El teléfono es obligatorio';
@@ -53,7 +60,6 @@ export default function CheckoutPage() {
         return undefined;
       case 'calle':
         if (t === 'domicilio' && !value.trim()) return 'La calle es obligatoria';
-        if (value.length > 100) return 'Máximo 100 caracteres';
         return undefined;
       case 'numero':
         if (t === 'domicilio' && !value.trim()) return 'El número es obligatorio';
@@ -65,9 +71,6 @@ export default function CheckoutPage() {
         if (t === 'domicilio' && !value.trim()) return 'El código postal es obligatorio';
         if (t === 'domicilio' && !CP_REGEX.test(value)) return 'Debe tener 5 dígitos';
         return undefined;
-      case 'telefonoEntrega':
-        if (value.trim() && !PHONE_REGEX.test(value.replace(/\s/g, ''))) return 'Formato inválido';
-        return undefined;
       default:
         return undefined;
     }
@@ -75,7 +78,7 @@ export default function CheckoutPage() {
 
   const validateAll = useCallback((): boolean => {
     const fields = ['cliente', 'telefono'];
-    if (tipo === 'domicilio') fields.push('calle', 'numero', 'ciudad', 'codigoPostal', 'telefonoEntrega');
+    if (tipo === 'domicilio') fields.push('calle', 'numero', 'ciudad', 'codigoPostal');
     const newErrors: FormErrors = {};
     let valid = true;
     for (const field of fields) {
@@ -90,9 +93,10 @@ export default function CheckoutPage() {
     return valid;
   }, [form, tipo, validateField]);
 
-  if (items.length === 0) {
+  if (items.length === 0 && step === 'datos') {
     return (
       <div className="min-h-screen bg-[#160a00] flex flex-col items-center justify-center pt-20 px-4">
+        <span className="text-5xl mb-4 opacity-30">🛒</span>
         <p className="text-gray-400 text-lg mb-4">No tienes productos en el carrito</p>
         <Link href="/pedir" className="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold transition">
           Ver carta
@@ -125,8 +129,8 @@ export default function CheckoutPage() {
         : 'border-gray-700 focus:border-amber-500'
     }`;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Paso 1: Crear pedido + Payment Intent
+  const handleContinuarAlPago = async () => {
     if (!validateAll()) {
       toast.error('Revisa los campos marcados en rojo');
       return;
@@ -134,6 +138,15 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
+      // Validar que todos los productoId son ObjectIds válidos de MongoDB (24 hex chars)
+      const idValido = /^[a-f0-9]{24}$/;
+      const productosInvalidos = items.filter((i) => !idValido.test(i.productoId));
+      if (productosInvalidos.length > 0) {
+        clearCart();
+        toast.error('Tu carrito tenía productos desactualizados. Se ha vaciado. Vuelve a añadir los productos.');
+        return;
+      }
+
       const body: Record<string, unknown> = {
         tipo,
         cliente: form.cliente,
@@ -162,7 +175,7 @@ export default function CheckoutPage() {
         body.gastoEnvio = gastoEnvio;
       }
 
-      const res = await fetch('/api/public/pedidos', {
+      const res = await fetch('/api/public/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -174,8 +187,9 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Error al crear el pedido');
       }
 
-      clearCart();
-      router.push(`/pedir/confirmacion/${data.data._id}`);
+      setClientSecret(data.data.clientSecret);
+      setPaymentIntentId(data.data.paymentIntentId);
+      setStep('pago');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       toast.error(message);
@@ -184,186 +198,245 @@ export default function CheckoutPage() {
     }
   };
 
+  const handlePaymentSuccess = (newPedidoId: string) => {
+    clearCart();
+    router.push(`/pedir/confirmacion/${newPedidoId}`);
+  };
+
+  const handlePaymentError = (message: string) => {
+    toast.error(message);
+  };
+
   return (
     <div className="min-h-screen bg-[#160a00] pt-20 pb-8">
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <Link href="/pedir/carrito" className="text-sm text-gray-500 hover:text-amber-400 transition mb-4 inline-block">
-          ← Volver al carrito
+        <Link href="/pedir" className="text-sm text-gray-500 hover:text-amber-400 transition mb-4 inline-block">
+          ← Volver a la carta
         </Link>
-        <h1 className="text-2xl font-bold text-amber-500 mb-6">Finalizar pedido</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Tipo de pedido */}
-          <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Tipo de pedido</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setTipo('recoger')}
-                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition ${
-                  tipo === 'recoger' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700'
-                }`}
-              >
-                🛍️ Recoger
-              </button>
-              <button
-                type="button"
-                onClick={() => setTipo('domicilio')}
-                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition ${
-                  tipo === 'domicilio' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700'
-                }`}
-              >
-                🛵 Domicilio
-              </button>
-            </div>
+        {/* Progress steps */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className={`flex items-center gap-2 ${step === 'datos' ? 'text-amber-500' : 'text-green-500'}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+              step === 'datos' ? 'bg-amber-600 text-white' : 'bg-green-600 text-white'
+            }`}>{step === 'datos' ? '1' : '✓'}</span>
+            <span className="text-sm font-semibold">Datos</span>
           </div>
-
-          {/* Datos del cliente */}
-          <div className="space-y-4">
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Tus datos</p>
-            <div>
-              <input
-                type="text"
-                name="cliente"
-                value={form.cliente}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                placeholder="Tu nombre *"
-                aria-invalid={!!errors.cliente}
-                className={inputClass('cliente')}
-              />
-              {touched.has('cliente') && errors.cliente && (
-                <p className="text-red-400 text-xs mt-1 ml-1">{errors.cliente}</p>
-              )}
-            </div>
-            <div>
-              <input
-                type="tel"
-                name="telefono"
-                value={form.telefono}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                placeholder="Tu teléfono * (ej: 612345678)"
-                aria-invalid={!!errors.telefono}
-                className={inputClass('telefono')}
-              />
-              {touched.has('telefono') && errors.telefono && (
-                <p className="text-red-400 text-xs mt-1 ml-1">{errors.telefono}</p>
-              )}
-            </div>
+          <div className="flex-1 h-0.5 bg-gray-700 rounded">
+            <div className={`h-full rounded transition-all ${step === 'pago' ? 'bg-amber-500 w-full' : 'w-0'}`} />
           </div>
+          <div className={`flex items-center gap-2 ${step === 'pago' ? 'text-amber-500' : 'text-gray-600'}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+              step === 'pago' ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-500'
+            }`}>2</span>
+            <span className="text-sm font-semibold">Pago</span>
+          </div>
+        </div>
 
-          {/* Dirección (solo domicilio) */}
-          {tipo === 'domicilio' && (
+        <h1 className="text-2xl font-bold text-amber-500 mb-6">
+          {step === 'datos' ? 'Datos del pedido' : 'Método de pago'}
+        </h1>
+
+        {step === 'datos' ? (
+          /* ═══ PASO 1: DATOS ═══ */
+          <div className="space-y-8">
+            {/* Tipo de pedido */}
+            <div>
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Tipo de pedido</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTipo('recoger')}
+                  className={`flex-1 py-3 rounded-xl font-semibold text-sm transition ${
+                    tipo === 'recoger' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700'
+                  }`}
+                >
+                  🛍️ Recoger
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTipo('domicilio')}
+                  className={`flex-1 py-3 rounded-xl font-semibold text-sm transition ${
+                    tipo === 'domicilio' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700'
+                  }`}
+                >
+                  🛵 Domicilio (+3.50€)
+                </button>
+              </div>
+            </div>
+
+            {/* Datos del cliente */}
             <div className="space-y-4">
-              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">📍 Dirección de entrega</p>
-              <div className="bg-amber-600/10 border border-amber-600/30 rounded-xl px-4 py-2.5 text-xs text-amber-300">
-                🛵 Zona de reparto: Xàtiva y alrededores (máx. 5 km). Envío +3.50€
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Tus datos</p>
+              <div>
+                <input type="text" name="cliente" value={form.cliente} onChange={handleChange} onBlur={handleBlur}
+                  placeholder="Nombre *" className={inputClass('cliente')} />
+                {touched.has('cliente') && errors.cliente && <p className="text-red-400 text-xs mt-1">{errors.cliente}</p>}
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="col-span-2">
-                  <input type="text" name="calle" value={form.calle} onChange={handleChange} onBlur={handleBlur} required placeholder="Calle *" aria-invalid={!!errors.calle} className={inputClass('calle').replace('w-full ', '')} />
-                  {touched.has('calle') && errors.calle && <p className="text-red-400 text-xs mt-1 ml-1">{errors.calle}</p>}
-                </div>
-                <div>
-                  <input type="text" name="numero" value={form.numero} onChange={handleChange} onBlur={handleBlur} required placeholder="Nº *" aria-invalid={!!errors.numero} className={inputClass('numero').replace('w-full ', '')} />
-                  {touched.has('numero') && errors.numero && <p className="text-red-400 text-xs mt-1 ml-1">{errors.numero}</p>}
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <input type="text" name="piso" value={form.piso} onChange={handleChange} placeholder="Piso / Puerta" className="px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
-                <div>
-                  <input type="text" name="ciudad" value={form.ciudad} onChange={handleChange} onBlur={handleBlur} required placeholder="Ciudad *" aria-invalid={!!errors.ciudad} className={inputClass('ciudad').replace('w-full ', '')} />
-                  {touched.has('ciudad') && errors.ciudad && <p className="text-red-400 text-xs mt-1 ml-1">{errors.ciudad}</p>}
-                </div>
-                <div>
-                  <input type="text" name="codigoPostal" value={form.codigoPostal} onChange={handleChange} onBlur={handleBlur} required placeholder="CP *" maxLength={5} aria-invalid={!!errors.codigoPostal} className={inputClass('codigoPostal').replace('w-full ', '')} />
-                  {touched.has('codigoPostal') && errors.codigoPostal && <p className="text-red-400 text-xs mt-1 ml-1">{errors.codigoPostal}</p>}
-                </div>
+              <div>
+                <input type="tel" name="telefono" value={form.telefono} onChange={handleChange} onBlur={handleBlur}
+                  placeholder="Teléfono * (ej: 612345678)" className={inputClass('telefono')} />
+                {touched.has('telefono') && errors.telefono && <p className="text-red-400 text-xs mt-1">{errors.telefono}</p>}
               </div>
             </div>
-          )}
 
-          {/* Notas */}
-          <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Notas (opcional)</p>
-            <textarea
-              name="notas"
-              value={form.notas}
-              onChange={handleChange}
-              placeholder="Indicaciones especiales..."
-              rows={2}
-              className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none resize-none"
-              maxLength={500}
-            />
-          </div>
-
-          {/* Resumen */}
-          <div className="bg-gray-800/80 border border-gray-600/50 rounded-xl p-5 space-y-3">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Resumen del pedido</p>
-            {items.map((item, idx) => (
-              <div key={idx} className="space-y-0.5">
-                <div className="flex items-center gap-3 text-sm text-gray-200">
-                  {item.imagen && (
-                    <img src={item.imagen} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />
-                  )}
-                  <span className="truncate flex-1 font-medium">{item.cantidad}x {item.nombre}</span>
-                  <span className="shrink-0 ml-2 text-amber-400">{((item.precio + (item.personalizaciones?.precioExtras ?? 0)) * item.cantidad).toFixed(2)}€</span>
-                </div>
-                {item.personalizaciones?.ingredientesExtra && item.personalizaciones.ingredientesExtra.length > 0 && (
-                  <p className="text-xs text-gray-500 pl-4">+ {item.personalizaciones.ingredientesExtra.join(', ')}</p>
-                )}
-                {item.personalizaciones?.ingredientesRemovidos && item.personalizaciones.ingredientesRemovidos.length > 0 && (
-                  <p className="text-xs text-red-400/60 pl-4">- {item.personalizaciones.ingredientesRemovidos.join(', ')}</p>
-                )}
-                {item.notas && (
-                  <p className="text-xs text-gray-500 pl-4 italic">Nota: {item.notas}</p>
-                )}
-              </div>
-            ))}
+            {/* Dirección (solo domicilio) */}
             {tipo === 'domicilio' && (
-              <div className="flex justify-between text-sm text-gray-400 border-t border-gray-700 pt-2 mt-2">
-                <span>Gastos de envío</span>
-                <span>{gastoEnvio.toFixed(2)}€</span>
+              <div className="space-y-4">
+                <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">📍 Dirección de entrega</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2">
+                    <input type="text" name="calle" value={form.calle} onChange={handleChange} onBlur={handleBlur}
+                      placeholder="Calle *" className={inputClass('calle')} />
+                    {touched.has('calle') && errors.calle && <p className="text-red-400 text-xs mt-1">{errors.calle}</p>}
+                  </div>
+                  <div>
+                    <input type="text" name="numero" value={form.numero} onChange={handleChange} onBlur={handleBlur}
+                      placeholder="Nº *" className={inputClass('numero')} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <input type="text" name="piso" value={form.piso} onChange={handleChange}
+                    placeholder="Piso (opc.)" className={inputClass('piso')} />
+                  <div>
+                    <input type="text" name="ciudad" value={form.ciudad} onChange={handleChange} onBlur={handleBlur}
+                      placeholder="Ciudad *" className={inputClass('ciudad')} />
+                  </div>
+                  <div>
+                    <input type="text" name="codigoPostal" value={form.codigoPostal} onChange={handleChange} onBlur={handleBlur}
+                      placeholder="CP *" maxLength={5} className={inputClass('codigoPostal')} />
+                  </div>
+                </div>
+                <input type="tel" name="telefonoEntrega" value={form.telefonoEntrega} onChange={handleChange}
+                  placeholder="Teléfono de entrega (si es diferente)" className={inputClass('telefonoEntrega')} />
               </div>
             )}
-            <div className="flex justify-between text-lg font-bold text-white border-t border-gray-700 pt-2 mt-2">
-              <span>Total</span>
-              <span className="text-amber-400">{totalFinal.toFixed(2)}€</span>
-            </div>
-          </div>
 
-          {/* Tiempo estimado */}
-          <div className="bg-gray-800/50 border border-gray-700/30 rounded-xl px-4 py-3 flex items-center gap-3">
-            <span className="text-xl">⏱️</span>
+            {/* Notas */}
             <div>
-              <p className="text-sm font-semibold text-white">
-                Tiempo estimado: {tipo === 'domicilio' ? '35–50 min' : '20–30 min'}
-              </p>
-              <p className="text-xs text-gray-500">
-                {tipo === 'recoger' ? 'Te avisaremos cuando esté listo para recoger' : 'Desde la confirmación del pedido'}
-              </p>
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Notas del pedido (opcional)</p>
+              <textarea name="notas" value={form.notas} onChange={handleChange}
+                placeholder="Ej: tocar el timbre, dejar en portería..."
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none resize-none"
+                rows={2} maxLength={500} />
+            </div>
+
+            {/* Resumen del pedido */}
+            <div className="bg-gray-800/80 rounded-xl border border-gray-600/50 p-5">
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3">Resumen del pedido</p>
+              <div className="space-y-2 mb-4">
+                {items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between text-sm">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-amber-400 font-semibold">{item.cantidad}x</span>
+                      <span className="text-gray-300 ml-1">{item.nombre}</span>
+                      {item.personalizaciones?.ingredientesExtra && item.personalizaciones.ingredientesExtra.length > 0 && (
+                        <p className="text-[10px] text-green-400 ml-4">+ {item.personalizaciones.ingredientesExtra.join(', ')}</p>
+                      )}
+                      {item.personalizaciones?.ingredientesRemovidos && item.personalizaciones.ingredientesRemovidos.length > 0 && (
+                        <p className="text-[10px] text-red-400 ml-4">- {item.personalizaciones.ingredientesRemovidos.join(', ')}</p>
+                      )}
+                    </div>
+                    <span className="text-amber-400 font-semibold shrink-0 ml-2">
+                      {((item.precio + (item.personalizaciones?.precioExtras ?? 0)) * item.cantidad).toFixed(2)}€
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-gray-700 pt-3 space-y-1">
+                <div className="flex justify-between text-sm text-gray-400">
+                  <span>Subtotal</span><span>{total.toFixed(2)}€</span>
+                </div>
+                {gastoEnvio > 0 && (
+                  <div className="flex justify-between text-sm text-gray-400">
+                    <span>Envío</span><span>{gastoEnvio.toFixed(2)}€</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg font-bold text-white pt-1">
+                  <span>Total</span><span className="text-amber-400">{totalFinal.toFixed(2)}€</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Botón continuar al pago */}
+            <button
+              onClick={handleContinuarAlPago}
+              disabled={loading}
+              className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white rounded-xl font-bold text-lg transition active:scale-[0.98] shadow-lg shadow-green-600/20"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Preparando pago...
+                </span>
+              ) : (
+                `Continuar al pago — ${totalFinal.toFixed(2)}€`
+              )}
+            </button>
+          </div>
+        ) : (
+          /* ═══ PASO 2: PAGO CON STRIPE ═══ */
+          <div className="space-y-6">
+            {/* Resumen compacto */}
+            <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-400">{tipo === 'recoger' ? '🛍️ Para recoger' : '🛵 A domicilio'}</p>
+                  <p className="text-white font-semibold">{form.cliente} · {form.telefono}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">{items.length} producto{items.length !== 1 ? 's' : ''}</p>
+                  <p className="text-xl font-bold text-amber-400">{totalFinal.toFixed(2)}€</p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setStep('datos')}
+              className="text-sm text-gray-500 hover:text-amber-400 transition"
+            >
+              ← Volver a modificar datos
+            </button>
+
+            {/* Formulario de pago Stripe */}
+            {clientSecret && (
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret,
+                  appearance: {
+                    theme: 'night',
+                    variables: {
+                      colorPrimary: '#d97706',
+                      colorBackground: '#1f2937',
+                      colorText: '#ffffff',
+                      colorDanger: '#ef4444',
+                      borderRadius: '12px',
+                      fontFamily: 'system-ui, sans-serif',
+                    },
+                  },
+                }}
+              >
+                <StripePaymentForm
+                  total={totalFinal}
+                  paymentIntentId={paymentIntentId!}
+                  onSuccess={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                />
+              </Elements>
+            )}
+
+            {/* Tarjetas de prueba */}
+            <div className="bg-blue-900/20 border border-blue-700/30 rounded-xl p-4">
+              <p className="text-blue-400 text-xs font-semibold mb-2">🧪 Modo test — Tarjetas de prueba:</p>
+              <div className="space-y-1 text-xs text-blue-300/80">
+                <p><span className="font-mono bg-blue-900/50 px-1.5 py-0.5 rounded">4242 4242 4242 4242</span> — Pago exitoso</p>
+                <p><span className="font-mono bg-blue-900/50 px-1.5 py-0.5 rounded">4000 0000 0000 0002</span> — Tarjeta rechazada</p>
+                <p className="text-blue-300/60">Fecha: cualquier futura · CVC: cualquiera de 3 dígitos</p>
+              </div>
             </div>
           </div>
-
-          {/* Confirmar */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-5 bg-green-600 hover:bg-green-500 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-lg transition active:scale-[0.98] shadow-lg shadow-green-600/20 flex items-center justify-center gap-3"
-          >
-            {loading ? (
-              <>
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Enviando pedido...
-              </>
-            ) : (
-              `Confirmar pedido — ${totalFinal.toFixed(2)}€`
-            )}
-          </button>
-        </form>
+        )}
       </div>
     </div>
   );
