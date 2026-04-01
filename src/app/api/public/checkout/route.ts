@@ -7,9 +7,11 @@ import { sanitizeBody } from '@/lib/utils/sanitize';
 import { validarProductosYObtenerPrecios } from '@/lib/services/pedidoService';
 import { ApiResponse } from '@/lib/types';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-03-25.dahlia',
-});
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY no configurada');
+  return new Stripe(key, { apiVersion: '2026-03-25.dahlia' });
+}
 
 // Rate limiting simple
 const requestMap = new Map<string, { count: number; resetAt: number }>();
@@ -85,7 +87,7 @@ export async function POST(req: NextRequest) {
     const totalCentimos = Math.round(totalFinal * 100);
 
     // Crear Payment Intent en Stripe (sin crear pedido)
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await getStripe().paymentIntents.create({
       amount: totalCentimos,
       currency: 'eur',
       metadata: {
