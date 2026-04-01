@@ -1,276 +1,287 @@
 # Arbol de Codigo Fuente - El Buey Madurado
 
-**Fecha de generacion:** 2026-03-30
+> Actualizado: 2026-04-01 | Escaneo profundo (full rescan)
 
 ---
 
-## Estructura Completa
+## Estructura General
 
 ```
 el-buey-madurado/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                          # Pipeline CI: typecheck + build
-├── docs/                                   # Documentacion del proyecto
-│   ├── index.md                            # Indice maestro de documentacion
-│   ├── project-overview.md                 # Resumen del proyecto
-│   ├── architecture.md                     # Arquitectura del sistema
-│   ├── source-tree-analysis.md             # Este archivo
-│   ├── api-contracts.md                    # Contratos API (41 endpoints)
-│   ├── data-models.md                      # Modelos de datos (6 modelos)
-│   ├── component-inventory.md              # Inventario de componentes (~59)
-│   ├── development-guide.md                # Guia de desarrollo
-│   ├── deployment-guide.md                 # Guia de despliegue
-│   ├── project-scan-report.json            # Datos del escaneo
-│   ├── auditoria-el-buey-madurado.md       # Auditoria del proyecto
-│   ├── plan-mejoras-el-buey-madurado.md    # Plan de mejoras
+│       └── ci.yml                    # CI: typecheck + build en PR a main y push a develop
+├── docs/                             # Documentacion del proyecto (project_knowledge)
+│   ├── index.md                      # Indice maestro
+│   ├── project-overview.md           # Resumen del proyecto
+│   ├── architecture.md               # Arquitectura del sistema
+│   ├── api-contracts.md              # 43 endpoints documentados
+│   ├── data-models.md                # 6 modelos Mongoose
+│   ├── component-inventory.md        # ~100 archivos inventariados
+│   ├── source-tree-analysis.md       # Este archivo
+│   ├── development-guide.md          # Guia de desarrollo
+│   ├── deployment-guide.md           # Guia de despliegue
+│   ├── auditoria-el-buey-madurado.md # Auditoria manual
+│   ├── plan-mejoras-el-buey-madurado.md
 │   └── seguimiento-mejoras-el-buey-madurado.md
-├── e2e/                                    # Tests end-to-end (Playwright)
-│   └── auth.spec.ts                        # Test de autenticacion E2E
-├── public/                                 # Archivos estaticos publicos
-│   ├── assets/
-│   │   └── images/                         # Imagenes del sitio (~19 archivos)
-│   │       ├── carne[1-10].*              # Galeria de carnes
-│   │       ├── carneSobreNosotros[1-3].*  # Imagenes Sobre Nosotros
-│   │       ├── hero-Sobre-Nosotros.jpeg   # Hero Sobre Nosotros
-│   │       ├── josep.jpeg                 # Equipo
-│   │       ├── letis.webp                 # Equipo
-│   │       ├── miguel.jpeg                # Equipo
-│   │       └── local[1-3]img.jpeg         # Imagenes del local
-│   ├── icons/
-│   │   ├── icon-192.png                   # Icono PWA 192px
-│   │   ├── icon-512.png                   # Icono PWA 512px
-│   │   └── icon-maskable-512.png          # Icono maskable PWA
-│   ├── hero.mp4                           # Video hero de la landing
-│   ├── logo-fondo-blanco.ico              # Favicon
-│   ├── manifest.webmanifest               # Manifest PWA
-│   └── sw.js                              # Service Worker (PWA)
-├── src/
-│   ├── app/                                # Next.js App Router
-│   │   ├── layout.tsx                      # Layout raiz (html, body, fonts)
-│   │   ├── page.tsx                        # Pagina principal (landing)
-│   │   ├── RootLayoutContent.tsx           # Contenido del layout (Sonner)
-│   │   ├── globals.css                     # Estilos globales (Tailwind base)
-│   │   │
-│   │   ├── (public)/                       # Grupo de rutas publicas
-│   │   │   ├── layout.tsx                  # Layout: Navbar + Footer + CartProvider
-│   │   │   ├── carta/
-│   │   │   │   └── page.tsx               # Carta digital del menu
-│   │   │   ├── contacto/
-│   │   │   │   └── page.tsx               # Pagina de contacto
-│   │   │   ├── reservas/
-│   │   │   │   └── page.tsx               # Reservas (TheFork)
-│   │   │   ├── sobre-nosotros/
-│   │   │   │   └── page.tsx               # Pagina Sobre Nosotros
-│   │   │   └── pedir/                      # ★ Sistema de pedidos online
-│   │   │       ├── page.tsx               # Catalogo de productos
-│   │   │       ├── carrito/
-│   │   │       │   └── page.tsx           # Vista del carrito
-│   │   │       ├── checkout/
-│   │   │       │   └── page.tsx           # Formulario de checkout
-│   │   │       ├── confirmacion/
-│   │   │       │   └── [id]/
-│   │   │       │       └── page.tsx       # Confirmacion de pedido
-│   │   │       └── seguimiento/
-│   │   │           └── [id]/
-│   │   │               └── page.tsx       # Seguimiento en tiempo real
-│   │   │
-│   │   ├── (dashboard)/                    # Grupo de rutas protegidas
-│   │   │   ├── layout.tsx                  # Layout: DashboardShell (sidebar)
-│   │   │   └── dashboard/
-│   │   │       ├── page.tsx               # Dashboard home
-│   │   │       ├── pedidos/
-│   │   │       │   └── page.tsx           # Panel de pedidos
-│   │   │       ├── mesas/
-│   │   │       │   └── page.tsx           # Gestion de mesas
-│   │   │       ├── ingredientes/
-│   │   │       │   └── layout.tsx         # Stock de ingredientes
-│   │   │       ├── productos/
-│   │   │       │   └── layout.tsx         # Stock de productos
-│   │   │       ├── tickets-cocina/
-│   │   │       │   └── layout.tsx         # Panel de cocina
-│   │   │       └── usuarios/
-│   │   │           └── page.tsx           # Gestion de usuarios
-│   │   │
-│   │   ├── login/
-│   │   │   └── page.tsx                    # Pagina de login
-│   │   │
-│   │   └── api/                            # API Route Handlers
-│   │       ├── auth/
-│   │       │   ├── login/route.ts         # POST: login + cookie JWT
-│   │       │   ├── logout/route.ts        # POST: logout + borrar cookie
-│   │       │   ├── me/route.ts            # GET: usuario actual
-│   │       │   └── register/route.ts      # POST: registro (solo admin)
-│   │       ├── ingredientes/
-│   │       │   ├── route.ts               # GET (lista) + POST (crear)
-│   │       │   └── [id]/route.ts          # GET + PUT + DELETE
-│   │       ├── mesas/
-│   │       │   ├── route.ts               # GET (lista) + POST (crear)
-│   │       │   ├── [id]/route.ts          # PUT + DELETE
-│   │       │   └── seed/route.ts          # POST: crear 15 mesas iniciales
-│   │       ├── pedidos/
-│   │       │   ├── route.ts               # GET (paginado) + POST (crear)
-│   │       │   ├── [id]/
-│   │       │   │   ├── route.ts           # GET + PUT + DELETE
-│   │       │   │   └── cobrar/route.ts    # PUT: cobrar pedido
-│   │       │   └── abrir/route.ts         # POST: abrir pedido en mesa
-│   │       ├── productos/
-│   │       │   ├── route.ts               # GET + POST + PUT + DELETE
-│   │       │   └── [id]/route.ts          # GET + PUT + DELETE
-│   │       ├── public/                     # ★ Endpoints sin autenticacion
-│   │       │   ├── productos/route.ts     # GET: catalogo publico
-│   │       │   └── pedidos/
-│   │       │       ├── route.ts           # POST: crear pedido online
-│   │       │       └── [id]/route.ts      # GET: seguimiento de pedido
-│   │       ├── reportes/
-│   │       │   └── route.ts               # GET: metricas agregadas
-│   │       ├── tickets-cocina/
-│   │       │   ├── route.ts               # GET + POST
-│   │       │   └── [id]/route.ts          # GET + PUT
-│   │       └── usuarios/
-│   │           ├── route.ts               # GET + POST
-│   │           └── [id]/route.ts          # GET + PUT + DELETE
-│   │
-│   ├── components/                         # Componentes React
-│   │   ├── dashboard/                     # ★ Componentes del panel (22 archivos)
-│   │   │   ├── DashboardShell.tsx         # Shell con sidebar
-│   │   │   ├── PedidoPanel.tsx            # Panel de pedidos
-│   │   │   ├── PedidoForm.tsx             # Formulario de pedido
-│   │   │   ├── PedidoCard.tsx             # Tarjeta compacta de pedido
-│   │   │   ├── CocinaPanel.tsx            # Panel de cocina
-│   │   │   ├── StockPanel.tsx             # Panel de stock con filtros
-│   │   │   ├── ReportesPanel.tsx          # Panel de reportes
-│   │   │   ├── ProductoForm.tsx           # Formulario de producto
-│   │   │   ├── ProductoList.tsx           # Lista de productos
-│   │   │   ├── ProductCardGrid.tsx        # Grid de productos
-│   │   │   ├── IngredienteForm.tsx        # Formulario de ingrediente
-│   │   │   ├── IngredienteList.tsx        # Lista de ingredientes
-│   │   │   ├── IngredientCardGrid.tsx     # Grid de ingredientes
-│   │   │   ├── MesaGrid.tsx              # Grid de mesas
-│   │   │   ├── MesaCard.tsx              # Tarjeta de mesa
-│   │   │   ├── MesaForm.tsx              # Formulario de mesa
-│   │   │   ├── MesaMapView.tsx           # Mapa interactivo de mesas
-│   │   │   ├── ButtonGrid.tsx            # Grid de botones de accion
-│   │   │   ├── ConfirmModal.tsx          # Modal de confirmacion
-│   │   │   ├── CobrarModal.tsx           # Modal de cobro
-│   │   │   ├── PersonalizarProductoModal.tsx  # Modal personalizacion
-│   │   │   └── hooks/                     # Hooks del dashboard
-│   │   │       ├── usePedidoForm.ts
-│   │   │       ├── usePedidoPanel.ts
-│   │   │       ├── useProductoForm.ts
-│   │   │       ├── useConfirm.ts
-│   │   │       └── __tests__/            # Tests de hooks
-│   │   │           ├── usePedidoForm.test.tsx
-│   │   │           ├── usePedidoPanel.test.tsx
-│   │   │           └── useProductoForm.test.tsx
-│   │   ├── public/                        # ★ Componentes pedidos online
-│   │   │   ├── ProductoCard.tsx           # Tarjeta producto publico
-│   │   │   ├── PersonalizarModal.tsx      # Modal personalizacion publico
-│   │   │   ├── CartDrawer.tsx             # Drawer lateral del carrito
-│   │   │   └── CartSummaryBar.tsx         # Barra resumen del carrito
-│   │   ├── Home/                          # Landing page
-│   │   │   ├── HeroSectionHome.tsx
-│   │   │   ├── GallerySection.tsx
-│   │   │   ├── Marquee.tsx
-│   │   │   └── ContactSection.tsx
-│   │   ├── Navbar/
-│   │   │   ├── Navbar.tsx
-│   │   │   ├── NavLink.tsx
-│   │   │   └── Logo.tsx
-│   │   ├── Footer/
-│   │   │   ├── Footer.tsx
-│   │   │   ├── FooterBottom.tsx
-│   │   │   ├── FooterHorario.tsx
-│   │   │   ├── FooterLegal.tsx
-│   │   │   ├── FooterSocial.tsx
-│   │   │   ├── SocialButton.tsx
-│   │   │   └── SocialButtom.tsx
-│   │   ├── SobreNosotros/
-│   │   │   ├── HeroSectionSobreNosotros.tsx
-│   │   │   ├── HistoriaYValores.tsx
-│   │   │   ├── Equipo.tsx
-│   │   │   ├── Esquipo.tsx
-│   │   │   ├── MuseoCarne.tsx
-│   │   │   └── GoogleReviews.tsx
-│   │   ├── Reservas/
-│   │   │   └── reservas.tsx
-│   │   ├── ui/
-│   │   │   ├── Button.tsx                 # Boton reutilizable
-│   │   │   ├── WhatsAppButton.tsx         # Boton flotante WhatsApp
-│   │   │   ├── ReservasButton.tsx         # Boton flotante reservas
-│   │   │   ├── FirstVisitNotice.tsx       # Aviso primera visita
-│   │   │   └── OfflineBanner.tsx          # Banner offline (PWA)
-│   │   └── ProtectedRoute.tsx             # HOC proteccion de rutas
-│   │
+├── e2e/                              # Tests end-to-end (Playwright)
+├── public/                           # Assets estaticos
 │   ├── data/
-│   │   └── menu.ts                        # Datos estaticos del menu (650 lineas, 64 productos)
-│   │
-│   ├── lib/                                # Logica compartida
-│   │   ├── api.ts                         # Funciones de API genericas
-│   │   ├── apiClient.ts                   # Cliente API configurado
-│   │   ├── auth.ts                        # Utilidades JWT (generarToken, verificarToken)
-│   │   ├── db.ts                          # Conexion MongoDB singleton
-│   │   ├── menu.ts                        # Utilidades de menu
-│   │   ├── middlewareAuth.ts              # Middleware auth API (protegerRuta, verificarRol)
-│   │   ├── models/                        # Modelos Mongoose (6)
-│   │   │   ├── Usuario.ts                # Usuarios con roles y bcrypt
-│   │   │   ├── Producto.ts               # Productos con ingredientes y extras
-│   │   │   ├── Pedido.ts                 # Pedidos multicanal
-│   │   │   ├── Mesa.ts                   # Mesas con estado y pedido actual
-│   │   │   ├── Ingrediente.ts            # Ingredientes con alergenos UE
-│   │   │   └── TicketCocina.ts           # Tickets de cocina
-│   │   ├── services/                      # Servicios de logica de negocio
-│   │   │   ├── pedidoService.ts          # Logica centralizada de pedidos
-│   │   │   └── __tests__/
-│   │   │       ├── pedidoService.test.ts
-│   │   │       └── pedidoService.db.test.ts
-│   │   ├── constants/
-│   │   │   └── alergenos.ts              # 14 alergenos UE (labels, iconos, colores)
-│   │   ├── context/
-│   │   │   └── CartContext.tsx            # ★ Contexto del carrito (localStorage)
-│   │   ├── types/
-│   │   │   └── index.ts                  # Re-exports de interfaces + ApiResponse, AuthUser
-│   │   ├── utils/
-│   │   │   ├── logger.ts                 # Logging estructurado
-│   │   │   ├── pagination.ts             # Paginacion de resultados
-│   │   │   ├── rateLimiter.ts            # Rate limiting en memoria
-│   │   │   ├── sanitize.ts              # Sanitizacion de inputs
-│   │   │   ├── validateId.ts            # Validacion ObjectId MongoDB
-│   │   │   └── __tests__/
-│   │   │       ├── logger.test.ts
-│   │   │       ├── pagination.test.ts
-│   │   │       ├── rateLimiter.test.ts
-│   │   │       ├── sanitize.test.ts
-│   │   │       └── validateId.test.ts
-│   │   └── hooks/
-│   │       ├── useAuth.ts                # Hook de autenticacion global
-│   │       └── swr/                      # ★ Hooks SWR (7 hooks)
-│   │           ├── index.ts             # Re-exports
-│   │           ├── fetcher.ts           # authFetcher con JWT
-│   │           ├── useIngredientes.ts   # 5s refresh
-│   │           ├── useProductos.ts      # 5s refresh
-│   │           ├── useMesas.ts          # 5s refresh
-│   │           ├── usePedidos.ts        # 5s refresh (paginado)
-│   │           ├── useReportes.ts       # 5s refresh
-│   │           ├── useUsuarios.ts       # Sin refresh
-│   │           └── usePublicProductos.ts # 60s refresh (sin auth)
-│   │
-│   ├── assets/                             # Assets importados (CSS/fonts)
-│   └── middleware.ts                       # ★ Middleware Edge: JWT /dashboard/*
+│   │   └── productos.json            # Productos para pagina publica /pedir
+│   ├── icons/                        # Iconos PWA
+│   ├── images/                       # Imagenes del sitio
+│   └── manifest.webmanifest          # PWA manifest
+├── src/                              # Codigo fuente principal
+│   ├── app/                          # Next.js App Router (paginas + API)
+│   ├── assets/                       # Assets importados por componentes
+│   ├── components/                   # Componentes React
+│   ├── data/                         # Datos semilla (ingredientes, productos)
+│   ├── lib/                          # Logica compartida (modelos, hooks, utils)
+│   └── middleware.ts                 # Edge middleware (proteccion /dashboard/*)
+├── Dockerfile                        # Build multi-stage (node:20-alpine)
+├── docker-compose.yml                # App + MongoDB 7 + Mongo Express
+├── next.config.ts                    # output: "standalone"
+├── tailwind.config.ts                # Tailwind CSS config
+├── tsconfig.json                     # TypeScript strict, paths @/*
+├── vitest.config.ts                  # Unit tests
+├── playwright.config.ts              # E2E tests (chromium)
+├── package.json                      # Scripts y dependencias
+└── postcss.config.mjs                # PostCSS + Tailwind
+```
+
+---
+
+## Directorio `src/app/` — Paginas y API
+
+```
+src/app/
+├── layout.tsx                        # ENTRY: Root layout (metadata SEO, PWA, Analytics)
+├── RootLayoutContent.tsx             # Client layout: Navbar, Footer, SW, banners
+├── page.tsx                          # / → Home (Hero + Marquee + Galeria + Contacto)
+├── globals.css                       # Estilos globales
+├── login/
+│   └── page.tsx                      # /login → Login admin
 │
-├── Dockerfile                              # Imagen Docker standalone
-├── docker-compose.yml                     # Docker: app + MongoDB
-├── next.config.ts                         # Config Next.js (output: standalone)
-├── tailwind.config.ts                     # Config Tailwind CSS
-├── vitest.config.ts                       # Config Vitest
-├── playwright.config.ts                   # Config Playwright
-├── tsconfig.json                          # Config TypeScript
-├── postcss.config.mjs                     # Config PostCSS
-├── next-env.d.ts                          # Tipos Next.js (auto)
-├── .env.example                           # Variables de entorno de ejemplo
-├── mailmap                                # Mapa de autores Git
-├── package.json                           # Dependencias y scripts
-└── README.md                              # Documentacion principal
+├── (public)/                         # Route group: paginas publicas
+│   ├── layout.tsx                    # CartProvider wrapper
+│   ├── globals.css                   # Estilos publicos
+│   ├── carta/
+│   │   ├── page.tsx                  # /carta → Carta con slides por categoria
+│   │   └── carta.css
+│   ├── contacto/
+│   │   └── page.tsx                  # /contacto → Auto-scroll a contacto
+│   ├── reservas/
+│   │   └── page.tsx                  # /reservas → iframe CoverManager
+│   ├── sobre-nosotros/
+│   │   └── page.tsx                  # /sobre-nosotros → Historia, museo, equipo
+│   ├── admin/                        # (vacio)
+│   └── pedir/                        # Sistema de pedidos online
+│       ├── page.tsx                  # /pedir → Catalogo con carrito
+│       ├── carrito/
+│       │   └── page.tsx              # /pedir/carrito → Redirect
+│       ├── checkout/
+│       │   └── page.tsx              # /pedir/checkout → Datos + Stripe
+│       ├── confirmacion/
+│       │   └── [id]/
+│       │       └── page.tsx          # /pedir/confirmacion/[id] → Post-pago
+│       └── seguimiento/
+│           └── [id]/
+│               └── page.tsx          # /pedir/seguimiento/[id] → Tracking
+│
+├── (dashboard)/                      # Route group: panel de administracion
+│   ├── layout.tsx                    # ProtectedRoute + Toaster
+│   └── dashboard/
+│       ├── page.tsx                  # /dashboard → AdminPanel (modulos via URL)
+│       ├── mesas/
+│       │   └── page.tsx              # /dashboard/mesas → MesasPanel
+│       ├── pedidos/
+│       │   └── page.tsx              # /dashboard/pedidos → Redirect a /dashboard
+│       ├── usuarios/
+│       │   └── page.tsx              # /dashboard/usuarios → UsuariosPanel
+│       ├── ingredientes/
+│       │   └── layout.tsx            # Placeholder "en construccion"
+│       ├── productos/
+│       │   └── layout.tsx            # Placeholder "en construccion"
+│       └── tickets-cocina/
+│           └── layout.tsx            # Placeholder "en construccion"
+│
+└── api/                              # API Routes (43 endpoints)
+    ├── auth/
+    │   ├── login/route.ts            # POST login
+    │   ├── logout/route.ts           # POST logout
+    │   ├── me/route.ts               # GET me
+    │   └── register/route.ts         # POST register (admin only)
+    ├── ingredientes/
+    │   ├── route.ts                  # GET list, POST create
+    │   └── [id]/route.ts             # GET, PUT, DELETE by id
+    ├── mesas/
+    │   ├── route.ts                  # GET list, POST create
+    │   ├── [id]/route.ts             # PUT, DELETE by id
+    │   └── seed/route.ts             # POST seed 15 mesas
+    ├── pedidos/
+    │   ├── route.ts                  # GET list (paginado), POST create
+    │   ├── abrir/route.ts            # POST abrir pedido para mesa
+    │   └── [id]/
+    │       ├── route.ts              # GET, PUT, DELETE by id
+    │       └── cobrar/route.ts       # PUT cobrar pedido
+    ├── productos/
+    │   ├── route.ts                  # GET, POST, PUT, DELETE (id en body/query)
+    │   └── [id]/route.ts             # GET, PUT, DELETE by id (roles estrictos)
+    ├── public/                       # Sin autenticacion
+    │   ├── productos/route.ts        # GET productos disponibles
+    │   ├── pedidos/
+    │   │   ├── route.ts              # POST crear pedido publico
+    │   │   └── [id]/route.ts         # GET estado pedido
+    │   └── checkout/
+    │       ├── route.ts              # POST crear Stripe PaymentIntent
+    │       └── confirm/route.ts      # POST confirmar pago y crear pedido
+    ├── tickets-cocina/
+    │   ├── route.ts                  # GET list, POST create
+    │   └── [id]/route.ts             # GET, PUT by id
+    ├── usuarios/
+    │   ├── route.ts                  # GET list, POST create (admin)
+    │   └── [id]/route.ts             # GET, PUT, DELETE by id (admin)
+    └── reportes/
+        └── route.ts                  # GET dashboard reportes (agregaciones)
+```
+
+---
+
+## Directorio `src/components/` — Componentes React
+
+```
+src/components/
+├── dashboard/                        # 21 componentes + 4 hooks del dashboard
+│   ├── DashboardShell.tsx            # Shell principal con sidebar
+│   ├── MesaCard.tsx                  # Card de mesa individual
+│   ├── MesaGrid.tsx                  # Grid de mesas
+│   ├── MesaForm.tsx                  # CRUD mesa
+│   ├── MesaMapView.tsx               # Vista mapa del restaurante
+│   ├── StockPanel.tsx                # Panel stock (productos + ingredientes)
+│   ├── CobrarModal.tsx               # Modal de cobro
+│   ├── ConfirmModal.tsx              # Modal de confirmacion reutilizable
+│   ├── ProductoForm.tsx              # CRUD producto
+│   ├── ProductoList.tsx              # Tabla productos (legacy)
+│   ├── ProductCardGrid.tsx           # Grid cards productos
+│   ├── IngredienteForm.tsx           # CRUD ingrediente (14 alergenos UE)
+│   ├── IngredienteList.tsx           # Lista ingredientes responsive
+│   ├── IngredientCardGrid.tsx        # Grid cards ingredientes
+│   ├── PedidoForm.tsx                # Formulario pedido completo
+│   ├── PedidoCard.tsx                # Card pedido con flujo estados
+│   ├── PedidoPanel.tsx               # Panel Kanban pedidos
+│   ├── CocinaPanel.tsx               # Vista cocina con alergenos y sonido
+│   ├── ReportesPanel.tsx             # Panel reportes con PDF/Excel
+│   ├── ButtonGrid.tsx                # Botones accion rapida
+│   ├── PersonalizarProductoModal.tsx # Modal personalizar (dashboard)
+│   └── hooks/
+│       ├── useConfirm.ts             # Confirm modal Promise-based
+│       ├── useProductoForm.ts        # Logica form producto
+│       ├── usePedidoForm.ts          # Logica form pedido
+│       ├── usePedidoPanel.ts         # Logica panel pedidos
+│       └── __tests__/               # Tests de hooks
+│
+├── public/                           # 5 componentes de pedido online
+│   ├── ProductoCard.tsx              # Card producto publico
+│   ├── PersonalizarModal.tsx         # Modal personalizacion publico
+│   ├── CartDrawer.tsx                # Drawer carrito
+│   ├── CartSummaryBar.tsx            # Barra resumen carrito
+│   └── StripePaymentForm.tsx         # Formulario pago Stripe
+│
+├── Home/                             # 4 componentes de la home
+│   ├── HeroSectionHome.tsx
+│   ├── Marquee.tsx
+│   ├── GallerySection.tsx
+│   └── ContactSection.tsx
+│
+├── Navbar/                           # 3 componentes
+│   ├── Navbar.tsx
+│   ├── NavLink.tsx
+│   └── Logo.tsx
+│
+├── Footer/                           # 7 archivos (2 duplicados con typo)
+│   ├── Footer.tsx
+│   ├── FooterBottom.tsx
+│   ├── FooterLegal.tsx
+│   ├── FooterHorario.tsx
+│   ├── FooterSocial.tsx
+│   ├── SocialButtom.tsx              # ⚠ Typo (importado)
+│   └── SocialButton.tsx              # Duplicado (no importado)
+│
+├── SobreNosotros/                    # 6 archivos (1 duplicado con typo)
+│   ├── HeroSectionSobreNosotros.tsx
+│   ├── HistoriaYValores.tsx
+│   ├── MuseoCarne.tsx
+│   ├── GoogleReviews.tsx
+│   ├── Esquipo.tsx                   # ⚠ Typo (importado)
+│   └── Equipo.tsx                    # Duplicado (no importado)
+│
+├── Reservas/
+│   └── reservas.tsx                  # iframe CoverManager
+│
+├── ui/                               # 5 componentes reutilizables
+│   ├── Button.tsx                    # Variantes + tamanos
+│   ├── OfflineBanner.tsx             # Banner offline
+│   ├── FirstVisitNotice.tsx          # Modal primera visita
+│   ├── WhatsAppButton.tsx            # ⚠ Actualmente = ReservasButton
+│   └── ReservasButton.tsx            # Boton flotante reservar
+│
+└── ProtectedRoute.tsx                # HOC auth + roles
+```
+
+---
+
+## Directorio `src/lib/` — Logica Compartida
+
+```
+src/lib/
+├── api.ts                            # apiFetch() - helper server-side
+├── apiClient.ts                      # apiRequest() + wrappers CRUD por recurso
+├── auth.ts                           # generateToken() + verifyToken() (JWT 7d)
+├── db.ts                             # Conexion singleton MongoDB/Mongoose
+├── menu.ts                           # Datos estaticos del menu (/carta)
+├── middlewareAuth.ts                  # protegerRuta() + verificarRol()
+├── middleware.ts → src/middleware.ts  # Edge middleware (jose)
+│
+├── constants/
+│   └── alergenos.ts                  # 14 alergenos UE + labels/iconos/colores
+│
+├── context/
+│   └── CartContext.tsx                # CartProvider + useCart() (localStorage)
+│
+├── hooks/
+│   ├── useAuth.ts                    # Login, logout, verificacion token
+│   └── swr/
+│       ├── fetcher.ts                # authFetcher<T> generico
+│       ├── index.ts                  # Barrel exports
+│       ├── useIngredientes.ts        # SWR 5s
+│       ├── useProductos.ts           # SWR 5s
+│       ├── useMesas.ts              # SWR 5s
+│       ├── usePedidos.ts            # SWR 5s (paginado)
+│       ├── useUsuarios.ts           # SWR sin refresh
+│       ├── useReportes.ts           # SWR 5s
+│       └── usePublicProductos.ts    # SWR 60s (sin auth)
+│
+├── models/
+│   ├── Usuario.ts                    # Auth + roles + bcrypt
+│   ├── Producto.ts                   # Menu + ingredientes + extras
+│   ├── Pedido.ts                     # Pedidos multi-tipo + estados
+│   ├── Mesa.ts                       # Mesas con estado en tiempo real
+│   ├── Ingrediente.ts                # Stock + alergenos UE
+│   └── TicketCocina.ts              # Tickets para cocina
+│
+├── services/
+│   ├── pedidoService.ts              # normalizarPedido, ocupar/liberarMesa
+│   └── __tests__/                    # Tests de servicios
+│
+├── types/
+│   └── index.ts                      # Re-exports interfaces + ApiResponse<T>
+│
+└── utils/
+    ├── logger.ts                     # Logger dev/prod
+    ├── pagination.ts                 # Paginacion API
+    ├── rateLimiter.ts                # Rate limit in-memory
+    ├── sanitize.ts                   # Anti-XSS
+    └── validateId.ts                 # Validador ObjectId
 ```
 
 ---
@@ -278,48 +289,19 @@ el-buey-madurado/
 ## Estadisticas
 
 | Metrica | Valor |
-|---------|-------|
+|---|---|
 | Archivos TypeScript/TSX | ~120 |
+| Componentes React | ~62 |
+| API Route files | 19 |
 | Modelos Mongoose | 6 |
-| API Route Handlers | 17 archivos (41 endpoints) |
-| Componentes React | ~59 |
-| Custom Hooks | 12 (4 dashboard + 7 SWR + 1 auth) |
-| Tests unitarios | 8 archivos |
-| Tests E2E | 1 archivo |
-| Paginas publicas | 10 |
-| Paginas dashboard | 7 |
-| Imagenes publicas | ~19 |
+| Hooks SWR | 9 |
+| Hooks custom (dashboard) | 4 |
+| Paginas (pages) | 15 |
+| Layouts | 7 |
+| Utilidades | 5 |
+| Tests (unit) | src/**/*.test.ts |
+| Tests (E2E) | e2e/ (Playwright) |
 
 ---
 
-## Directorios Criticos
-
-| Directorio | Proposito |
-|------------|-----------|
-| `src/app/api/` | Todos los endpoints REST del backend (41 endpoints) |
-| `src/app/api/public/` | Endpoints sin autenticacion para pedidos online |
-| `src/app/(public)/pedir/` | Flujo completo de pedidos online (5 paginas) |
-| `src/lib/models/` | Esquemas y modelos de MongoDB (fuente de verdad del dominio) |
-| `src/lib/services/` | Logica de negocio centralizada (pedidoService) |
-| `src/lib/context/` | CartContext para el carrito de compras |
-| `src/components/dashboard/` | Componentes del panel de gestion (22 archivos) |
-| `src/components/public/` | Componentes del sistema de pedidos online (4 archivos) |
-| `src/lib/hooks/swr/` | Hooks SWR con auto-refresh (7 hooks) |
-| `src/lib/utils/` | Utilidades transversales (seguridad, validacion, logging) |
-| `src/middleware.ts` | Punto de entrada de seguridad (proteccion JWT en edge) |
-
----
-
-## Puntos de Entrada
-
-| Archivo | Tipo | Funcion |
-|---------|------|---------|
-| `src/app/layout.tsx` | Layout raiz | Layout principal (html, body, metadata) |
-| `src/app/page.tsx` | Pagina | Landing page del restaurante |
-| `src/middleware.ts` | Middleware | Interceptor JWT para rutas `/dashboard/*` |
-| `src/lib/db.ts` | Conexion | Conexion singleton a MongoDB |
-| `src/lib/context/CartContext.tsx` | Contexto | Carrito de compras global |
-
----
-
-*Actualizado el 2026-03-30 | Escaneo profundo (deep scan)*
+*Generado automaticamente el 2026-04-01 | Escaneo profundo (full rescan)*

@@ -42,6 +42,14 @@ const CATEGORIA_GRADIENT: Record<string, string> = {
   Bebidas: 'from-cyan-900/40 to-transparent',
 };
 
+const CATEGORIA_BADGE_COLOR: Record<string, string> = {
+  Entrantes: 'bg-emerald-600/80 text-emerald-100',
+  Hamburguesas: 'bg-orange-600/80 text-orange-100',
+  Carnes: 'bg-red-600/80 text-red-100',
+  Postres: 'bg-pink-600/80 text-pink-100',
+  Bebidas: 'bg-cyan-600/80 text-cyan-100',
+};
+
 export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecrementar, enCarrito }: ProductoCardProps) {
   const tienePersonalizacion = producto.permitirExtras || producto.permitirRemover;
   const [imgError, setImgError] = useState(false);
@@ -78,7 +86,7 @@ export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecr
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/20 to-transparent" />
           {/* Category badge sobre imagen */}
           <div className="absolute top-2.5 right-2.5 z-[5]">
-            <span className="text-[10px] font-semibold text-white bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">
+            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm ${CATEGORIA_BADGE_COLOR[producto.categoria] || 'bg-gray-600/80 text-gray-200'}`}>
               {CATEGORIA_ICON[producto.categoria] || '📦'} {producto.categoria}
             </span>
           </div>
@@ -97,7 +105,7 @@ export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecr
           <div className={`absolute inset-0 bg-gradient-to-br ${CATEGORIA_GRADIENT[producto.categoria] || 'from-gray-800/40 to-transparent'} opacity-50`} />
           {/* Category badge sin imagen */}
           <div className="absolute top-2.5 right-2.5 z-[5]">
-            <span className="text-[10px] font-semibold text-gray-400 bg-gray-900/80 px-2 py-0.5 rounded-full">
+            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${CATEGORIA_BADGE_COLOR[producto.categoria] || 'bg-gray-700/80 text-gray-300'}`}>
               {CATEGORIA_ICON[producto.categoria] || '📦'} {producto.categoria}
             </span>
           </div>

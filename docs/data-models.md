@@ -1,287 +1,318 @@
 # Modelos de Datos - El Buey Madurado
 
-**Fecha de generacion:** 2026-03-30
-**ODM:** Mongoose ^9.1.5
-**Base de datos:** MongoDB 7
+> Actualizado: 2026-04-01 | Escaneo profundo (full rescan)
+
+## Resumen
+
+- **Base de datos:** MongoDB 7 (via Mongoose ^9.1.5)
+- **Modelos:** 6 (Usuario, Producto, Pedido, Mesa, Ingrediente, TicketCocina)
+- **Indices:** 12
+- **Patron:** Mongoose schemas con interfaces TypeScript, timestamps automaticos
 
 ---
 
-## Diagrama de Relaciones
+## 1. Usuario (`src/lib/models/Usuario.ts`)
+
+Gestion de empleados del restaurante con autenticacion.
+
+### Campos
+
+| Campo | Tipo | Requerido | Default | Validacion |
+|---|---|---|---|---|
+| `email` | String | Si | — | unique, lowercase, regex email |
+| `password` | String | Si | — | minlength 6, `select: false` |
+| `rol` | String (enum) | No | `'camarero'` | `'admin'` \| `'camarero'` \| `'cocinero'` |
+| `activo` | Boolean | No | `true` | — |
+| `ultimoLogin` | Date | No | — | — |
+| `createdAt` | Date | Auto | — | timestamps |
+| `updatedAt` | Date | Auto | — | timestamps |
+
+### Hooks y Metodos
+
+- **Pre-save:** Hash de password con bcrypt (salt rounds: 12). Solo si password fue modificado
+- **Metodo:** `comparePassword(passwordIngresado)` → `Promise<boolean>` via bcrypt.compare
+
+### Indices
+
+- `email`: unique (implicito por `unique: true`)
+
+---
+
+## 2. Producto (`src/lib/models/Producto.ts`)
+
+Platos y bebidas del menu con personalizacion e ingredientes extra.
+
+### Campos
+
+| Campo | Tipo | Requerido | Default | Validacion |
+|---|---|---|---|---|
+| `nombre` | String | Si | — | trim |
+| `descripcion` | String | No | — | trim |
+| `precio` | Number | Si | — | min 0 |
+| `categoria` | String | Si | — | — |
+| `imagen` | String | No | — | URL de Cloudinary |
+| `ingredientes` | [ProductoIngrediente] | No | `[]` | Subdocumento |
+| `ingredientesExtra` | [IngredienteExtra] | No | `[]` | Subdocumento |
+| `permitirPersonalizacion` | Boolean | No | `true` | — |
+| `permitirExtras` | Boolean | No | `true` | — |
+| `permitirRemover` | Boolean | No | `true` | — |
+| `disponible` | Boolean | No | `true` | — |
+| `activo` | Boolean | No | `true` | — |
+
+### Subdocumento: ProductoIngrediente
+
+| Campo | Tipo | Requerido | Validacion |
+|---|---|---|---|
+| `ingrediente` | ObjectId → Ingrediente | Si | ref |
+| `cantidad` | Number | Si | min 0 |
+| `unidad` | String | Si | default `'gramos'` |
+
+### Subdocumento: IngredienteExtra
+
+| Campo | Tipo | Requerido | Validacion |
+|---|---|---|---|
+| `nombre` | String | Si | trim, maxlength 50 |
+| `precio` | Number | Si | min 0, default 0 |
+
+### Indices
+
+- `{ categoria: 1, disponible: 1 }` — busqueda por categoria filtrada
+- `{ nombre: 'text', descripcion: 'text' }` — busqueda full-text
+
+### Relaciones
+
+- `ingredientes[].ingrediente` → **Ingrediente** (ref, populate)
+
+---
+
+## 3. Pedido (`src/lib/models/Pedido.ts`)
+
+Pedidos de restaurante (local, recoger, domicilio) con flujo de estados.
+
+### Campos
+
+| Campo | Tipo | Requerido | Default | Validacion |
+|---|---|---|---|---|
+| `tipo` | String (enum) | Si | `'local'` | `'local'` \| `'recoger'` \| `'domicilio'` |
+| `mesa` | ObjectId → Mesa | Condicional | — | Requerido si `tipo === 'local'` |
+| `direccionEntrega` | DireccionEntrega | Condicional | — | Requerido si `tipo === 'domicilio'` |
+| `productos` | [ProductoPedido] | Si | — | Subdocumento |
+| `subtotal` | Number | Si | `0` | min 0 |
+| `impuestos` | Number | Si | `0` | min 0 |
+| `descuento` | Number | No | `0` | min 0 |
+| `gastoEnvio` | Number | No | `0` | min 0 (solo domicilio, default 3.50) |
+| `total` | Number | Si | `0` | min 0 |
+| `estado` | String (enum) | No | `'pendiente'` | Ver diagrama de estados |
+| `camarero` | ObjectId → Usuario | No | — | alias `creadoPor` |
+| `repartidor` | ObjectId → Usuario | No | — | Solo domicilio |
+| `cliente` | String | No | — | maxlength 100 |
+| `telefono` | String | No | — | maxlength 20 |
+| `metodoPago` | String (enum) | No | — | `'efectivo'` \| `'tarjeta'` \| `'mixto'` |
+| `notas` | String | No | — | maxlength 500 |
+
+### Subdocumento: ProductoPedido
+
+| Campo | Tipo | Requerido | Validacion |
+|---|---|---|---|
+| `producto` | ObjectId → Producto | Si | ref |
+| `cantidad` | Number | Si | min 1 |
+| `precioUnitario` | Number | Si | min 0 |
+| `subtotal` | Number | Si | min 0 |
+| `notas` | String | No | maxlength 200 |
+| `personalizaciones.ingredientesExtra` | [String] | No | — |
+| `personalizaciones.ingredientesRemovidos` | [String] | No | — |
+| `estadoProducto` | String (enum) | No | `'pendiente'` | `'pendiente'` \| `'preparando'` \| `'listo'` |
+
+### Subdocumento: DireccionEntrega
+
+| Campo | Tipo | Requerido |
+|---|---|---|
+| `calle` | String | Si |
+| `numero` | String | Si |
+| `piso` | String | No |
+| `ciudad` | String | Si |
+| `codigoPostal` | String | Si |
+| `telefono` | String | Si |
+| `notas` | String | No |
+
+### Diagrama de Estados del Pedido
 
 ```
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│   Usuario    │◄────│     Pedido      │────►│     Mesa     │
-│              │     │                 │     │              │
-│ email        │     │ tipo            │     │ nombre       │
-│ password     │     │ productos[]     │     │ capacidad    │
-│ rol          │     │ estado          │     │ comensales   │
-│ activo       │     │ total           │     │ estado       │
-│ ultimoLogin  │     │ cliente         │     │ pedidoActual │
-└──────────────┘     │ telefono        │     │ activa       │
-                     │ direccionEntrega│     └──────────────┘
-                     │ personalizaciones│
-                     │ gastoEnvio      │
-                     └────────┬────────┘
-                              │ productos[]
-                              ▼
-                     ┌─────────────────┐     ┌──────────────┐
-                     │    Producto     │────►│ Ingrediente  │
-                     │                 │     │              │
-                     │ nombre          │     │ nombre       │
-                     │ precio          │     │ categoria    │
-                     │ categoria       │     │ precioBase   │
-                     │ ingredientes[]  │     │ precioExtra  │
-                     │ ingredientesExtra│    │ inventario   │
-                     │ permitirPersona.│     │ alergenos[]  │
-                     │ permitirExtras  │     │ disponible   │
-                     │ permitirRemover │     └──────────────┘
-                     └────────┬────────┘
-                              │ referenciado por
-                              ▼
-                     ┌─────────────────┐
-                     │  TicketCocina   │
-                     │                 │
-                     │ pedido (ref)    │
-                     │ items[]         │
-                     │ prioridad       │
-                     │ estado          │
-                     │ completado      │
-                     │ horaInicio/Fin  │
-                     └─────────────────┘
+                    ┌─────────────────────────────────────┐
+                    │            cancelado                 │
+                    └─────────────────────────────────────┘
+                              ↑ (cualquier estado)
+                              │
+pendiente → preparando → listo ─┬→ servido → pagado    (local)
+                                ├→ en_camino → entregado (domicilio)
+                                └→ entregado             (recoger)
 ```
 
----
-
-## 1. Usuario
-
-**Coleccion:** `usuarios`
-**Archivo:** `src/lib/models/Usuario.ts`
-
-| Campo | Tipo | Requerido | Unico | Default | Descripcion |
-|-------|------|-----------|-------|---------|-------------|
-| `email` | String | Si | Si | - | Email (lowercase, regex validado) |
-| `password` | String | Si | No | - | Hash bcrypt (salt: 12). `select: false` |
-| `rol` | String (enum) | No | No | `camarero` | `admin` / `camarero` / `cocinero` |
-| `activo` | Boolean | No | No | `true` | Estado activo/inactivo |
-| `ultimoLogin` | Date | No | No | - | Fecha del ultimo inicio de sesion |
-| `createdAt` | Date | Auto | No | - | Timestamp de creacion |
-| `updatedAt` | Date | Auto | No | - | Timestamp de actualizacion |
-
-**Metodos:**
-- `comparePassword(passwordIngresado: string): Promise<boolean>` - Compara password con hash bcrypt
-
-**Hooks:**
-- `pre('save')`: Hash automatico de password con bcrypt (salt 12) si fue modificado
-
-**Indices:**
-- `email` (unique, via schema)
-
----
-
-## 2. Producto
-
-**Coleccion:** `productos`
-**Archivo:** `src/lib/models/Producto.ts`
-
-| Campo | Tipo | Requerido | Default | Descripcion |
-|-------|------|-----------|---------|-------------|
-| `nombre` | String | Si | - | Nombre del producto (trim) |
-| `descripcion` | String | No | - | Descripcion del producto (trim) |
-| `precio` | Number | Si | - | Precio base (min: 0) |
-| `categoria` | String | Si | - | Categoria (Entrantes, Carnes, Hamburguesas, Postres, Bebidas) |
-| `imagen` | String | No | - | URL de imagen en Cloudinary |
-| `ingredientes` | [ProductoIngrediente] | No | `[]` | Lista de ingredientes vinculados |
-| `ingredientesExtra` | [IngredienteExtra] | No | `[]` | Extras disponibles con precio |
-| `permitirPersonalizacion` | Boolean | No | `true` | Permite modificar ingredientes |
-| `permitirExtras` | Boolean | No | `true` | Permite anadir extras |
-| `permitirRemover` | Boolean | No | `true` | Permite quitar ingredientes |
-| `disponible` | Boolean | No | `true` | Disponible para venta |
-| `activo` | Boolean | No | `true` | Activo en el sistema |
-| `createdAt` | Date | Auto | - | Timestamp de creacion |
-| `updatedAt` | Date | Auto | - | Timestamp de actualizacion |
-
-**Subdocumento ProductoIngrediente:**
-
-| Campo | Tipo | Requerido | Default | Descripcion |
-|-------|------|-----------|---------|-------------|
-| `ingrediente` | ObjectId → Ingrediente | Si | - | Referencia al ingrediente |
-| `cantidad` | Number | Si | - | Cantidad necesaria (min: 0) |
-| `unidad` | String | Si | `gramos` | Unidad de medida |
-
-**Subdocumento IngredienteExtra:**
-
-| Campo | Tipo | Requerido | Default | Descripcion |
-|-------|------|-----------|---------|-------------|
-| `nombre` | String | Si | - | Nombre del extra (max: 50, trim) |
-| `precio` | Number | Si | `0` | Precio del extra (min: 0) |
-
-**Indices:**
-- `{ categoria: 1, disponible: 1 }` - Busqueda por categoria disponible
-- `{ nombre: 'text', descripcion: 'text' }` - Busqueda full-text
-
----
-
-## 3. Pedido
-
-**Coleccion:** `pedidos`
-**Archivo:** `src/lib/models/Pedido.ts`
-
-| Campo | Tipo | Requerido | Default | Descripcion |
-|-------|------|-----------|---------|-------------|
-| `tipo` | String (enum) | Si | `local` | `local` / `recoger` / `domicilio` |
-| `mesa` | ObjectId → Mesa | Condicional | - | Requerido si tipo === `local` |
-| `direccionEntrega` | DireccionEntrega | Condicional | - | Requerido si tipo === `domicilio` |
-| `productos` | [ProductoPedido] | Si | `[]` | Lista de productos con precios |
-| `subtotal` | Number | Si | `0` | Suma de subtotales (min: 0) |
-| `impuestos` | Number | Si | `0` | IVA 21% calculado (min: 0) |
-| `descuento` | Number | No | `0` | Descuento aplicado (min: 0) |
-| `gastoEnvio` | Number | No | `0` | Coste envio domicilio (default: 3.50) |
-| `total` | Number | Si | `0` | Total final (min: 0) |
-| `estado` | String (enum) | No | `pendiente` | Estado del flujo del pedido |
-| `camarero` | ObjectId → Usuario | No | - | Creador del pedido (alias: `creadoPor`) |
-| `repartidor` | ObjectId → Usuario | No | - | Repartidor asignado (domicilio) |
-| `cliente` | String | No | - | Nombre del cliente (max: 100) |
-| `telefono` | String | No | - | Telefono del cliente (max: 20) |
-| `metodoPago` | String (enum) | No | - | `efectivo` / `tarjeta` / `mixto` |
-| `notas` | String | No | - | Notas adicionales (max: 500) |
-| `createdAt` | Date | Auto | - | Timestamp de creacion |
-| `updatedAt` | Date | Auto | - | Timestamp de actualizacion |
-
-**Estados del pedido:**
+### Estado por Plato Individual
 
 ```
-                    ┌──── servido ────── pagado
-                    │     (local)
-pendiente → preparando → listo ──┤
-                    │     ├──── entregado
-                    │     │     (recoger)
-                    │     └──── en_camino → entregado
-                    │           (domicilio)
-                    └──── cancelado (desde cualquier estado activo)
+pendiente → preparando → listo
 ```
 
-**Subdocumento ProductoPedido:**
+- Si el pedido estaba `pendiente` y un plato pasa a `preparando` → pedido pasa a `preparando`
+- Si todos los platos no-bebidas estan `listo` → pedido pasa a `listo`
 
-| Campo | Tipo | Requerido | Descripcion |
-|-------|------|-----------|-------------|
-| `producto` | ObjectId → Producto | Si | Referencia al producto |
-| `cantidad` | Number | Si | Cantidad (min: 1) |
-| `precioUnitario` | Number | Si | Precio unitario (min: 0) |
-| `subtotal` | Number | Si | Subtotal linea (min: 0) |
-| `notas` | String | No | Notas especiales (max: 200) |
-| `personalizaciones.ingredientesExtra` | [String] | No | Extras anadidos |
-| `personalizaciones.ingredientesRemovidos` | [String] | No | Ingredientes quitados |
+### Metodos
 
-**Subdocumento DireccionEntrega:**
+- `calcularTotales()`: Calcula subtotal (suma de productos), impuestos (21% IVA), total (subtotal + impuestos + gastoEnvio - descuento)
 
-| Campo | Tipo | Requerido | Descripcion |
-|-------|------|-----------|-------------|
-| `calle` | String | Si | Nombre de la calle |
-| `numero` | String | Si | Numero |
-| `piso` | String | No | Piso/puerta |
-| `ciudad` | String | Si | Ciudad |
-| `codigoPostal` | String | Si | Codigo postal |
-| `telefono` | String | Si | Telefono de contacto |
-| `notas` | String | No | Notas de entrega |
+### Indices
 
-**Metodos:**
-- `calcularTotales()`: Recalcula subtotal, impuestos (21% IVA) y total (incluyendo gastoEnvio y descuento)
+- `{ tipo: 1, estado: 1 }` — filtrado por tipo y estado
+- `{ mesa: 1, estado: 1 }` — busqueda de pedido activo por mesa
+- `{ estado: 1, createdAt: -1 }` — listado de pedidos recientes por estado
+- `{ camarero: 1, createdAt: -1 }` — historial por camarero
 
-**Indices:**
-- `{ tipo: 1, estado: 1 }` - Filtro por tipo y estado
-- `{ mesa: 1, estado: 1 }` - Busqueda por mesa
-- `{ estado: 1, createdAt: -1 }` - Ordenacion por estado reciente
-- `{ camarero: 1, createdAt: -1 }` - Pedidos por camarero
+### Relaciones
+
+- `mesa` → **Mesa** (ref)
+- `productos[].producto` → **Producto** (ref, populate con ingredientes anidados)
+- `camarero` → **Usuario** (ref)
+- `repartidor` → **Usuario** (ref)
 
 ---
 
-## 4. Mesa
+## 4. Mesa (`src/lib/models/Mesa.ts`)
 
-**Coleccion:** `mesas`
-**Archivo:** `src/lib/models/Mesa.ts`
+Mesas fisicas del restaurante con estado en tiempo real.
 
-| Campo | Tipo | Requerido | Unico | Default | Descripcion |
-|-------|------|-----------|-------|---------|-------------|
-| `nombre` | String | Si | Si | - | Nombre de la mesa (1-40 chars, trim) |
-| `capacidad` | Number | Si | No | - | Capacidad maxima (1-20) |
-| `comensalesActuales` | Number | No | No | `0` | Comensales sentados (min: 0) |
-| `estado` | String (enum) | No | No | `libre` | `libre` / `ocupada` / `reservada` |
-| `pedidoActual` | ObjectId → Pedido | No | No | - | Pedido activo en la mesa |
-| `activa` | Boolean | No | No | `true` | Mesa activa/inactiva |
-| `createdAt` | Date | Auto | No | - | Timestamp de creacion |
-| `updatedAt` | Date | Auto | No | - | Timestamp de actualizacion |
+### Campos
 
-**Validacion personalizada:** `comensalesActuales` no puede superar `capacidad` (validador custom que funciona en `save()` y `findByIdAndUpdate()`)
+| Campo | Tipo | Requerido | Default | Validacion |
+|---|---|---|---|---|
+| `nombre` | String | Si | — | unique, trim, 1-40 chars |
+| `capacidad` | Number | Si | — | 1-20 |
+| `comensalesActuales` | Number | No | `0` | min 0, <= capacidad (validador custom) |
+| `estado` | String (enum) | No | `'libre'` | `'libre'` \| `'ocupada'` \| `'reservada'` |
+| `pedidoActual` | ObjectId → Pedido | No | — | ref |
+| `activa` | Boolean | No | `true` | — |
 
-**Indices:**
-- `nombre` (unique, via schema)
-- `{ estado: 1 }`
+### Validador Custom
+
+`comensalesActuales` tiene un validador que funciona tanto en `save()` (document) como en `findByIdAndUpdate()` (query). Compara contra `capacidad` del mismo documento/update.
+
+### Indices
+
+- `nombre`: unique (implicito)
+- `{ estado: 1 }` — filtrado rapido por estado
+
+### Relaciones
+
+- `pedidoActual` → **Pedido** (ref, populate en GET /api/mesas)
 
 ---
 
-## 5. Ingrediente
+## 5. Ingrediente (`src/lib/models/Ingrediente.ts`)
 
-**Coleccion:** `ingredientes`
-**Archivo:** `src/lib/models/Ingrediente.ts`
+Ingredientes individuales con gestion de stock y alergenos UE.
 
-| Campo | Tipo | Requerido | Default | Descripcion |
-|-------|------|-----------|---------|-------------|
-| `nombre` | String | Si | - | Nombre del ingrediente |
-| `categoria` | String | Si | - | Categoria (carnes, verduras, salsas, etc.) |
-| `precioBase` | Number | Si | `0` | Precio base del ingrediente |
-| `precioExtra` | Number | Si | `0` | Precio cuando se anade como extra |
-| `inventario.cantidad` | Number | Si | `0` | Cantidad en stock |
-| `inventario.unidad` | String | Si | `kg` | Unidad de medida |
-| `alergenos` | [String] | No | `[]` | Alergenos UE (validado contra lista de 14) |
-| `disponible` | Boolean | No | `true` | Disponible para uso |
-| `activo` | Boolean | No | `true` | Activo en el sistema |
-| `createdAt` | Date | Auto | - | Timestamp de creacion |
-| `updatedAt` | Date | Auto | - | Timestamp de actualizacion |
+### Campos
 
-**Alergenos UE Validos (14):**
+| Campo | Tipo | Requerido | Default | Validacion |
+|---|---|---|---|---|
+| `nombre` | String | Si | — | — |
+| `categoria` | String | Si | — | — |
+| `precioBase` | Number | Si | `0` | — |
+| `precioExtra` | Number | Si | `0` | Precio al anadir como extra |
+| `inventario.cantidad` | Number | Si | `0` | — |
+| `inventario.unidad` | String | Si | `'kg'` | — |
+| `alergenos` | [String] | No | `[]` | Validador: solo 14 alergenos UE (Reglamento 1169/2011) |
+| `disponible` | Boolean | No | `true` | — |
+| `activo` | Boolean | No | `true` | — |
+
+### Alergenos UE Validos (14)
+
 `gluten`, `crustaceos`, `huevos`, `pescado`, `cacahuetes`, `soja`, `lacteos`, `frutos_secos`, `apio`, `mostaza`, `sesamo`, `sulfitos`, `altramuces`, `moluscos`
 
-**Indices:**
-- `{ nombre: 1 }`
-- `{ categoria: 1 }`
+### Indices
+
+- `{ nombre: 1 }` — busqueda por nombre
+- `{ categoria: 1 }` — filtrado por categoria
 
 ---
 
-## 6. TicketCocina
+## 6. TicketCocina (`src/lib/models/TicketCocina.ts`)
 
-**Coleccion:** `ticketcocinas`
-**Archivo:** `src/lib/models/TicketCocina.ts`
+Tickets enviados a la cocina para preparacion de pedidos.
 
-| Campo | Tipo | Requerido | Default | Descripcion |
-|-------|------|-----------|---------|-------------|
-| `pedido` | ObjectId → Pedido | Si | - | Pedido asociado |
-| `items[].producto` | ObjectId → Producto | Si | - | Producto a preparar |
-| `items[].cantidad` | Number | Si | - | Cantidad (min: 1) |
-| `items[].notas` | String | No | `''` | Notas para cocina |
-| `prioridad` | String (enum) | No | `media` | `baja` / `media` / `alta` |
-| `estado` | String (enum) | No | `pendiente` | `pendiente` / `en-preparacion` / `completado` |
-| `completado` | Boolean | No | `false` | Ticket finalizado |
-| `horaInicio` | Date | No | - | Hora inicio de preparacion |
-| `horaFin` | Date | No | - | Hora finalizacion |
-| `createdAt` | Date | Auto | - | Timestamp de creacion |
-| `updatedAt` | Date | Auto | - | Timestamp de actualizacion |
+### Campos
 
-**Indices:**
-- `{ estado: 1, completado: 1 }`
+| Campo | Tipo | Requerido | Default | Validacion |
+|---|---|---|---|---|
+| `pedido` | ObjectId → Pedido | Si | — | ref |
+| `items` | [TicketItem] | Si | — | Subdocumento |
+| `prioridad` | String (enum) | No | `'media'` | `'baja'` \| `'media'` \| `'alta'` |
+| `estado` | String (enum) | No | `'pendiente'` | `'pendiente'` \| `'en-preparacion'` \| `'completado'` |
+| `completado` | Boolean | No | `false` | — |
+| `horaInicio` | Date | No | — | — |
+| `horaFin` | Date | No | — | — |
 
----
+### Subdocumento: TicketItem
 
-## Resumen de Modelos
+| Campo | Tipo | Requerido |
+|---|---|---|
+| `producto` | ObjectId → Producto | Si |
+| `cantidad` | Number | Si (min 1) |
+| `notas` | String | No (default `''`) |
 
-| Modelo | Coleccion | Campos | Relaciones | Indices |
-|--------|-----------|--------|------------|---------|
-| Usuario | usuarios | 7 | - | email (unique) |
-| Producto | productos | 13 | → Ingrediente | categoria+disponible, text(nombre,descripcion) |
-| Pedido | pedidos | 17 | → Mesa, Producto, Usuario | tipo+estado, mesa+estado, estado+fecha, camarero+fecha |
-| Mesa | mesas | 7 | → Pedido | nombre (unique), estado |
-| Ingrediente | ingredientes | 9 | - | nombre, categoria |
-| TicketCocina | ticketcocinas | 8 | → Pedido, Producto | estado+completado |
+### Indices
+
+- `{ estado: 1, completado: 1 }` — filtrado de tickets activos
+
+### Relaciones
+
+- `pedido` → **Pedido** (ref, populate)
+- `items[].producto` → **Producto** (ref)
 
 ---
 
-*Actualizado el 2026-03-30 | Escaneo profundo (deep scan)*
+## Diagrama de Relaciones (ERD Simplificado)
+
+```
+┌──────────┐     ┌───────────┐     ┌──────────────┐
+│ Usuario  │     │   Mesa    │     │ Ingrediente  │
+│──────────│     │───────────│     │──────────────│
+│ email    │     │ nombre    │     │ nombre       │
+│ password │     │ capacidad │     │ categoria    │
+│ rol      │◄──┐ │ estado    │     │ alergenos[]  │
+│ activo   │   │ │pedidoActual│◄┐  │ inventario   │
+└──────────┘   │ └───────────┘  │  └──────┬───────┘
+               │                │         │
+               │  ┌─────────┐   │         │ ingredientes[]
+               └──│ Pedido  │───┘         │
+                  │─────────│             │
+                  │ tipo    │     ┌───────┴──────┐
+                  │ estado  │     │  Producto    │
+                  │productos│────►│──────────────│
+                  │ total   │     │ nombre       │
+                  │ mesa    │     │ categoria    │
+                  └────┬────┘     │ ingredientes │
+                       │          │ extras       │
+                  ┌────┴──────┐   └──────────────┘
+                  │TicketCocina│
+                  │───────────│
+                  │ items[]   │
+                  │ prioridad │
+                  │ estado    │
+                  └───────────┘
+```
+
+---
+
+## Datos Semilla
+
+| Coleccion | Cantidad | Fuente |
+|---|---|---|
+| Ingredientes | 68 | `src/data/` (menu real) |
+| Productos | 64 | `src/data/` (menu real) |
+| Mesas | 15 | `/api/mesas/seed` |
+| Alergenos UE | 14 | `src/lib/constants/alergenos.ts` |
+
+---
+
+*Generado automaticamente el 2026-04-01 | Escaneo profundo (full rescan)*

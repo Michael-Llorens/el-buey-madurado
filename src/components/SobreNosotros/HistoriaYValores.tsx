@@ -1,7 +1,39 @@
 'use client';
 
+import { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaStar } from 'react-icons/fa';
+
+function AnimatedNumber({ value, suffix = '', decimals = 0 }: { value: number; suffix?: string; decimals?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [displayed, setDisplayed] = useState('0');
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (!ref.current || hasAnimated.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasAnimated.current) {
+        hasAnimated.current = true;
+        const duration = 1500;
+        const start = performance.now();
+        const animate = (now: number) => {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+          const current = eased * value;
+          setDisplayed(decimals > 0 ? current.toFixed(decimals) : Math.floor(current).toString());
+          if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+        observer.disconnect();
+      }
+    }, { threshold: 0.5 });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [value, decimals]);
+
+  return <span ref={ref}>{displayed}{suffix}</span>;
+}
 
 export default function HistoriaYValores() {
   return (
@@ -121,13 +153,15 @@ export default function HistoriaYValores() {
           className="grid md:grid-cols-4 gap-6 mt-20"
         >
           {[
-            { number: "5.0", label: "Rating en Google" },
-            { number: "55+", label: "Reseñas verificadas" },
-            { number: "100%", label: "Carne Premium" },
-            { number: "2", label: "Socios apasionados" }
+            { value: 5, decimals: 1, suffix: '', label: "Rating en Google" },
+            { value: 55, decimals: 0, suffix: '+', label: "Reseñas verificadas" },
+            { value: 100, decimals: 0, suffix: '%', label: "Carne Premium" },
+            { value: 2, decimals: 0, suffix: '', label: "Socios apasionados" },
           ].map((stat, i) => (
             <div key={i} className="text-center">
-              <p className="text-4xl font-bold text-amber-400 mb-2">{stat.number}</p>
+              <p className="text-4xl font-bold text-amber-400 mb-2">
+                <AnimatedNumber value={stat.value} suffix={stat.suffix} decimals={stat.decimals} />
+              </p>
               <p className="text-white/70 text-sm">{stat.label}</p>
             </div>
           ))}

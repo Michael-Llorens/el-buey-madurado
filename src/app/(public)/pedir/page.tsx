@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import gsap from 'gsap';
 import { useCart } from '@/lib/context/CartContext';
 import ProductoCard from '@/components/public/ProductoCard';
 import PersonalizarModal from '@/components/public/PersonalizarModal';
@@ -20,7 +21,6 @@ const CATEGORIAS_ORDEN = ['Entrantes', 'Hamburguesas', 'Carnes', 'Postres', 'Beb
 
 export default function PedirPage() {
   const productos = productosData as unknown as ProductoPublico[];
-  const isLoading = false;
   const cart = useCart();
   const { addItem, items, total, itemCount, updateQuantity, removeItem } = cart;
   const [localTipo, setLocalTipo] = useState<'recoger' | 'domicilio' | null>(null);
@@ -33,16 +33,26 @@ export default function PedirPage() {
   const [productoModal, setProductoModal] = useState<ProductoPublico | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const productsGridRef = useRef<HTMLDivElement>(null);
 
-  const productosTyped = productos;
+  // Stagger animation when filtered products change
+  useEffect(() => {
+    if (!productsGridRef.current) return;
+    const cards = productsGridRef.current.querySelectorAll('[role="article"]');
+    if (cards.length === 0) return;
+    gsap.fromTo(cards,
+      { y: 20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power2.out', overwrite: true }
+    );
+  }, [categoriaActiva, busqueda]);
 
   const categorias = useMemo(() => {
-    const cats = [...new Set(productosTyped.map((p) => p.categoria))];
+    const cats = [...new Set(productos.map((p) => p.categoria))];
     return CATEGORIAS_ORDEN.filter((c) => cats.includes(c));
-  }, [productosTyped]);
+  }, [productos]);
 
   const productosFiltrados = useMemo(() => {
-    let resultado = productosTyped;
+    let resultado = productos;
     if (categoriaActiva !== 'todas') {
       resultado = resultado.filter((p) => p.categoria === categoriaActiva);
     }
@@ -53,7 +63,7 @@ export default function PedirPage() {
       );
     }
     return resultado;
-  }, [productosTyped, categoriaActiva, busqueda]);
+  }, [productos, categoriaActiva, busqueda]);
 
   const cantidadEnCarrito = useCallback((productoId: string) =>
     items.filter((i) => i.productoId === productoId).reduce((s, i) => s + i.cantidad, 0),
@@ -101,17 +111,6 @@ export default function PedirPage() {
     setProductoModal(null);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#160a00] flex items-center justify-center pt-20">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-amber-400 text-sm">Cargando carta...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Paso 1: Elegir tipo de pedido
   if (!tipoPedido) {
     return (
@@ -129,11 +128,16 @@ export default function PedirPage() {
               onClick={() => setTipoPedido('recoger')}
               className="w-full max-w-sm inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-800/80 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 group active:scale-[0.98]"
             >
-              <span className="text-3xl bg-amber-600/20 rounded-xl p-3 group-hover:bg-amber-600/30 transition-colors">🛍️</span>
+              <span className="bg-amber-600/20 rounded-xl p-3 group-hover:bg-amber-600/30 transition-colors">
+                <svg className="w-8 h-8 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+              </span>
               <div className="text-left">
                 <p className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Recoger en restaurante</p>
                 <p className="text-sm text-gray-400">Te avisamos cuando esté listo</p>
-                <p className="text-xs text-green-500/70 mt-0.5">Tiempo estimado: 20–30 min</p>
+                <p className="text-xs text-green-500/70 mt-0.5 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                  20–30 min
+                </p>
               </div>
             </button>
 
@@ -141,11 +145,16 @@ export default function PedirPage() {
               onClick={() => setTipoPedido('domicilio')}
               className="w-full max-w-sm inline-flex items-center gap-4 px-6 py-5 bg-gray-800 border-2 border-gray-600 rounded-2xl hover:border-amber-500 hover:bg-gray-800/80 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 group active:scale-[0.98]"
             >
-              <span className="text-3xl bg-purple-600/20 rounded-xl p-3 group-hover:bg-purple-600/30 transition-colors">🛵</span>
+              <span className="bg-purple-600/20 rounded-xl p-3 group-hover:bg-purple-600/30 transition-colors">
+                <svg className="w-8 h-8 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" /></svg>
+              </span>
               <div className="text-left">
                 <p className="text-lg font-bold text-white group-hover:text-amber-300 transition-colors">Entrega a domicilio</p>
                 <p className="text-sm text-gray-400">Te lo llevamos a casa · <span className="text-amber-500 font-semibold">+3.50€</span></p>
-                <p className="text-xs text-green-500/70 mt-0.5">Tiempo estimado: 35–50 min</p>
+                <p className="text-xs text-green-500/70 mt-0.5 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+                  35–50 min
+                </p>
               </div>
             </button>
           </div>
@@ -176,7 +185,13 @@ export default function PedirPage() {
                 {tipoPedido === 'recoger' ? '🛍️ Para recoger' : '🛵 A domicilio'}
               </span>
               <button
-                onClick={() => setTipoPedido(null)}
+                onClick={() => {
+                  if (itemCount > 0) {
+                    if (!window.confirm('Si cambias el tipo de pedido, perderás los productos del carrito. ¿Continuar?')) return;
+                    cart.clearCart();
+                  }
+                  setTipoPedido(null);
+                }}
                 className="text-xs font-semibold text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-lg transition"
               >
                 Cambiar
@@ -243,7 +258,7 @@ export default function PedirPage() {
       </div>
 
       {/* Productos */}
-      <div className="max-w-6xl mx-auto px-4 mt-3">
+      <div ref={productsGridRef} className="max-w-6xl mx-auto px-4 mt-3">
         {categoriaActiva === 'todas' ? (
           categorias.map((cat) => {
             const prods = productosFiltrados.filter((p) => p.categoria === cat);
@@ -318,6 +333,18 @@ export default function PedirPage() {
           onConfirm={handleConfirmPersonalizar}
           onClose={() => setProductoModal(null)}
         />
+      )}
+
+      {/* Botón flotante carrito — solo móvil */}
+      {itemCount > 0 && (
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className="fixed bottom-5 right-5 z-40 sm:hidden flex items-center gap-2 px-5 py-3.5 bg-amber-600 hover:bg-amber-700 text-white rounded-2xl font-bold shadow-xl shadow-amber-600/30 transition active:scale-95"
+        >
+          <span>🛒</span>
+          <span>{total.toFixed(2)}€</span>
+          <span className="bg-white/20 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{itemCount}</span>
+        </button>
       )}
 
       {/* Cart Drawer */}

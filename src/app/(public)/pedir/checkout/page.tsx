@@ -53,6 +53,7 @@ export default function CheckoutPage() {
       case 'cliente':
         if (!value.trim()) return 'El nombre es obligatorio';
         if (value.trim().length < 2) return 'Mínimo 2 caracteres';
+        if (value.trim().length > 60) return 'Máximo 60 caracteres';
         return undefined;
       case 'telefono':
         if (!value.trim()) return 'El teléfono es obligatorio';
@@ -70,6 +71,9 @@ export default function CheckoutPage() {
       case 'codigoPostal':
         if (t === 'domicilio' && !value.trim()) return 'El código postal es obligatorio';
         if (t === 'domicilio' && !CP_REGEX.test(value)) return 'Debe tener 5 dígitos';
+        return undefined;
+      case 'telefonoEntrega':
+        if (value.trim() && !PHONE_REGEX.test(value.replace(/\s/g, ''))) return 'Formato inválido (ej: 612345678)';
         return undefined;
       default:
         return undefined;
@@ -210,9 +214,15 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-[#160a00] pt-20 pb-8">
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <Link href="/pedir" className="text-sm text-gray-500 hover:text-amber-400 transition mb-4 inline-block">
-          ← Volver a la carta
-        </Link>
+        {step === 'datos' ? (
+          <Link href="/pedir" className="text-sm text-gray-500 hover:text-amber-400 transition mb-4 inline-block">
+            ← Volver a la carta
+          </Link>
+        ) : (
+          <button onClick={() => setStep('datos')} className="text-sm text-gray-500 hover:text-amber-400 transition mb-4 inline-block">
+            ← Volver a datos del pedido
+          </button>
+        )}
 
         {/* Progress steps */}
         <div className="flex items-center gap-3 mb-6">
@@ -426,15 +436,17 @@ export default function CheckoutPage() {
               </Elements>
             )}
 
-            {/* Tarjetas de prueba */}
-            <div className="bg-blue-900/20 border border-blue-700/30 rounded-xl p-4">
-              <p className="text-blue-400 text-xs font-semibold mb-2">🧪 Modo test — Tarjetas de prueba:</p>
-              <div className="space-y-1 text-xs text-blue-300/80">
-                <p><span className="font-mono bg-blue-900/50 px-1.5 py-0.5 rounded">4242 4242 4242 4242</span> — Pago exitoso</p>
-                <p><span className="font-mono bg-blue-900/50 px-1.5 py-0.5 rounded">4000 0000 0000 0002</span> — Tarjeta rechazada</p>
-                <p className="text-blue-300/60">Fecha: cualquier futura · CVC: cualquiera de 3 dígitos</p>
+            {/* Tarjetas de prueba — solo en desarrollo */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="bg-blue-900/20 border border-blue-700/30 rounded-xl p-4">
+                <p className="text-blue-400 text-xs font-semibold mb-2">🧪 Modo test — Tarjetas de prueba:</p>
+                <div className="space-y-1 text-xs text-blue-300/80">
+                  <p><span className="font-mono bg-blue-900/50 px-1.5 py-0.5 rounded">4242 4242 4242 4242</span> — Pago exitoso</p>
+                  <p><span className="font-mono bg-blue-900/50 px-1.5 py-0.5 rounded">4000 0000 0000 0002</span> — Tarjeta rechazada</p>
+                  <p className="text-blue-300/60">Fecha: cualquier futura · CVC: cualquiera de 3 dígitos</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

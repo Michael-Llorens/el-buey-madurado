@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import DashboardShell from '@/components/dashboard/DashboardShell';
 import StockPanel from '@/components/dashboard/StockPanel';
 import UsuariosPanel from './usuarios/page';
@@ -25,8 +25,10 @@ const MODULOS_VALIDOS: ModuloActivo[] = [
 
 export default function AdminPanel() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [moduloActivo, setModuloActivo] = useState<ModuloActivo>('pedidos');
 
+  // Leer módulo de la URL al montar
   useEffect(() => {
     const moduloFromUrl = searchParams.get('modulo') as ModuloActivo | null;
     if (moduloFromUrl && MODULOS_VALIDOS.includes(moduloFromUrl)) {
@@ -34,8 +36,14 @@ export default function AdminPanel() {
     }
   }, [searchParams]);
 
+  // Cambiar módulo y actualizar URL
+  const handleModuloChange = useCallback((modulo: ModuloActivo) => {
+    setModuloActivo(modulo);
+    router.replace(`/dashboard?modulo=${modulo}`, { scroll: false });
+  }, [router]);
+
   return (
-    <DashboardShell moduloActivo={moduloActivo} onModuloChange={setModuloActivo}>
+    <DashboardShell moduloActivo={moduloActivo} onModuloChange={handleModuloChange}>
       {moduloActivo === 'stock' && <StockPanel />}
       {moduloActivo === 'mesas' && <MesasPanel />}
       {moduloActivo === 'pedidos' && <PedidosPanel />}

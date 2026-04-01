@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 
 interface CartItemPersonalizaciones {
   ingredientesExtra?: string[];
@@ -134,18 +134,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setTipoPedido(tipo);
   }, []);
 
-  const total = items.reduce(
-    (sum, item) =>
-      sum + (item.precio + (item.personalizaciones?.precioExtras ?? 0)) * item.cantidad,
-    0
+  const total = useMemo(
+    () => items.reduce(
+      (sum, item) =>
+        sum + (item.precio + (item.personalizaciones?.precioExtras ?? 0)) * item.cantidad,
+      0
+    ),
+    [items]
   );
 
-  const itemCount = items.reduce((sum, item) => sum + item.cantidad, 0);
+  const itemCount = useMemo(
+    () => items.reduce((sum, item) => sum + item.cantidad, 0),
+    [items]
+  );
+
+  const value = useMemo(
+    () => ({ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, tipoPedido, setTipoPedido: changeTipoPedido }),
+    [items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, tipoPedido, changeTipoPedido]
+  );
 
   return (
-    <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount, tipoPedido, setTipoPedido: changeTipoPedido }}
-    >
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );
