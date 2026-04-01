@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { connectDB } from '@/lib/db';
 import Pedido from '@/lib/models/Pedido';
 import '@/lib/models/Producto';
@@ -7,9 +6,12 @@ import '@/lib/models/Ingrediente';
 import { validarProductosYObtenerPrecios } from '@/lib/services/pedidoService';
 import { ApiResponse } from '@/lib/types';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-03-25.dahlia',
-});
+async function getStripe() {
+  const Stripe = (await import('stripe')).default;
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY no configurada');
+  return new Stripe(key, { apiVersion: '2026-03-25.dahlia' as const });
+}
 
 // POST - Confirmar pago y crear pedido
 export async function POST(req: NextRequest) {
@@ -26,6 +28,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar con Stripe que el pago se completó
+    const stripe = await getStripe();
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     if (paymentIntent.status !== 'succeeded') {
