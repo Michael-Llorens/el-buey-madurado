@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Mesa from '@/lib/models/Mesa';
-import { protegerRuta } from '@/lib/middlewareAuth';
+import { protegerRutaPorRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 // ===========================
 // POST - Crear 15 mesas iniciales
@@ -10,7 +12,8 @@ import { ApiResponse } from '@/lib/types';
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    await protegerRuta(req);
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     // Verificar si ya existen mesas
     const mesasExistentes = await Mesa.countDocuments();
@@ -46,12 +49,12 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('❌ Error en POST /api/mesas/seed:', error);
+  } catch (error) {
+    logger.error('❌ Error en POST /api/mesas/seed:', error);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       },
       { status: 500 }
     );

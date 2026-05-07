@@ -5,12 +5,13 @@ import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
 import { sanitizeBody } from '@/lib/utils/sanitize';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin'])) {
@@ -42,10 +43,10 @@ export async function GET(
       success: true,
       data: usuario,
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 500 });
   }
 }
@@ -54,7 +55,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin'])) {
@@ -90,10 +91,10 @@ export async function PUT(
       success: true,
       data: usuario,
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 400 });
   }
 }
@@ -102,7 +103,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin'])) {
@@ -132,10 +133,10 @@ export async function DELETE(
       success: true,
       data: { id: usuario._id },
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 500 });
   }
 }

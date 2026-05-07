@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 interface Pedido {
   _id: string;
@@ -97,8 +98,8 @@ export default function CobrarModal({ pedido, onClose, onCobrado }: CobrarModalP
       }
 
       onCobrado();
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

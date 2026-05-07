@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useUsuarios } from '@/lib/hooks/swr';
 import ConfirmModal from '@/components/dashboard/ConfirmModal';
 import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type Modo = 'view' | 'add' | 'edit';
 
@@ -43,8 +44,8 @@ export default function UsuariosPanel() {
       } else {
         throw new Error(data.error);
       }
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     } finally {
       setEliminandoId(null);
     }
@@ -234,8 +235,8 @@ function UsuarioForm({ usuario, onGuardar, onCancelar }: any) {
       
       toast.success(usuario ? 'Actualizado' : 'Creado');
       onGuardar();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

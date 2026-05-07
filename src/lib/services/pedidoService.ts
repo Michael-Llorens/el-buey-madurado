@@ -27,10 +27,14 @@ export async function ocuparMesa(mesaId: any, pedidoId: any): Promise<void> {
 }
 
 /**
- * Libera una mesa (estado libre, pedidoActual null).
+ * Libera una mesa (estado libre, pedidoActual null, comensales = 0).
  */
 export async function liberarMesa(mesaId: any): Promise<void> {
-  await Mesa.findByIdAndUpdate(mesaId, { estado: 'libre', pedidoActual: null });
+  await Mesa.findByIdAndUpdate(mesaId, {
+    estado: 'libre',
+    pedidoActual: null,
+    comensalesActuales: 0,
+  });
 }
 
 /**

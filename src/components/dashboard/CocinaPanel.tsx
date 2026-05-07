@@ -10,6 +10,7 @@ import {
   getAlergenosProducto,
   type AlergenoUE,
 } from '@/lib/constants/alergenos';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type EstadoCocina = 'pendiente' | 'preparando' | 'listo';
 
@@ -82,9 +83,14 @@ const LABEL_BOTON: Record<EstadoCocina, string> = {
   listo: '',
 };
 
-// Badge semáforo de tiempo
+// Badge semáforo de tiempo (auto-refresca cada 30s)
 function TimeBadge({ fecha }: { fecha: string }) {
-  const diff = Date.now() - new Date(fecha).getTime();
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  const diff = now - new Date(fecha).getTime();
   const min = Math.floor(diff / 60_000);
 
   let bg = 'bg-green-500';
@@ -231,8 +237,8 @@ export default function CocinaPanel() {
 
         await mutate();
         toast.success(`Pedido marcado como "${LABEL_ESTADO[nuevoEstado]}"`);
-      } catch (err: any) {
-        toast.error(err.message);
+      } catch (err) {
+        toast.error(getErrorMessage(err));
       } finally {
         setCambiandoId(null);
       }
@@ -261,8 +267,8 @@ export default function CocinaPanel() {
         if (!res.ok || !data.success) throw new Error(data.error || 'Error al cambiar estado del plato');
 
         await mutate();
-      } catch (err: any) {
-        toast.error(err.message);
+      } catch (err) {
+        toast.error(getErrorMessage(err));
       } finally {
         setCambiandoId(null);
       }

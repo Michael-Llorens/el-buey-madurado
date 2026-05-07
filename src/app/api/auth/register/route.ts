@@ -5,6 +5,7 @@ import { ApiResponse } from '@/lib/types';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 
 import { checkRateLimit } from '@/lib/utils/rateLimiter';
+import { logger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Solo un admin autenticado puede registrar usuarios
-    const auth = protegerRuta(request);
+    const auth = await protegerRuta(request);
     if (!auth.valido || !auth.payload) {
       return auth.response!;
     }
@@ -86,8 +87,8 @@ export async function POST(request: NextRequest) {
       },
     }, { status: 201 });
 
-  } catch (error: any) {
-    console.error('Error registro:', error);
+  } catch (error) {
+    logger.error('Error registro:', error);
     return NextResponse.json<ApiResponse>({
       success: false,
       error: 'Error al registrar usuario',

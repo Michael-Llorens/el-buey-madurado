@@ -4,6 +4,7 @@ import Pedido from '@/lib/models/Pedido';
 import { sanitizeBody } from '@/lib/utils/sanitize';
 import { validarProductosYObtenerPrecios } from '@/lib/services/pedidoService';
 import { ApiResponse } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
 
 // ===========================
 // Rate limiting en memoria
@@ -143,6 +144,9 @@ export async function POST(req: NextRequest) {
 
     const gastoEnvio = tipo === 'domicilio' ? 3.5 : 0;
 
+    // Método de pago: por defecto 'efectivo' (pagar al recoger / contraentrega)
+    const metodoPago = body.metodoPago === 'tarjeta' ? 'tarjeta' : 'efectivo';
+
     const nuevoPedido = new Pedido({
       tipo,
       direccionEntrega: tipo === 'domicilio' ? body.direccionEntrega : undefined,
@@ -152,6 +156,7 @@ export async function POST(req: NextRequest) {
       notas: body.notas || '',
       descuento: 0,
       gastoEnvio,
+      metodoPago,
     });
 
     nuevoPedido.calcularTotales();
@@ -171,7 +176,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error desconocido';
-    console.error('Error en POST /api/public/pedidos:', message);
+    logger.error('Error en POST /api/public/pedidos:', message);
 
     // Errores de validación de productos se devuelven como 400
     if (message.includes('no encontrado') || message.includes('no disponible')) {

@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extraerTokenDelHeader, verificarToken, TokenPayload } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
 
-export function protegerRuta(request: NextRequest): {
+export async function protegerRuta(request: NextRequest): Promise<{
   valido: boolean;
   payload?: TokenPayload;
   response?: NextResponse;
-} {
-  // Intentar leer token del header Authorization (compatibilidad localStorage)
-  // Si no hay header, intentar leer de cookie httpOnly (nuevo)
+}> {
+  // Token: header Authorization (Bearer) o cookie httpOnly
   const authHeader = request.headers.get('authorization');
   const tokenFromHeader = extraerTokenDelHeader(authHeader);
   const tokenFromCookie = request.cookies.get('auth_token')?.value;
@@ -24,7 +23,7 @@ export function protegerRuta(request: NextRequest): {
     };
   }
 
-  const payload = verificarToken(token);
+  const payload = await verificarToken(token);
 
   if (!payload) {
     return {
@@ -37,6 +36,30 @@ export function protegerRuta(request: NextRequest): {
   }
 
   return { valido: true, payload };
+}
+
+/**
+ * Helper combinado: protege la ruta y valida que el rol esté permitido.
+ * Devuelve { valido: false, response } si falla cualquier comprobación.
+ */
+export async function protegerRutaPorRol(
+  request: NextRequest,
+  rolesPermitidos: TokenPayload['rol'][]
+): Promise<{ valido: boolean; payload?: TokenPayload; response?: NextResponse }> {
+  const auth = await protegerRuta(request);
+  if (!auth.valido || !auth.payload) return auth;
+
+  if (!rolesPermitidos.includes(auth.payload.rol)) {
+    return {
+      valido: false,
+      response: NextResponse.json<ApiResponse>({
+        success: false,
+        error: 'No tienes permisos para realizar esta acción',
+      }, { status: 403 }),
+    };
+  }
+
+  return auth;
 }
 
 export function verificarRol(

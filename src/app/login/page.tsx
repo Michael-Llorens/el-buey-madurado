@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -33,8 +34,8 @@ export default function LoginPage() {
       } else {
         setError(result.error || 'Error al iniciar sesión');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useIngredientes as useIngredientesSWR } from '@/lib/hooks/swr';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 interface Ingrediente {
   _id: string;
@@ -250,9 +251,9 @@ export function useProductoForm({ producto, onGuardar }: UseProductoFormProps) {
       );
 
       onGuardar(data.data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al guardar:', err);
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

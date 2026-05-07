@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/db';
 import Producto from '@/lib/models/Producto';
 import '@/lib/models/Ingrediente';
 import { ApiResponse } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
 
 // ===========================
 // GET - Listar productos disponibles (público, sin auth)
@@ -28,7 +29,7 @@ export async function GET() {
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error desconocido';
-    console.error('Error en GET /api/public/productos:', message);
+    logger.error('Error en GET /api/public/productos:', message);
     return NextResponse.json<ApiResponse>(
       {
         success: false,

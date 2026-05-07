@@ -55,6 +55,38 @@ interface PedidoFormProps {
   mesaIdPreseleccionada?: string;
 }
 
+// ═══ Estilos por categoría principal (gradientes + iconos + colores) ═══
+const CATEGORIA_STYLE: Record<string, { icon: string; gradient: string; accent: string; text: string; ring: string }> = {
+  Bebidas:      { icon: '🥤', gradient: 'from-cyan-900/50 to-blue-900/30',   accent: 'border-cyan-600/60',   text: 'text-cyan-300',   ring: 'hover:border-cyan-400' },
+  Carnes:       { icon: '🥩', gradient: 'from-red-900/50 to-rose-900/30',    accent: 'border-red-600/60',    text: 'text-red-300',    ring: 'hover:border-red-400' },
+  Entrantes:    { icon: '🍽️', gradient: 'from-emerald-900/50 to-green-900/30', accent: 'border-emerald-600/60', text: 'text-emerald-300', ring: 'hover:border-emerald-400' },
+  Hamburguesas: { icon: '🍔', gradient: 'from-orange-900/50 to-amber-900/30', accent: 'border-orange-600/60', text: 'text-orange-300', ring: 'hover:border-orange-400' },
+  Postres:      { icon: '🍰', gradient: 'from-pink-900/50 to-fuchsia-900/30', accent: 'border-pink-600/60',   text: 'text-pink-300',   ring: 'hover:border-pink-400' },
+};
+const STYLE_DEFAULT = { icon: '📦', gradient: 'from-gray-800 to-gray-900', accent: 'border-gray-700', text: 'text-gray-200', ring: 'hover:border-gray-500' };
+const getCategoriaStyle = (cat: string) => CATEGORIA_STYLE[cat] ?? STYLE_DEFAULT;
+
+// ═══ Detección automática de sub-categoría de bebida por nombre ═══
+type SubcatBebida = 'vinos' | 'cervezas' | 'refrescos' | 'aguas' | 'otros';
+
+function detectarSubcategoriaBebida(nombre: string): SubcatBebida {
+  const n = nombre.toLowerCase();
+  if (/\bagua\b|aquarel|font ?vella|bezoya|solán/.test(n)) return 'aguas';
+  if (/mahou|estrella|alhambra|cerveza|ipa|lager|radler|heineken|amstel|cruzcampo/.test(n)) return 'cervezas';
+  if (/refresco|tónica|tonica|coca[ -]?cola|fanta|sprite|nestea|aquarius|bitter|kas|seven ?up|7up|pepsi|red ?bull/.test(n)) return 'refrescos';
+  if (/vino|tinto|blanco|rosado|rosé|albariño|reserva|crianza|verdejo|tempranillo|godello|garnacha|ribera|rioja|priorat|\b(19|20)\d{2}\b/.test(n)) return 'vinos';
+  return 'otros';
+}
+
+const SUBCAT_BEBIDA_STYLE: Record<SubcatBebida, { icon: string; label: string; gradient: string; accent: string; text: string }> = {
+  vinos:     { icon: '🍷', label: 'Vinos',     gradient: 'from-purple-900/40 to-rose-900/30', accent: 'border-purple-600/60', text: 'text-purple-300' },
+  cervezas:  { icon: '🍺', label: 'Cervezas',  gradient: 'from-amber-900/40 to-yellow-900/30', accent: 'border-amber-600/60', text: 'text-amber-300' },
+  refrescos: { icon: '🥤', label: 'Refrescos', gradient: 'from-cyan-900/40 to-sky-900/30',   accent: 'border-cyan-600/60',   text: 'text-cyan-300' },
+  aguas:     { icon: '💧', label: 'Aguas',     gradient: 'from-blue-900/40 to-sky-900/30',   accent: 'border-blue-600/60',   text: 'text-blue-300' },
+  otros:     { icon: '🥃', label: 'Otros',     gradient: 'from-stone-900/40 to-gray-900/30', accent: 'border-stone-600/60', text: 'text-stone-300' },
+};
+const ORDEN_SUBCAT: SubcatBebida[] = ['vinos', 'cervezas', 'refrescos', 'aguas', 'otros'];
+
 export default function PedidoForm({
   onGuardar,
   onCancelar,
@@ -268,21 +300,23 @@ export default function PedidoForm({
                 const prod = productosDisponibles.find((pd: any) => pd._id === p.producto);
                 return prod && (prod as any).categoria === cat;
               }).reduce((s, p) => s + p.cantidad, 0);
+              const style = getCategoriaStyle(cat);
 
               return (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => setCategoriaSeleccionada(cat)}
-                  className="relative flex flex-col items-center justify-center p-4 sm:p-5 bg-gray-800 border border-gray-700 rounded-xl hover:border-amber-500/50 hover:bg-gray-750 transition active:scale-95 text-center"
+                  className={`relative overflow-hidden flex flex-col items-center justify-center gap-1.5 p-4 sm:p-5 bg-gradient-to-br ${style.gradient} border-2 ${style.accent} ${style.ring} rounded-xl transition-all active:scale-95 text-center shadow-md`}
                 >
                   {productosEnCarrito > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
                       {productosEnCarrito}
                     </span>
                   )}
-                  <span className="text-white text-sm sm:text-base font-semibold capitalize">{cat}</span>
-                  <span className="text-gray-500 text-xs mt-1">{numProductos} producto{numProductos !== 1 ? 's' : ''}</span>
+                  <span className="text-2xl sm:text-3xl">{style.icon}</span>
+                  <span className={`${style.text} text-sm sm:text-base font-bold capitalize`}>{cat}</span>
+                  <span className="text-gray-400 text-[11px]">{numProductos} producto{numProductos !== 1 ? 's' : ''}</span>
                 </button>
               );
             })}
@@ -290,53 +324,108 @@ export default function PedidoForm({
         ) : (
           /* PASO 2: Productos de la categoría seleccionada (o resultados de búsqueda) */
           <div>
-            {/* Cabecera con botón volver */}
+            {/* Cabecera con botón volver — botón rojo bien visible */}
             {categoriaSeleccionada !== '_busqueda' && (
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-3 mb-3">
                 <button
                   type="button"
                   onClick={() => { setCategoriaSeleccionada('todas'); setBusquedaProducto(''); }}
-                  className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-medium transition"
+                  className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition active:scale-95 shadow-md shadow-red-600/30"
                 >
-                  ← Categorías
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                  Categorías
                 </button>
-                <span className="text-white text-sm font-semibold capitalize">{categoriaSeleccionada}</span>
-                <span className="text-gray-500 text-xs">({productosFiltrados.length})</span>
+                <span className="text-2xl">{getCategoriaStyle(categoriaSeleccionada).icon}</span>
+                <span className={`${getCategoriaStyle(categoriaSeleccionada).text} text-base font-bold capitalize`}>
+                  {categoriaSeleccionada}
+                </span>
+                <span className="text-gray-500 text-xs ml-auto">{productosFiltrados.length} producto{productosFiltrados.length !== 1 ? 's' : ''}</span>
               </div>
             )}
 
-            {/* Grid de productos */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[35vh] sm:max-h-[260px] overflow-y-auto pr-1">
-              {productosFiltrados.length === 0 ? (
-                <p className="col-span-full text-center text-gray-500 text-sm py-6">
-                  {busquedaProducto ? `Sin resultados para "${busquedaProducto}"` : 'No hay productos en esta categoría'}
-                </p>
-              ) : (
-                productosFiltrados.map((prod) => {
-                  const enCarrito = productosSeleccionados.find((p) => p.producto === prod._id);
-                  return (
-                    <button
-                      key={prod._id}
-                      type="button"
-                      onClick={() => handleAddProductoRapido(prod._id)}
-                      className={`relative flex flex-col items-start p-3 rounded-lg text-left transition active:scale-95 ${
-                        enCarrito
-                          ? 'bg-amber-600/20 border-2 border-amber-500'
-                          : 'bg-gray-800 border border-gray-700 hover:border-gray-500'
-                      }`}
-                    >
-                      {enCarrito && (
-                        <span className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
-                          {enCarrito.cantidad}
-                        </span>
-                      )}
-                      <span className="text-white text-sm font-medium leading-tight line-clamp-2">{prod.nombre}</span>
-                      <span className="text-amber-400 text-sm font-bold mt-1.5">{prod.precio.toFixed(2)}€</span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
+            {/* Si es Bebidas → agrupar por sub-categoría detectada (vinos / cervezas / refrescos / aguas / otros) */}
+            {categoriaSeleccionada === 'Bebidas' && !busquedaProducto ? (
+              <div className="max-h-[35vh] sm:max-h-[400px] overflow-y-auto pr-1 space-y-4">
+                {(() => {
+                  const grupos: Record<SubcatBebida, typeof productosFiltrados> = {
+                    vinos: [], cervezas: [], refrescos: [], aguas: [], otros: [],
+                  };
+                  productosFiltrados.forEach((p) => {
+                    grupos[detectarSubcategoriaBebida(p.nombre)].push(p);
+                  });
+
+                  return ORDEN_SUBCAT.filter((sc) => grupos[sc].length > 0).map((sc) => {
+                    const sub = SUBCAT_BEBIDA_STYLE[sc];
+                    return (
+                      <div key={sc}>
+                        <div className={`flex items-center gap-2 mb-2 pb-1.5 border-b ${sub.accent}`}>
+                          <span className="text-lg">{sub.icon}</span>
+                          <span className={`${sub.text} text-sm font-bold uppercase tracking-wider`}>{sub.label}</span>
+                          <span className="text-gray-500 text-xs">({grupos[sc].length})</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                          {grupos[sc].map((prod) => {
+                            const enCarrito = productosSeleccionados.find((p) => p.producto === prod._id);
+                            return (
+                              <button
+                                key={prod._id}
+                                type="button"
+                                onClick={() => handleAddProductoRapido(prod._id)}
+                                className={`relative flex flex-col items-start p-3 rounded-lg text-left transition active:scale-95 bg-gradient-to-br ${sub.gradient} ${
+                                  enCarrito ? 'border-2 border-amber-500 shadow-lg shadow-amber-600/20' : `border ${sub.accent} hover:brightness-125`
+                                }`}
+                              >
+                                {enCarrito && (
+                                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                                    {enCarrito.cantidad}
+                                  </span>
+                                )}
+                                <span className="text-white text-sm font-medium leading-tight line-clamp-2">{prod.nombre}</span>
+                                <span className="text-amber-400 text-sm font-bold mt-1.5">{prod.precio.toFixed(2)}€</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            ) : (
+              /* Vista plana para otras categorías o búsqueda */
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[35vh] sm:max-h-[260px] overflow-y-auto pr-1">
+                {productosFiltrados.length === 0 ? (
+                  <p className="col-span-full text-center text-gray-500 text-sm py-6">
+                    {busquedaProducto ? `Sin resultados para "${busquedaProducto}"` : 'No hay productos en esta categoría'}
+                  </p>
+                ) : (
+                  productosFiltrados.map((prod) => {
+                    const enCarrito = productosSeleccionados.find((p) => p.producto === prod._id);
+                    const catStyle = getCategoriaStyle(prod.categoria);
+                    return (
+                      <button
+                        key={prod._id}
+                        type="button"
+                        onClick={() => handleAddProductoRapido(prod._id)}
+                        className={`relative flex flex-col items-start p-3 rounded-lg text-left transition active:scale-95 bg-gradient-to-br ${catStyle.gradient} ${
+                          enCarrito
+                            ? 'border-2 border-amber-500 shadow-lg shadow-amber-600/20'
+                            : `border ${catStyle.accent} hover:brightness-125`
+                        }`}
+                      >
+                        {enCarrito && (
+                          <span className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                            {enCarrito.cantidad}
+                          </span>
+                        )}
+                        <span className="text-white text-sm font-medium leading-tight line-clamp-2">{prod.nombre}</span>
+                        <span className="text-amber-400 text-sm font-bold mt-1.5">{prod.precio.toFixed(2)}€</span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

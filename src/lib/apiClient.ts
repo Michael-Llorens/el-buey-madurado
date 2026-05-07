@@ -1,4 +1,5 @@
 import { ApiResponse } from '@/lib/types';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
@@ -35,15 +36,15 @@ export async function apiRequest<T = any>(
       const error = await response.json().catch(() => ({ message: 'Error de red' }));
       return { 
         success: false, 
-        error: error.error || error.message || 'Error desconocido' 
+        error: error.error || getErrorMessage(error) || 'Error desconocido' 
       };
     }
 
     return response.json();
-  } catch (err: any) {
+  } catch (err) {
     return { 
       success: false, 
-      error: err.message || 'Error de conexión' 
+      error: getErrorMessage(err) || 'Error de conexión' 
     };
   }
 }

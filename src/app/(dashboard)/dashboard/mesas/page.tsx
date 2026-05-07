@@ -9,6 +9,7 @@ import MesaMapView from '@/components/dashboard/MesaMapView';
 import ConfirmModal from '@/components/dashboard/ConfirmModal';
 import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
 import { useMesas } from '@/lib/hooks/swr';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type Modo = 'view' | 'add' | 'edit';
 type Vista = 'lista' | 'mapa';
@@ -61,9 +62,9 @@ export default function MesasPanel() {
       } else {
         throw new Error(data.error || 'Error al crear mesas');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al crear mesas:', err);
-      toast.error(`Error: ${err.message}`);
+      toast.error(`Error: ${getErrorMessage(err)}`);
     }
   };
 
@@ -108,9 +109,9 @@ export default function MesasPanel() {
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al eliminar:', err);
-      toast.error(`Error: ${err.message}`);
+      toast.error(`Error: ${getErrorMessage(err)}`);
     } finally {
       setEliminandoId(null);
     }
@@ -137,9 +138,9 @@ export default function MesasPanel() {
       if (!res.ok || !data.success) throw new Error(data.error || 'Error al cambiar estado');
 
       await mutate();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al cambiar estado:', err);
-      toast.error(`Error: ${err.message}`);
+      toast.error(`Error: ${getErrorMessage(err)}`);
     }
   };
 
@@ -171,9 +172,9 @@ export default function MesasPanel() {
       if (!res.ok || !data.success) throw new Error(data.error || 'Error al actualizar comensales');
 
       await mutate();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      toast.error(`Error: ${err.message}`);
+      toast.error(`Error: ${getErrorMessage(err)}`);
     }
   };
 
@@ -210,9 +211,9 @@ export default function MesasPanel() {
 
         router.push(`/dashboard?modulo=pedidos&modo=add&mesaId=${encodeURIComponent(mesaId)}`);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al hacer pedido:', err);
-      toast.error(`Error: ${err.message}`);
+      toast.error(`Error: ${getErrorMessage(err)}`);
     }
   };
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useMesas as useMesasSWR, useProductos as useProductosSWR } from '@/lib/hooks/swr';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 interface Mesa {
   _id: string;
@@ -500,9 +501,9 @@ export function usePedidoForm({
 
       toast.success(modo === 'edit' ? 'Pedido actualizado' : 'Pedido creado exitosamente');
       await onGuardar();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al guardar:', err);
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

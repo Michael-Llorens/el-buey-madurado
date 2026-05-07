@@ -9,6 +9,7 @@ import {
   ALERGENOS_COLORES,
   type AlergenoUE,
 } from '@/lib/constants/alergenos';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 interface IngredienteFormProps {
   ingrediente?: any | null;
@@ -165,9 +166,9 @@ export default function IngredienteForm({
       );
 
       onGuardar(data.data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al guardar:', err);
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

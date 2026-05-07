@@ -57,6 +57,9 @@ yarn-error.log*
 *.swo
 *~
 
+# Claude Code (configuración local del agente)
+.claude/
+
 # Turbopack
 .turbo
 

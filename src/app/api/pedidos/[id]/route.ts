@@ -3,12 +3,14 @@ import { connectDB } from '@/lib/db';
 import Pedido from '@/lib/models/Pedido';
 import Producto from '@/lib/models/Producto';
 import Ingrediente from '@/lib/models/Ingrediente';
-import { protegerRuta } from '@/lib/middlewareAuth';
+import { protegerRuta, protegerRutaPorRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
 import { sanitizeBody } from '@/lib/utils/sanitize';
 import mongoose from 'mongoose';
 import { normalizarPedido, liberarMesa } from '@/lib/services/pedidoService';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -20,8 +22,8 @@ export async function GET(req: NextRequest, context: Ctx) {
     await connectDB();
     void Producto; void Ingrediente; // asegurar registro para populate anidado
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRuta(req);
+    if (!auth.valido) return auth.response!;
 
     const { id } = await context.params;
     const idError = validarObjectId(id);
@@ -47,10 +49,10 @@ export async function GET(req: NextRequest, context: Ctx) {
       success: true,
       data: normalizarPedido(pedido),
     });
-  } catch (error: any) {
-    console.error('❌ Error en GET /api/pedidos/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en GET /api/pedidos/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -63,8 +65,8 @@ export async function PUT(req: NextRequest, context: Ctx) {
   try {
     await connectDB();
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRuta(req);
+    if (!auth.valido) return auth.response!;
 
     const body = sanitizeBody(await req.json());
     const { id } = await context.params;
@@ -182,10 +184,10 @@ export async function PUT(req: NextRequest, context: Ctx) {
       data: normalizarPedido(pedidoActualizado),
       message: 'Pedido actualizado exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en PUT /api/pedidos/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en PUT /api/pedidos/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -198,8 +200,8 @@ export async function DELETE(req: NextRequest, context: Ctx) {
   try {
     await connectDB();
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     const { id } = await context.params;
     const idError = validarObjectId(id);
@@ -224,10 +226,10 @@ export async function DELETE(req: NextRequest, context: Ctx) {
       success: true,
       message: 'Pedido cancelado exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en DELETE /api/pedidos/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en DELETE /api/pedidos/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }

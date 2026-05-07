@@ -34,7 +34,7 @@ export interface IPedido extends Document {
   descuento: number;
   gastoEnvio: number;     // ✅ NUEVO (solo para "domicilio")
   total: number;
-  estado: 'pendiente' | 'preparando' | 'listo' | 'en_camino' | 'servido' | 'entregado' | 'pagado' | 'cancelado'; // ✅ Actualizado
+  estado: 'pendiente_pago' | 'pendiente' | 'preparando' | 'listo' | 'en_camino' | 'servido' | 'entregado' | 'pagado' | 'cancelado';
   camarero?: Types.ObjectId;
   repartidor?: Types.ObjectId; // ✅ NUEVO (para domicilio)
   cliente?: string;
@@ -143,8 +143,8 @@ const PedidoSchema: Schema = new Schema({
   },
   estado: { 
     type: String, 
-    enum: ['pendiente', 'preparando', 'listo', 'en_camino', 'servido', 'entregado', 'pagado', 'cancelado'],
-    default: 'pendiente' 
+    enum: ['pendiente_pago', 'pendiente', 'preparando', 'listo', 'en_camino', 'servido', 'entregado', 'pagado', 'cancelado'],
+    default: 'pendiente'
   },
   camarero: {
     type: mongoose.Schema.Types.ObjectId,
