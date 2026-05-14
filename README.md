@@ -4,7 +4,7 @@
 
 ### Sistema integral de gestión para restaurante — *Carta digital, pedidos online, cocina en vivo y panel de administración*
 
-[![Live Demo](https://img.shields.io/badge/Demo-Online-00c853?style=for-the-badge&logo=vercel&logoColor=white)](https://restaurante-el-buey-madurado.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Demo-Online-00c853?style=for-the-badge&logo=vercel&logoColor=white)](https://www.restauranteelbueymadurado.com)
 [![CI](https://img.shields.io/github/actions/workflow/status/Michael-Llorens/el-buey-madurado/ci.yml?style=for-the-badge&label=CI&logo=github)](https://github.com/Michael-Llorens/el-buey-madurado/actions)
 [![Last Commit](https://img.shields.io/github/last-commit/Michael-Llorens/el-buey-madurado?style=for-the-badge)](https://github.com/Michael-Llorens/el-buey-madurado/commits)
 [![License](https://img.shields.io/badge/Licencia-Acad%C3%A9mica-blue?style=for-the-badge)](#-licencia)
@@ -19,7 +19,7 @@
 [![Vitest](https://img.shields.io/badge/Vitest-4-6E9F18?style=flat-square&logo=vitest&logoColor=white)](https://vitest.dev)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com)
 
-**🌐 Live demo →** https://restaurante-el-buey-madurado.vercel.app
+**🌐 Live demo →** https://www.restauranteelbueymadurado.com
 
 </div>
 
@@ -54,7 +54,7 @@
 | **Autor** | Michael Llorens Barbera |
 | **Curso** | Proyecto Integrado — 2º DAW |
 | **Repositorio** | https://github.com/Michael-Llorens/el-buey-madurado |
-| **Producción** | https://restaurante-el-buey-madurado.vercel.app |
+| **Producción** | https://www.restauranteelbueymadurado.com |
 | **Estado** | ✅ Funcional — TypeCheck 0 errores · ESLint 0 errores · 71/71 tests pasando |
 
 ---

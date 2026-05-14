@@ -17,7 +17,7 @@
 | **Año académico** | 2025 / 2026 |
 | **Fecha de defensa** | Mayo 2026 |
 | **Repositorio** | https://github.com/Michael-Llorens/el-buey-madurado |
-| **Entorno productivo** | https://restaurante-el-buey-madurado.vercel.app |
+| **Entorno productivo** | https://www.restauranteelbueymadurado.com |
 
 </div>
 
@@ -376,7 +376,7 @@ Si pasa >20 min sin servir → useEffect detecta → playBeepUrgente() (doble be
 | **Local Dev** | `feat/*` | Docker | MongoDB en contenedor | `localhost:3000` |
 | **Local Dev (sin Docker)** | `feat/*` | Node directo | Mongo Atlas (dev) | `localhost:3333` |
 | **Staging** | `develop` | Vercel Preview | MongoDB Atlas | `*.vercel.app` (dinámica) |
-| **Producción** | `main` | Vercel | MongoDB Atlas | `restaurante-el-buey-madurado.vercel.app` |
+| **Producción** | `main` | Vercel | MongoDB Atlas | `www.restauranteelbueymadurado.com` |
 
 ---
 

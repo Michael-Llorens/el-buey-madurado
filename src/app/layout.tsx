@@ -30,7 +30,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" data-scroll-behavior="smooth">
+    // suppressHydrationWarning: el script anti-flash añade la clase `theme-light`
+    // al <html> antes de la hidratación de React. Sin esta prop, React detecta
+    // la diferencia entre el HTML del servidor y el cliente y lanza un warning.
+    // Es el patrón oficial para theme switchers (igual que usa next-themes).
+    <html lang="es" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        {/*
+          Script anti-flash: aplica la clase `theme-light` en <html>
+          ANTES del primer render para evitar el parpadeo del modo oscuro
+          cuando el usuario tiene preferencia guardada en modo claro.
+          Solo afecta a las áreas marcadas como `.admin-themed` (login + dashboard).
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('admin-theme');if(t==='light')document.documentElement.classList.add('theme-light');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="bg-[#160a00] text-white overflow-x-hidden">
         <RootLayoutContent>
           {children}

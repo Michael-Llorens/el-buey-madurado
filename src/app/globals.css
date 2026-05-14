@@ -112,3 +112,174 @@ body {
 .logo-slide-2 { animation-delay: 0.30s; }
 .logo-slide-3 { animation-delay: 0.50s; }
 .logo-slide-4 { animation-delay: 0.60s; }
+
+/* ============================================================
+   MODO CLARO PARA ÁREA DE ADMINISTRACIÓN (login + dashboard)
+   ============================================================
+   Solo se activa cuando:
+     - <html> tiene la clase `theme-light`
+     - El contenido está envuelto en `.admin-themed`
+
+   La web pública NO se ve afectada: mantiene su tema oscuro fijo.
+   Se aplica con !important porque las clases Tailwind hardcoded
+   tienen mayor especificidad por sí mismas.
+   ============================================================ */
+
+html.theme-light .admin-themed {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+/* Backgrounds oscuros → claros */
+html.theme-light .admin-themed .bg-gray-950,
+html.theme-light .admin-themed.bg-gray-950 { background-color: #ffffff !important; }
+html.theme-light .admin-themed .bg-gray-900,
+html.theme-light .admin-themed.bg-gray-900 { background-color: #f9fafb !important; }
+html.theme-light .admin-themed .bg-gray-800,
+html.theme-light .admin-themed.bg-gray-800 { background-color: #ffffff !important; }
+html.theme-light .admin-themed .bg-gray-700 { background-color: #f3f4f6 !important; }
+html.theme-light .admin-themed .bg-gray-750 { background-color: #f9fafb !important; }
+html.theme-light .admin-themed .bg-gray-950\/90 { background-color: rgba(255, 255, 255, 0.92) !important; }
+html.theme-light .admin-themed .bg-gray-950\/80 { background-color: rgba(255, 255, 255, 0.85) !important; }
+html.theme-light .admin-themed .bg-gray-900\/90 { background-color: rgba(249, 250, 251, 0.92) !important; }
+html.theme-light .admin-themed .bg-gray-900\/95 { background-color: rgba(255, 255, 255, 0.96) !important; }
+html.theme-light .admin-themed .bg-gray-800\/50 { background-color: rgba(249, 250, 251, 0.7) !important; }
+html.theme-light .admin-themed .bg-gray-800\/80 { background-color: rgba(255, 255, 255, 0.85) !important; }
+html.theme-light .admin-themed .bg-gray-800\/90 { background-color: rgba(255, 255, 255, 0.92) !important; }
+html.theme-light .admin-themed .bg-black\/50 { background-color: rgba(17, 24, 39, 0.3) !important; }
+html.theme-light .admin-themed .bg-black\/70 { background-color: rgba(17, 24, 39, 0.5) !important; }
+
+/* El header sticky del dashboard (bg-gray-950/90) — específico para asegurar fondo claro */
+html.theme-light .admin-themed > div > header,
+html.theme-light .admin-themed header.sticky {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #e5e7eb !important;
+}
+
+/* Sidebar del dashboard (bg-gray-900) — borde y separadores claros */
+html.theme-light .admin-themed aside {
+  background-color: #ffffff !important;
+  border-right-color: #e5e7eb !important;
+}
+html.theme-light .admin-themed aside .border-gray-800 { border-color: #e5e7eb !important; }
+
+/* Botones del sidebar: estados activo/hover en modo claro */
+html.theme-light .admin-themed nav button {
+  color: #374151;
+}
+html.theme-light .admin-themed nav button.bg-gray-800,
+html.theme-light .admin-themed nav button[class*="bg-gradient-to"]:not([class*="bg-green"]):not([class*="bg-amber"]):not([class*="bg-orange"]):not([class*="bg-purple"]):not([class*="bg-blue"]):not([class*="bg-yellow"]) {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* Backgrounds con opacidades adicionales */
+html.theme-light .admin-themed .bg-gray-900\/30 { background-color: rgba(243, 244, 246, 0.5) !important; }
+html.theme-light .admin-themed .bg-gray-900\/50 { background-color: rgba(243, 244, 246, 0.7) !important; }
+html.theme-light .admin-themed .bg-gray-700\/30 { background-color: rgba(229, 231, 235, 0.4) !important; }
+html.theme-light .admin-themed .bg-gray-700\/40 { background-color: rgba(229, 231, 235, 0.5) !important; }
+html.theme-light .admin-themed .bg-gray-700\/50 { background-color: rgba(229, 231, 235, 0.6) !important; }
+html.theme-light .admin-themed .bg-gray-700\/60 { background-color: rgba(229, 231, 235, 0.7) !important; }
+html.theme-light .admin-themed .bg-gray-600\/40 { background-color: rgba(209, 213, 219, 0.5) !important; }
+html.theme-light .admin-themed .bg-gray-500\/20 { background-color: rgba(156, 163, 175, 0.2) !important; }
+
+/* Backgrounds intermedios (gray-400/500/600) mantienen su tono pero más claros */
+html.theme-light .admin-themed .bg-gray-400 { background-color: #d1d5db !important; }
+html.theme-light .admin-themed .bg-gray-500 { background-color: #9ca3af !important; }
+html.theme-light .admin-themed .bg-gray-600 { background-color: #6b7280 !important; color: #ffffff !important; }
+
+/* Hover backgrounds */
+html.theme-light .admin-themed .hover\:bg-gray-600:hover { background-color: #9ca3af !important; }
+html.theme-light .admin-themed .hover\:bg-gray-700:hover { background-color: #e5e7eb !important; }
+html.theme-light .admin-themed .hover\:bg-gray-750:hover { background-color: #f3f4f6 !important; }
+html.theme-light .admin-themed .hover\:bg-gray-800:hover { background-color: #f3f4f6 !important; }
+
+/* Textos claros → oscuros */
+html.theme-light .admin-themed .text-white { color: #111827 !important; }
+html.theme-light .admin-themed .text-gray-100 { color: #1f2937 !important; }
+html.theme-light .admin-themed .text-gray-200 { color: #1f2937 !important; }
+html.theme-light .admin-themed .text-gray-300 { color: #374151 !important; }
+html.theme-light .admin-themed .text-gray-400 { color: #4b5563 !important; }
+html.theme-light .admin-themed .text-gray-500 { color: #6b7280 !important; }
+html.theme-light .admin-themed .text-gray-600 { color: #6b7280 !important; }
+html.theme-light .admin-themed .placeholder-gray-500::placeholder { color: #9ca3af !important; }
+html.theme-light .admin-themed .placeholder-gray-400::placeholder { color: #9ca3af !important; }
+
+/* Bordes */
+html.theme-light .admin-themed .border-gray-900 { border-color: #e5e7eb !important; }
+html.theme-light .admin-themed .border-gray-800 { border-color: #e5e7eb !important; }
+html.theme-light .admin-themed .border-gray-700 { border-color: #d1d5db !important; }
+html.theme-light .admin-themed .border-gray-600 { border-color: #d1d5db !important; }
+html.theme-light .admin-themed .border-gray-500 { border-color: #9ca3af !important; }
+html.theme-light .admin-themed .border-gray-400 { border-color: #d1d5db !important; }
+html.theme-light .admin-themed .divide-gray-700 > * + * { border-color: #e5e7eb !important; }
+html.theme-light .admin-themed .divide-gray-700\/30 > * + * { border-color: rgba(229, 231, 235, 0.6) !important; }
+/* Bordes con opacidad — hover y focus */
+html.theme-light .admin-themed .hover\:border-gray-500:hover { border-color: #9ca3af !important; }
+html.theme-light .admin-themed .hover\:border-gray-600:hover { border-color: #6b7280 !important; }
+html.theme-light .admin-themed .focus\:border-amber-500:focus { border-color: #f59e0b !important; }
+
+/* Sombras: las sombras de neón en oscuro se atenúan en claro */
+html.theme-light .admin-themed .shadow-lg,
+html.theme-light .admin-themed .shadow-xl,
+html.theme-light .admin-themed .shadow-2xl {
+  --tw-shadow-color: rgba(17, 24, 39, 0.08) !important;
+}
+
+/* Inputs: visibilidad mejorada en claro */
+html.theme-light .admin-themed input.bg-gray-800,
+html.theme-light .admin-themed textarea.bg-gray-800,
+html.theme-light .admin-themed select.bg-gray-800 {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+html.theme-light .admin-themed input.bg-gray-700,
+html.theme-light .admin-themed textarea.bg-gray-700 {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+/* Scrollbars en modo claro */
+html.theme-light .admin-themed *::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+html.theme-light .admin-themed *::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+}
+html.theme-light .admin-themed *::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Transición suave al cambiar de tema */
+html.theme-light .admin-themed,
+html.theme-light .admin-themed * {
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+/* Body fondo claro cuando theme-light está activo en cualquier área admin */
+html.theme-light body:has(.admin-themed) {
+  background-color: #f9fafb;
+}
+
+/* Logo del sidebar: dos versiones del logo, una se muestra según el tema.
+   - .logo-dark = logo Cloudinary (toro claro sobre transparente, va bien en oscuro)
+   - .logo-light = PNG local /icons/icon-192.png (toro oscuro sobre fondo blanco) */
+.admin-themed .logo-light { display: none; }
+html.theme-light .admin-themed .logo-dark { display: none; }
+html.theme-light .admin-themed .logo-light { display: block; }
+html.theme-light .admin-themed .logo-wrap {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+/* Botón hamburguesa del header en móvil */
+html.theme-light .admin-themed header button.text-gray-400 { color: #4b5563 !important; }
+html.theme-light .admin-themed header button.text-gray-400:hover { color: #111827 !important; }
+
+/* Avatar de usuario en sidebar (la inicial del email) — texto blanco sobre dorado se mantiene */
+/* El nombre y rol del usuario se vuelven oscuros (ya cubierto por .text-white) */
+
+/* Botón "Cerrar sesión" en sidebar (rojo) — mantiene su color */
+html.theme-light .admin-themed nav button.text-red-400,
+html.theme-light .admin-themed button.text-red-400 { color: #dc2626 !important; }
