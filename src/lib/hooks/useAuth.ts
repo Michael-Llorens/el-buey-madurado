@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { authApi } from '@/lib/apiClient';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export interface AuthUser {
   id: string;
@@ -56,8 +57,8 @@ export function useAuth() {
       }
 
       return { success: false, error: res.error };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      return { success: false, error: getErrorMessage(error) };
     }
   };
 

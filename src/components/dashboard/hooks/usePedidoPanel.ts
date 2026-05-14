@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { usePedidos, authFetcher } from '@/lib/hooks/swr';
 import { useConfirm } from './useConfirm';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type Modo = 'view' | 'add' | 'edit' | 'detail';
 
@@ -145,9 +146,9 @@ export function usePedidoPanel() {
 
                     // Limpia la URL
                     window.history.replaceState(null, '', '/dashboard');
-                } catch (e: any) {
+                } catch (e) {
                     if (cancelled) return;
-                    setMutationError(e.message);
+                    setMutationError(getErrorMessage(e));
                     setModo('view');
                 } finally {
                     if (cancelled) return;
@@ -348,9 +349,9 @@ export function usePedidoPanel() {
             } else {
                 throw new Error(data.error || 'Error al cambiar estado');
             }
-        } catch (e: any) {
+        } catch (e) {
             console.error('Error al cambiar estado:', e);
-            toast.error(`Error: ${e.message}`);
+            toast.error(`Error: ${getErrorMessage(e)}`);
         }
     };
 
@@ -385,9 +386,9 @@ export function usePedidoPanel() {
             } else {
                 throw new Error(data.error || 'Error al cancelar');
             }
-        } catch (e: any) {
+        } catch (e) {
             console.error('Error al cancelar:', e);
-            toast.error(`Error: ${e.message}`);
+            toast.error(`Error: ${getErrorMessage(e)}`);
         }
     };
 
@@ -417,10 +418,10 @@ export function usePedidoPanel() {
 
             const detalle = await cargarPedidoPorId(pedido._id);
             setPedidoDetalle(detalle);
-        } catch (e: any) {
+        } catch (e) {
             console.error('Error cargando detalle:', e);
             setPedidoDetalle(pedido); // fallback
-            setMutationError(e.message);
+            setMutationError(getErrorMessage(e));
         } finally {
             setLoadingDetalle(false);
         }

@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }, { status: 401 });
   }
 
-  const payload = verificarToken(token);
+  const payload = await verificarToken(token);
 
   if (!payload) {
     return NextResponse.json<ApiResponse>({

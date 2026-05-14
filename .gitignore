@@ -57,6 +57,12 @@ yarn-error.log*
 *.swo
 *~
 
+# Claude Code (configuración local del agente)
+.claude/
+
+# Memoria generada (output del script build-memoria.mjs)
+docs/memoria.html
+
 # Turbopack
 .turbo
 

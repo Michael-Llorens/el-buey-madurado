@@ -50,8 +50,13 @@ const CATEGORIA_BADGE_COLOR: Record<string, string> = {
   Bebidas: 'bg-cyan-600/80 text-cyan-100',
 };
 
+// Categorías que SIEMPRE requieren personalización (punto de la carne)
+// Debe coincidir con la constante del PersonalizarModal.
+const CATEGORIAS_PUNTO_CARNE = ['carnes', 'hamburguesas'];
+
 export default function ProductoCard({ producto, onAnadir, onIncrementar, onDecrementar, enCarrito }: ProductoCardProps) {
-  const tienePersonalizacion = producto.permitirExtras || producto.permitirRemover;
+  const necesitaPuntoCarne = CATEGORIAS_PUNTO_CARNE.includes(producto.categoria.toLowerCase());
+  const tienePersonalizacion = producto.permitirExtras || producto.permitirRemover || necesitaPuntoCarne;
   const [imgError, setImgError] = useState(false);
   const hasImage = producto.imagen && !imgError;
 

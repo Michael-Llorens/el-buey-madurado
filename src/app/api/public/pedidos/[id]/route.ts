@@ -4,6 +4,7 @@ import Pedido from '@/lib/models/Pedido';
 import Producto from '@/lib/models/Producto';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
+import { logger } from '@/lib/utils/logger';
 
 // Forzar registro del modelo Producto para populate
 void Producto;
@@ -53,7 +54,7 @@ export async function GET(_req: NextRequest, context: Ctx) {
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Error desconocido';
-    console.error('Error en GET /api/public/pedidos/[id]:', message);
+    logger.error('Error en GET /api/public/pedidos/[id]:', message);
     return NextResponse.json<ApiResponse>(
       { success: false, error: message },
       { status: 500 }

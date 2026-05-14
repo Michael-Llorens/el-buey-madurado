@@ -9,6 +9,7 @@ import IngredientCardGrid from '@/components/dashboard/IngredientCardGrid';
 import ConfirmModal from '@/components/dashboard/ConfirmModal';
 import { useConfirm } from '@/components/dashboard/hooks/useConfirm';
 import { useIngredientes, useProductos } from '@/lib/hooks/swr';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type TabActivo = 'productos' | 'ingredientes';
 type Modo = 'view' | 'add-product' | 'add-ingredient' | 'edit-product' | 'edit-ingredient';
@@ -69,9 +70,9 @@ export default function StockPanel() {
       await mutateIng();
       setIngredienteEditar(null);
       setModo('view');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al guardar:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(`Error: ${getErrorMessage(error)}`);
     }
   };
 
@@ -81,9 +82,9 @@ export default function StockPanel() {
       await mutateProd();
       setProductoEditar(null);
       setModo('view');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al guardar:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(`Error: ${getErrorMessage(error)}`);
     }
   };
 
@@ -136,9 +137,9 @@ export default function StockPanel() {
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al eliminar:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(`Error: ${getErrorMessage(error)}`);
     } finally {
       setEliminandoId(null);
     }
@@ -181,9 +182,9 @@ export default function StockPanel() {
       } else {
         throw new Error(data.error || 'Error al eliminar');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error al eliminar:', error);
-      toast.error(`Error: ${error.message}`);
+      toast.error(`Error: ${getErrorMessage(error)}`);
     } finally {
       setEliminandoId(null);
     }

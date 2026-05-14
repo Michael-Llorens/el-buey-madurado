@@ -80,6 +80,35 @@ export default function SeguimientoPage({ params }: { params: Promise<{ id: stri
     },
   });
 
+  const progressRef = useRef<HTMLDivElement>(null);
+  const dotsRef = useRef<HTMLDivElement>(null);
+  const prevEstadoRef = useRef<string | undefined>(undefined);
+
+  // Animate progress bar and dots on state change
+  useEffect(() => {
+    if (!pedido) return;
+    const esCancelado = pedido.estado === 'cancelado';
+    if (esCancelado || !progressRef.current || !dotsRef.current) return;
+
+    const estados = pedido.tipo === 'domicilio' ? ESTADOS_DOMICILIO : ESTADOS_RECOGER;
+    const idxActual = estados.indexOf(pedido.estado);
+
+    gsap.to(progressRef.current, {
+      width: `${Math.max(0, (idxActual / (estados.length - 1)) * 80)}%`,
+      duration: 0.8,
+      ease: 'power2.out',
+    });
+
+    if (prevEstadoRef.current !== pedido.estado) {
+      const dots = dotsRef.current.querySelectorAll('.progress-dot');
+      const activeDot = dots[idxActual];
+      if (activeDot) {
+        gsap.fromTo(activeDot, { scale: 0.5 }, { scale: 1, duration: 0.5, ease: 'back.out(2)' });
+      }
+      prevEstadoRef.current = pedido.estado;
+    }
+  }, [pedido]);
+
   if (error) {
     return (
       <div className="min-h-screen bg-[#160a00] flex flex-col items-center justify-center pt-20 px-4 text-center">
@@ -113,32 +142,6 @@ export default function SeguimientoPage({ params }: { params: Promise<{ id: stri
   const idxActual = estados.indexOf(pedido.estado);
   const esCancelado = pedido.estado === 'cancelado';
   const esCompletado = pedido.estado === 'entregado' || pedido.estado === 'pagado';
-
-  const progressRef = useRef<HTMLDivElement>(null);
-  const dotsRef = useRef<HTMLDivElement>(null);
-  const prevEstadoRef = useRef(pedido.estado);
-
-  // Animate progress bar and dots on state change
-  useEffect(() => {
-    if (esCancelado || !progressRef.current || !dotsRef.current) return;
-
-    // Animate progress line width
-    gsap.to(progressRef.current, {
-      width: `${Math.max(0, (idxActual / (estados.length - 1)) * 80)}%`,
-      duration: 0.8,
-      ease: 'power2.out',
-    });
-
-    // Animate dots: bounce the active one on state change
-    if (prevEstadoRef.current !== pedido.estado) {
-      const dots = dotsRef.current.querySelectorAll('.progress-dot');
-      const activeDot = dots[idxActual];
-      if (activeDot) {
-        gsap.fromTo(activeDot, { scale: 0.5 }, { scale: 1, duration: 0.5, ease: 'back.out(2)' });
-      }
-      prevEstadoRef.current = pedido.estado;
-    }
-  }, [pedido.estado, idxActual, estados.length, esCancelado]);
 
   return (
     <div className="min-h-screen bg-[#160a00] pt-20 pb-8">

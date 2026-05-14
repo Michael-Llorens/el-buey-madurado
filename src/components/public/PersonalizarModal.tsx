@@ -7,10 +7,43 @@ import type { ProductoPublico } from './ProductoCard';
 const CATEGORIAS_PUNTO_CARNE = ['carnes', 'hamburguesas'];
 
 const PUNTOS_CARNE = [
-  { id: 'Poco hecho', label: 'Poco hecho', desc: 'Rojo por dentro', color: 'from-red-700 to-red-500', icon: '🔴' },
-  { id: 'Medio', label: 'Al punto', desc: 'Rosa en el centro', color: 'from-rose-600 to-orange-500', icon: '🟠' },
-  { id: 'Hecho', label: 'Hecho', desc: 'Marrón uniforme', color: 'from-amber-700 to-amber-500', icon: '🟤' },
-  { id: 'Muy hecho', label: 'Muy hecho', desc: 'Bien cocido', color: 'from-stone-700 to-stone-500', icon: '⚫' },
+  {
+    id: 'Poco hecho',
+    label: 'Poco hecho',
+    desc: 'Rojo por dentro',
+    bgGradient: 'from-red-700/40 to-red-900/40',
+    ringColor: 'ring-red-500',
+    textColor: 'text-red-300',
+    // Corte transversal: rojo intenso en el centro, fino borde cocido
+    cutStyle: { background: 'radial-gradient(circle, #dc2626 0%, #dc2626 55%, #78350f 75%, #57534e 100%)' },
+  },
+  {
+    id: 'Medio',
+    label: 'Al punto',
+    desc: 'Rosa en el centro',
+    bgGradient: 'from-pink-700/40 to-rose-900/40',
+    ringColor: 'ring-pink-500',
+    textColor: 'text-pink-300',
+    cutStyle: { background: 'radial-gradient(circle, #fb7185 0%, #fb7185 35%, #92400e 70%, #44403c 100%)' },
+  },
+  {
+    id: 'Hecho',
+    label: 'Hecho',
+    desc: 'Marrón uniforme',
+    bgGradient: 'from-amber-800/40 to-amber-950/40',
+    ringColor: 'ring-amber-600',
+    textColor: 'text-amber-300',
+    cutStyle: { background: 'radial-gradient(circle, #a16207 0%, #78350f 60%, #451a03 100%)' },
+  },
+  {
+    id: 'Muy hecho',
+    label: 'Muy hecho',
+    desc: 'Bien cocido',
+    bgGradient: 'from-stone-700/40 to-stone-900/40',
+    ringColor: 'ring-stone-400',
+    textColor: 'text-stone-300',
+    cutStyle: { background: 'radial-gradient(circle, #57534e 0%, #292524 60%, #1c1917 100%)' },
+  },
 ] as const;
 
 interface PersonalizarModalProps {
@@ -79,7 +112,11 @@ export default function PersonalizarModal({ producto, onConfirm, onClose }: Pers
     }
   }, []);
 
+  const faltaPunto = necesitaPunto && !puntoCarne;
+
   const handleConfirm = () => {
+    if (faltaPunto) return; // Bloqueo defensivo (botón ya disabled, pero por si acaso)
+
     let notasFinal = '';
     if (puntoCarne) {
       notasFinal = notas.trim() ? `🥩${puntoCarne} | ${notas.trim()}` : `🥩${puntoCarne}`;
@@ -134,37 +171,51 @@ export default function PersonalizarModal({ producto, onConfirm, onClose }: Pers
 
         <div className="p-5 space-y-6">
 
-          {/* ═══ Punto de carne — visual con gradiente ═══ */}
+          {/* ═══ Punto de carne — visual con corte transversal ═══ */}
           {necesitaPunto && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <svg className="w-5 h-5 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
                 <p className="text-sm font-semibold text-white">Punto de la carne</p>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400 bg-orange-400/15 border border-orange-400/40 px-2 py-0.5 rounded-full">
+                  Obligatorio
+                </span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              {!puntoCarne && (
+                <p className="text-xs text-orange-300/90 mb-3 ml-7 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z" /></svg>
+                  Selecciona cómo quieres tu carne para continuar
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-2.5">
                 {PUNTOS_CARNE.map((punto) => {
                   const selected = puntoCarne === punto.id;
                   return (
                     <button
                       key={punto.id}
                       onClick={() => setPuntoCarne(selected ? null : punto.id)}
-                      className={`relative overflow-hidden rounded-xl p-3 text-left transition-all duration-200 ${
+                      className={`relative overflow-hidden rounded-xl p-3 text-left transition-all duration-200 border ${
                         selected
-                          ? 'ring-2 ring-orange-400 shadow-lg shadow-orange-600/20'
-                          : 'hover:ring-1 hover:ring-gray-600'
+                          ? `ring-2 ${punto.ringColor} border-transparent shadow-lg`
+                          : 'border-gray-700 hover:border-gray-500'
                       }`}
                     >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${punto.color} ${selected ? 'opacity-30' : 'opacity-10'} transition-opacity`} />
-                      <div className="relative flex items-center gap-2.5">
-                        <span className="text-lg">{punto.icon}</span>
-                        <div>
-                          <p className={`text-sm font-bold ${selected ? 'text-orange-300' : 'text-gray-200'}`}>{punto.label}</p>
-                          <p className="text-[10px] text-gray-500">{punto.desc}</p>
+                      <div className={`absolute inset-0 bg-gradient-to-br ${punto.bgGradient} ${selected ? 'opacity-100' : 'opacity-50'} transition-opacity`} />
+                      <div className="relative flex items-center gap-3">
+                        {/* Círculo con corte transversal real de la carne */}
+                        <span
+                          className="w-9 h-9 rounded-full shrink-0 ring-2 ring-white/20 shadow-inner"
+                          style={punto.cutStyle}
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0">
+                          <p className={`text-sm font-bold ${selected ? punto.textColor : 'text-gray-100'}`}>{punto.label}</p>
+                          <p className="text-[10px] text-gray-400">{punto.desc}</p>
                         </div>
                       </div>
                       {selected && (
-                        <div className="absolute top-2 right-2">
-                          <svg className="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                        <div className="absolute top-2 right-2 bg-black/40 rounded-full p-0.5">
+                          <svg className={`w-3.5 h-3.5 ${punto.textColor}`} fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                         </div>
                       )}
                     </button>
@@ -323,17 +374,24 @@ export default function PersonalizarModal({ producto, onConfirm, onClose }: Pers
 
           <button
             onClick={handleConfirm}
-            disabled={added}
+            disabled={added || faltaPunto}
             className={`w-full py-3.5 rounded-xl font-bold text-base transition-all duration-300 shadow-lg flex items-center justify-center gap-2 ${
               added
                 ? 'bg-green-600 text-white shadow-green-600/20 scale-[0.98]'
-                : 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20 active:scale-[0.98]'
+                : faltaPunto
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed border border-orange-500/30'
+                  : 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20 active:scale-[0.98]'
             }`}
           >
             {added ? (
               <>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                 ¡Añadido!
+              </>
+            ) : faltaPunto ? (
+              <>
+                <svg className="w-5 h-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z" /></svg>
+                Selecciona el punto de la carne
               </>
             ) : (
               `Añadir al carrito — ${precioTotal.toFixed(2)}€`

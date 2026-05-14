@@ -4,9 +4,10 @@ import Usuario from '@/lib/models/Usuario';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { sanitizeBody } from '@/lib/utils/sanitize';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export async function GET(request: NextRequest) {
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   // 🔐 SOLO ADMIN
@@ -28,16 +29,16 @@ export async function GET(request: NextRequest) {
       success: true,
       data: usuarios,
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   // 🔐 SOLO ADMIN CREA
@@ -59,10 +60,10 @@ export async function POST(request: NextRequest) {
       success: true,
       data: { id: usuario._id, email: usuario.email, rol: usuario.rol },
     }, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 400 });
   }
 }

@@ -93,7 +93,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const existingIndex = prev.findIndex(
           (existing) =>
             existing.productoId === item.productoId &&
-            personalizacionesMatch(existing.personalizaciones, item.personalizaciones)
+            personalizacionesMatch(existing.personalizaciones, item.personalizaciones) &&
+            (existing.notas ?? '') === (item.notas ?? '')
         );
 
         if (existingIndex >= 0) {

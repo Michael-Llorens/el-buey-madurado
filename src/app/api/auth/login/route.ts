@@ -5,6 +5,7 @@ import { generarToken } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
 
 import { checkRateLimit } from '@/lib/utils/rateLimiter';
+import { logger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generar token
-    const token = generarToken(usuario);
+    const token = await generarToken(usuario);
 
     // Actualizar último login
     usuario.ultimoLogin = new Date();
@@ -94,8 +95,8 @@ export async function POST(request: NextRequest) {
 
     return response;
 
-  } catch (error: any) {
-    console.error('Error login:', error);
+  } catch (error) {
+    logger.error('Error login:', error);
     return NextResponse.json<ApiResponse>({
       success: false,
       error: 'Error al iniciar sesión',

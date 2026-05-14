@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { getErrorMessage } from '@/lib/utils/errors';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -33,15 +35,20 @@ export default function LoginPage() {
       } else {
         setError(result.error || 'Error al iniciar sesión');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="admin-themed min-h-screen bg-gray-900 flex items-center justify-center p-4 relative">
+      {/* Toggle de tema en esquina superior derecha */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle variant="pill" />
+      </div>
+
       <div className="bg-gray-800 rounded-lg p-8 w-full max-w-md border border-gray-700">
         <h1 className="text-2xl font-bold text-amber-400 mb-6 text-center">
           🔐 Acceso Admin

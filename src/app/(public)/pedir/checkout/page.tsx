@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [step, setStep] = useState<'datos' | 'pago'>('datos');
+  const [metodoPago, setMetodoPago] = useState<'tarjeta' | 'efectivo'>('tarjeta');
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -179,6 +180,30 @@ export default function CheckoutPage() {
         body.gastoEnvio = gastoEnvio;
       }
 
+      // Bifurcación según método de pago elegido
+      if (metodoPago === 'efectivo') {
+        // 💵 Pagar al recoger / contra entrega — crear pedido directamente sin Stripe
+        body.metodoPago = 'efectivo';
+
+        const res = await fetch('/api/public/pedidos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Error al crear el pedido');
+        }
+
+        // Redirigir directamente a confirmación
+        clearCart();
+        router.push(`/pedir/confirmacion/${data.data._id}`);
+        return;
+      }
+
+      // 💳 Pago online con Stripe — flujo PaymentIntent
       const res = await fetch('/api/public/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -331,6 +356,64 @@ export default function CheckoutPage() {
                 rows={2} maxLength={500} />
             </div>
 
+            {/* Método de pago */}
+            <div>
+              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-2">Método de pago</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMetodoPago('tarjeta')}
+                  className={`relative p-4 rounded-xl text-left transition-all ${
+                    metodoPago === 'tarjeta'
+                      ? 'bg-amber-600/15 border-2 border-amber-500 shadow-lg shadow-amber-600/10'
+                      : 'bg-gray-800 border-2 border-gray-700 hover:border-gray-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">💳</span>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold text-sm ${metodoPago === 'tarjeta' ? 'text-amber-300' : 'text-gray-200'}`}>
+                        Pagar ahora
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Tarjeta, Apple Pay o Google Pay</p>
+                    </div>
+                  </div>
+                  {metodoPago === 'tarjeta' && (
+                    <div className="absolute top-2 right-2">
+                      <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    </div>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMetodoPago('efectivo')}
+                  className={`relative p-4 rounded-xl text-left transition-all ${
+                    metodoPago === 'efectivo'
+                      ? 'bg-emerald-600/15 border-2 border-emerald-500 shadow-lg shadow-emerald-600/10'
+                      : 'bg-gray-800 border-2 border-gray-700 hover:border-gray-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">💵</span>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold text-sm ${metodoPago === 'efectivo' ? 'text-emerald-300' : 'text-gray-200'}`}>
+                        {tipo === 'recoger' ? 'Pagar al recoger' : 'Pagar al recibir'}
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        {tipo === 'recoger' ? 'Efectivo o tarjeta en el local' : 'Efectivo o tarjeta al repartidor'}
+                      </p>
+                    </div>
+                  </div>
+                  {metodoPago === 'efectivo' && (
+                    <div className="absolute top-2 right-2">
+                      <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    </div>
+                  )}
+                </button>
+              </div>
+            </div>
+
             {/* Resumen del pedido */}
             <div className="bg-gray-800/80 rounded-xl border border-gray-600/50 p-5">
               <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3">Resumen del pedido</p>
@@ -368,19 +451,25 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Botón continuar al pago */}
+            {/* Botón final — texto según método elegido */}
             <button
               onClick={handleContinuarAlPago}
               disabled={loading}
-              className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 text-white rounded-xl font-bold text-lg transition active:scale-[0.98] shadow-lg shadow-green-600/20"
+              className={`w-full py-4 disabled:bg-gray-700 text-white rounded-xl font-bold text-lg transition active:scale-[0.98] shadow-lg ${
+                metodoPago === 'tarjeta'
+                  ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'
+                  : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
+              }`}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Preparando pago...
+                  {metodoPago === 'tarjeta' ? 'Preparando pago...' : 'Confirmando pedido...'}
                 </span>
-              ) : (
+              ) : metodoPago === 'tarjeta' ? (
                 `Continuar al pago — ${totalFinal.toFixed(2)}€`
+              ) : (
+                `Confirmar pedido — ${totalFinal.toFixed(2)}€`
               )}
             </button>
           </div>

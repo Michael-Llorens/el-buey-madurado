@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { usePedidos } from '@/lib/hooks/swr';
 import { IoReceiptOutline, IoFlameOutline, IoGridOutline, IoCubeOutline, IoBarChartOutline, IoPeopleOutline } from 'react-icons/io5';
 import type { IconType } from 'react-icons';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 type ModuloId = 'home' | 'stock' | 'mesas' | 'pedidos' | 'cocina' | 'reportes' | 'usuarios';
 
@@ -68,7 +69,7 @@ export default function DashboardShell({
   const moduloLabel = SIDEBAR_ITEMS.find((i) => i.id === moduloActivo)?.label ?? 'Dashboard';
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex">
+    <div className="admin-themed min-h-screen bg-gray-950 text-white flex">
       {/* ====== SIDEBAR ====== */}
 
       {/* Overlay mobile */}
@@ -89,15 +90,25 @@ export default function DashboardShell({
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        {/* Logo */}
+        {/* Logo (versión doble: oscuro Cloudinary + claro PNG local) */}
         <div className="px-5 py-4 border-b border-gray-800 flex items-center gap-3">
-          <CldImage
-            src="Logo-Buey_t9mc4b"
-            alt="El Buey Madurado"
-            width={40}
-            height={40}
-            className="object-contain shrink-0"
-          />
+          <div className="logo-wrap shrink-0 rounded-lg overflow-hidden flex items-center justify-center" style={{ width: 40, height: 40 }}>
+            <CldImage
+              src="Logo-Buey_t9mc4b"
+              alt="El Buey Madurado"
+              width={40}
+              height={40}
+              className="logo-dark object-contain"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-fondo-blanco.ico"
+              alt="El Buey Madurado"
+              width={40}
+              height={40}
+              className="logo-light object-contain"
+            />
+          </div>
           <div>
             <h1 className="text-sm font-bold text-amber-400 leading-tight">El Buey Madurado</h1>
             <p className="text-[10px] text-gray-500">Panel de gestion</p>
@@ -176,7 +187,10 @@ export default function DashboardShell({
             </svg>
           </button>
 
-          <h2 className="text-lg sm:text-xl font-semibold text-white truncate">{moduloLabel}</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-white truncate flex-1">{moduloLabel}</h2>
+
+          {/* Toggle de modo claro/oscuro */}
+          <ThemeToggle />
         </header>
 
         {/* Content */}

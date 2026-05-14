@@ -1,16 +1,15 @@
-import jwt from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
 import { IUsuario } from '@/lib/models/Usuario';
 
-function getJwtSecret(): string {
+function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new Error('JWT_SECRET no está definido en las variables de entorno. La aplicación no puede arrancar sin esta variable.');
   }
-  return secret;
+  return new TextEncoder().encode(secret);
 }
 
-const JWT_SECRET = getJwtSecret();
-const JWT_EXPIRE = '7d'; // Token válido 7 días
+const JWT_EXPIRE = '7d';
 
 export interface TokenPayload {
   userId: string;
@@ -20,41 +19,35 @@ export interface TokenPayload {
   exp?: number;
 }
 
-// ========== GENERAR TOKEN ==========
-export function generarToken(usuario: IUsuario): string {
-  const payload: TokenPayload = {
+export async function generarToken(usuario: IUsuario): Promise<string> {
+  return await new SignJWT({
     userId: usuario._id.toString(),
     email: usuario.email,
     rol: usuario.rol,
-  };
-
-  return jwt.sign(payload, JWT_SECRET, { 
-    expiresIn: JWT_EXPIRE 
-  });
+  })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRE)
+    .sign(getJwtSecret());
 }
 
-// ========== VERIFICAR TOKEN ==========
-export function verificarToken(token: string): TokenPayload | null {
+export async function verificarToken(token: string): Promise<TokenPayload | null> {
   try {
-    return jwt.verify(token, JWT_SECRET) as TokenPayload;
-  } catch (error) {
+    const { payload } = await jwtVerify(token, getJwtSecret());
+    return payload as unknown as TokenPayload;
+  } catch {
     return null;
   }
 }
 
-// ========== EXTRAER TOKEN DEL HEADER ==========
 export function extraerTokenDelHeader(authHeader: string | null): string | null {
   if (!authHeader) return null;
-  
   const partes = authHeader.split(' ');
   if (partes.length !== 2 || partes[0] !== 'Bearer') return null;
-  
   return partes[1];
 }
 
-// ========== MIDDLEWARE DE AUTENTICACIÓN ==========
-export function middlewareAutenticacion(token: string | null): TokenPayload | null {
+export async function middlewareAutenticacion(token: string | null): Promise<TokenPayload | null> {
   if (!token) return null;
-  
   return verificarToken(token);
 }

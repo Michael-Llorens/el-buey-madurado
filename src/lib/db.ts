@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from '@/lib/utils/errors';
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 
@@ -44,16 +45,16 @@ export async function connectDB() {
         return mongoose;
       })
       .catch((error) => {
-        console.error("❌ Error al conectar a MongoDB:", error.message);
+        console.error("❌ Error al conectar a MongoDB:", getErrorMessage(error));
         throw error;
       });
   }
 
   try {
     cached.conn = await cached.promise;
-  } catch (e: any) {
+  } catch (e) {
     cached.promise = null;
-    console.error("❌ Fallo en la conexión a MongoDB:", e.message);
+    console.error("❌ Fallo en la conexión a MongoDB:", getErrorMessage(e));
     throw e;
   }
 
