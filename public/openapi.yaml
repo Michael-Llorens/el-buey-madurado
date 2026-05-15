@@ -1,0 +1,974 @@
+openapi: 3.0.3
+info:
+  title: API de El Buey Madurado
+  description: |
+    API REST del sistema de gestión integral para el restaurante
+    **El Buey Madurado** (Xàtiva, Valencia).
+
+    Cubre todas las operaciones del negocio:
+    - 🌐 **Endpoints públicos** — carta, pedidos online, pagos Stripe
+    - 🔒 **Endpoints protegidos** — dashboard interno (admin, camarero, cocinero)
+
+    **Autenticación:** JWT (HS256) emitido por `/api/auth/login`.
+    El token viaja en cookie httpOnly `auth_token` o en header
+    `Authorization: Bearer <token>`. La cookie es preferida.
+
+    **Roles:** admin · camarero · cocinero. Cada endpoint sensible
+    verifica el rol mediante el helper `protegerRutaPorRol()`.
+  version: 1.0.0
+  contact:
+    name: Michael Llorens Barbera
+    url: https://github.com/Michael-Llorens
+
+license:
+    name: Académica
+servers:
+  - url: https://www.restauranteelbueymadurado.com
+    description: Producción
+  - url: http://localhost:3333
+    description: Desarrollo local (puerto 3333)
+
+tags:
+  - name: Autenticación
+    description: Login, logout, registro, sesión actual
+  - name: Productos
+    description: CRUD de productos del menú
+  - name: Ingredientes
+    description: CRUD de ingredientes con alérgenos UE
+  - name: Mesas
+    description: Gestión del mapa de mesas del restaurante
+  - name: Pedidos
+    description: Pedidos en local — toma de comanda, cocina, cobro
+  - name: Tickets cocina
+    description: Tickets independientes para cocina
+  - name: Usuarios
+    description: Gestión de cuentas del staff
+  - name: Reportes
+    description: Métricas y agregaciones del negocio
+  - name: Público
+    description: Endpoints sin autenticación — carta y pedidos online
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        data:
+          description: Payload (varía según el endpoint)
+        message:
+          type: string
+        error:
+          type: string
+
+    Usuario:
+      type: object
+      properties:
+        _id: { type: string, example: "660abc123def456789012345" }
+        email: { type: string, format: email, example: "admin@buey.es" }
+        rol: { type: string, enum: [admin, camarero, cocinero] }
+        activo: { type: boolean }
+        ultimoLogin: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+
+    Producto:
+      type: object
+      properties:
+        _id: { type: string }
+        nombre: { type: string, example: "Chuletón vaca rubia +60d" }
+        descripcion: { type: string }
+        precio: { type: number, format: float, example: 38.0 }
+        categoria: { type: string, enum: [Carnes, Hamburguesas, Entrantes, Postres, Bebidas] }
+        imagen: { type: string, format: uri }
+        ingredientes:
+          type: array
+          items:
+            type: object
+            properties:
+              ingrediente: { type: string, description: "ObjectId del Ingrediente" }
+              cantidad: { type: number }
+              unidad: { type: string }
+        ingredientesExtra:
+          type: array
+          items:
+            type: object
+            properties:
+              nombre: { type: string }
+              precio: { type: number, format: float }
+        permitirPersonalizacion: { type: boolean }
+        permitirExtras: { type: boolean }
+        permitirRemover: { type: boolean }
+        disponible: { type: boolean }
+        activo: { type: boolean }
+
+    Ingrediente:
+      type: object
+      properties:
+        _id: { type: string }
+        nombre: { type: string, example: "Carne de vaca rubia gallega LYO" }
+        categoria: { type: string, example: "Carnes" }
+        precioBase: { type: number }
+        precioExtra: { type: number }
+        inventario:
+          type: object
+          properties:
+            cantidad: { type: number }
+            unidad: { type: string }
+        alergenos:
+          type: array
+          items:
+            type: string
+            enum: [gluten, crustaceos, huevos, pescado, cacahuetes, soja, lacteos, frutos_secos, apio, mostaza, sesamo, sulfitos, altramuces, moluscos]
+        disponible: { type: boolean }
+        activo: { type: boolean }
+
+    Mesa:
+      type: object
+      properties:
+        _id: { type: string }
+        nombre: { type: string, example: "Mesa 1" }
+        capacidad: { type: integer, minimum: 1, maximum: 20 }
+        comensalesActuales: { type: integer, minimum: 0 }
+        estado: { type: string, enum: [libre, ocupada, reservada] }
+        pedidoActual: { type: string, nullable: true, description: "ObjectId del Pedido activo" }
+        activa: { type: boolean }
+
+    Pedido:
+      type: object
+      properties:
+        _id: { type: string }
+        tipo: { type: string, enum: [local, recoger, domicilio] }
+        mesa: { type: string, nullable: true }
+        direccionEntrega:
+          type: object
+          properties:
+            calle: { type: string }
+            numero: { type: string }
+            piso: { type: string }
+            ciudad: { type: string }
+            codigoPostal: { type: string }
+            telefono: { type: string }
+            notas: { type: string }
+        productos:
+          type: array
+          items:
+            type: object
+            properties:
+              producto: { type: string, description: "ObjectId del Producto" }
+              cantidad: { type: integer, minimum: 1 }
+              precioUnitario: { type: number }
+              subtotal: { type: number }
+              notas: { type: string }
+              personalizaciones:
+                type: object
+                properties:
+                  ingredientesExtra:
+                    type: array
+                    items: { type: string }
+                  ingredientesRemovidos:
+                    type: array
+                    items: { type: string }
+              estadoProducto: { type: string, enum: [pendiente, preparando, listo] }
+        subtotal: { type: number }
+        impuestos: { type: number, description: "IVA 21%" }
+        descuento: { type: number }
+        gastoEnvio: { type: number, description: "3.50 € para domicilio" }
+        total: { type: number }
+        estado:
+          type: string
+          enum: [pendiente_pago, pendiente, preparando, listo, en_camino, servido, entregado, pagado, cancelado]
+        cliente: { type: string }
+        telefono: { type: string }
+        metodoPago: { type: string, enum: [efectivo, tarjeta, mixto] }
+        notas: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+
+    LoginResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        data:
+          type: object
+          properties:
+            token: { type: string, description: "JWT (también en cookie httpOnly)" }
+            usuario:
+              type: object
+              properties:
+                id: { type: string }
+                email: { type: string }
+                rol: { type: string }
+
+    CheckoutRequest:
+      type: object
+      required: [tipo, productos, cliente, telefono]
+      properties:
+        tipo: { type: string, enum: [recoger, domicilio] }
+        productos:
+          type: array
+          items:
+            type: object
+            properties:
+              producto: { type: string }
+              cantidad: { type: integer }
+              notas: { type: string }
+              personalizaciones:
+                type: object
+                properties:
+                  ingredientesExtra: { type: array, items: { type: string } }
+                  ingredientesRemovidos: { type: array, items: { type: string } }
+        cliente: { type: string, maxLength: 100 }
+        telefono: { type: string, maxLength: 20 }
+        direccionEntrega:
+          type: object
+        notas: { type: string }
+
+    CheckoutResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        data:
+          type: object
+          properties:
+            clientSecret: { type: string, description: "Para Stripe Elements en el cliente" }
+            paymentIntentId: { type: string }
+            pedidoId: { type: string, description: "ObjectId del Pedido creado con estado pendiente_pago" }
+            total: { type: number }
+
+  responses:
+    Unauthorized:
+      description: Token ausente o inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            error: "Token no proporcionado"
+    Forbidden:
+      description: Rol insuficiente para esta operación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            error: "No tienes permisos para realizar esta acción"
+    BadRequest:
+      description: Datos de entrada inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    RateLimit:
+      description: Demasiadas peticiones desde esta IP
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            error: "Demasiados intentos. Inténtalo de nuevo en un minuto."
+
+paths:
+  # ─────────────────────────────────────────────────
+  # AUTENTICACIÓN
+  # ─────────────────────────────────────────────────
+  /api/auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Inicia sesión
+      description: |
+        Verifica credenciales. Si son válidas, devuelve un JWT en
+        body y en cookie httpOnly. Rate limit de **5 intentos/min/IP**.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401':
+          description: Credenciales incorrectas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '403':
+          description: Usuario inactivo
+        '429': { $ref: '#/components/responses/RateLimit' }
+
+  /api/auth/logout:
+    post:
+      tags: [Autenticación]
+      summary: Cierra sesión
+      description: Limpia la cookie httpOnly. Cliente debe limpiar localStorage si lo usaba.
+      responses:
+        '200':
+          description: Sesión cerrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/auth/me:
+    get:
+      tags: [Autenticación]
+      summary: Devuelve el usuario de la sesión actual
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario autenticado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        $ref: '#/components/schemas/Usuario'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/register:
+    post:
+      tags: [Autenticación]
+      summary: Crea un nuevo usuario (solo admin)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, rol]
+              properties:
+                email: { type: string }
+                password: { type: string, minLength: 6 }
+                rol: { type: string, enum: [admin, camarero, cocinero] }
+      responses:
+        '201':
+          description: Usuario creado
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409':
+          description: Email ya registrado
+
+  # ─────────────────────────────────────────────────
+  # PRODUCTOS
+  # ─────────────────────────────────────────────────
+  /api/productos:
+    get:
+      tags: [Productos]
+      summary: Lista todos los productos
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Producto'
+    post:
+      tags: [Productos]
+      summary: Crea un producto (solo admin)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Producto'
+      responses:
+        '201': { description: Producto creado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/productos/{id}:
+    get:
+      tags: [Productos]
+      summary: Detalle de un producto
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Productos]
+      summary: Actualiza un producto (admin o cocinero)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Producto'
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Productos]
+      summary: Elimina un producto (solo admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Eliminado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─────────────────────────────────────────────────
+  # PEDIDOS (dashboard interno)
+  # ─────────────────────────────────────────────────
+  /api/pedidos:
+    get:
+      tags: [Pedidos]
+      summary: Lista pedidos con filtros
+      description: |
+        Por defecto excluye los pedidos en estado `pendiente_pago`
+        (aún no confirmados por Stripe). Soporta múltiples estados
+        separados por coma: `?estado=pendiente,preparando`.
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: estado
+          in: query
+          schema: { type: string }
+          example: pendiente,preparando
+        - name: mesa
+          in: query
+          schema: { type: string }
+        - name: tipo
+          in: query
+          schema: { type: string, enum: [local, recoger, domicilio] }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Lista paginada de pedidos
+    post:
+      tags: [Pedidos]
+      summary: Crea un pedido en local (admin o camarero)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pedido'
+      responses:
+        '201': { description: Pedido creado }
+
+  /api/pedidos/{id}:
+    get:
+      tags: [Pedidos]
+      summary: Detalle de un pedido (con productos populados)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    put:
+      tags: [Pedidos]
+      summary: Actualiza un pedido (cambiar estado, productos…)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado: { type: string }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Pedidos]
+      summary: Cancela un pedido (solo admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Cancelado }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/pedidos/abrir:
+    post:
+      tags: [Pedidos]
+      summary: Abre un pedido nuevo asociado a una mesa
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mesaId]
+              properties:
+                mesaId: { type: string }
+      responses:
+        '200':
+          description: Pedido abierto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      pedidoId: { type: string }
+                      created: { type: boolean }
+
+  /api/pedidos/{id}/cobrar:
+    put:
+      tags: [Pedidos]
+      summary: Cobra un pedido y libera la mesa
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [metodoPago]
+              properties:
+                metodoPago: { type: string, enum: [efectivo, tarjeta, mixto] }
+                importeRecibido: { type: number, description: "Para calcular cambio si efectivo" }
+      responses:
+        '200':
+          description: Cobrado correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      pedido: { $ref: '#/components/schemas/Pedido' }
+                      cambio: { type: number }
+
+  # ─────────────────────────────────────────────────
+  # MESAS
+  # ─────────────────────────────────────────────────
+  /api/mesas:
+    get:
+      tags: [Mesas]
+      summary: Lista todas las mesas
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de mesas
+    post:
+      tags: [Mesas]
+      summary: Crea una mesa (solo admin)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mesa'
+      responses:
+        '201': { description: Creada }
+
+  /api/mesas/{id}:
+    put:
+      tags: [Mesas]
+      summary: Actualiza una mesa (admin o camarero)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Mesa'
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Mesas]
+      summary: Elimina una mesa (solo admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Eliminada }
+
+  /api/mesas/seed:
+    post:
+      tags: [Mesas]
+      summary: Crea 15 mesas iniciales (idempotente)
+      security:
+        - cookieAuth: []
+      responses:
+        '201': { description: Mesas creadas }
+        '400': { description: Ya existen mesas }
+
+  # ─────────────────────────────────────────────────
+  # INGREDIENTES
+  # ─────────────────────────────────────────────────
+  /api/ingredientes:
+    get:
+      tags: [Ingredientes]
+      summary: Lista todos los ingredientes
+      security:
+        - cookieAuth: []
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Ingredientes]
+      summary: Crea ingrediente (admin o cocinero)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ingrediente'
+      responses:
+        '201': { description: Creado }
+
+  /api/ingredientes/{id}:
+    get:
+      tags: [Ingredientes]
+      summary: Detalle de un ingrediente
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    put:
+      tags: [Ingredientes]
+      summary: Edita ingrediente (admin o cocinero)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Ingredientes]
+      summary: Elimina ingrediente (solo admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Eliminado }
+
+  # ─────────────────────────────────────────────────
+  # USUARIOS
+  # ─────────────────────────────────────────────────
+  /api/usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Lista usuarios (solo admin)
+      security:
+        - cookieAuth: []
+      responses:
+        '200': { description: OK }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Usuarios]
+      summary: Crea usuario (solo admin)
+      security:
+        - cookieAuth: []
+      responses:
+        '201': { description: Creado }
+
+  /api/usuarios/{id}:
+    get:
+      tags: [Usuarios]
+      summary: Detalle de usuario (solo admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    put:
+      tags: [Usuarios]
+      summary: Edita usuario (solo admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Usuarios]
+      summary: Elimina usuario (solo admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Eliminado }
+
+  # ─────────────────────────────────────────────────
+  # REPORTES
+  # ─────────────────────────────────────────────────
+  /api/reportes:
+    get:
+      tags: [Reportes]
+      summary: Métricas y agregaciones del negocio (solo admin)
+      description: |
+        Devuelve resumen general, productos top, evolución mensual,
+        pedidos por hora, ticket medio y distribución por método de pago.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Datos agregados
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─────────────────────────────────────────────────
+  # TICKETS COCINA
+  # ─────────────────────────────────────────────────
+  /api/tickets-cocina:
+    get:
+      tags: [Tickets cocina]
+      summary: Lista tickets de cocina (admin o cocinero)
+      security:
+        - cookieAuth: []
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Tickets cocina]
+      summary: Crea un ticket (admin o camarero)
+      security:
+        - cookieAuth: []
+      responses:
+        '201': { description: Creado }
+
+  /api/tickets-cocina/{id}:
+    put:
+      tags: [Tickets cocina]
+      summary: Actualiza ticket (admin o cocinero)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  # ─────────────────────────────────────────────────
+  # PÚBLICO (sin auth)
+  # ─────────────────────────────────────────────────
+  /api/public/productos:
+    get:
+      tags: [Público]
+      summary: Carta pública (sin autenticación)
+      responses:
+        '200':
+          description: Lista de productos disponibles
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Producto'
+
+  /api/public/pedidos:
+    post:
+      tags: [Público]
+      summary: Crea pedido público SIN pago (pagar al recoger/recibir)
+      description: |
+        Para pedidos de tipo `recoger` o `domicilio` que el cliente
+        pagará en efectivo o tarjeta al recoger/recibir. **No requiere Stripe**.
+        Rate limit: 10 peticiones/15 min/IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '201': { description: Pedido creado en estado pendiente }
+        '429': { $ref: '#/components/responses/RateLimit' }
+
+  /api/public/pedidos/{id}:
+    get:
+      tags: [Público]
+      summary: Estado del pedido para seguimiento en tiempo real
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Estado actual del pedido
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/public/checkout:
+    post:
+      tags: [Público]
+      summary: Crea Stripe PaymentIntent + Pedido pendiente_pago
+      description: |
+        **Flujo de pago online:**
+        1. Crea Pedido en MongoDB con `estado='pendiente_pago'`.
+        2. Crea PaymentIntent en Stripe con metadata `{ pedidoId }`.
+        3. Devuelve `clientSecret` para que el cliente confirme con Stripe Elements.
+        4. Cuando el pago se confirma, el cliente llama a `/api/public/checkout/confirm`.
+
+        Rate limit: 10 peticiones/15 min/IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequest'
+      responses:
+        '200':
+          description: PaymentIntent creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+        '429': { $ref: '#/components/responses/RateLimit' }
+
+  /api/public/checkout/confirm:
+    post:
+      tags: [Público]
+      summary: Confirma pago Stripe y activa el pedido
+      description: |
+        Verifica con Stripe que el pago se completó (`status === 'succeeded'`).
+        Si sí, cambia el estado del pedido de `pendiente_pago` → `pendiente`.
+        Idempotente: si el pedido ya está activo, devuelve los datos sin volver a transicionar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentIntentId]
+              properties:
+                paymentIntentId: { type: string }
+      responses:
+        '200':
+          description: Pedido activado
+        '400':
+          description: Pago no completado o pedidoId inválido
+        '404': { $ref: '#/components/responses/NotFound' }
