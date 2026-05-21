@@ -61,7 +61,10 @@ export default function HeroSectionHome() {
   }, { scope: heroRef });
 
   return (
-    <section ref={heroRef} className="relative w-full flex items-center justify-start overflow-hidden h-[calc(100vh-64px)] min-h-[500px]">
+    <section
+      ref={heroRef}
+      className="relative w-full max-w-[100vw] flex items-center justify-start overflow-hidden h-[calc(100vh-64px)] min-h-[500px]"
+    >
       {/* Video de fondo */}
       <div className="hero-video absolute top-0 left-0 w-full h-full z-0">
         <video
@@ -78,12 +81,11 @@ export default function HeroSectionHome() {
       </div>
 
       {/* Contenido */}
-      <div className="hero-content relative z-10 w-full flex flex-col justify-between md:justify-start items-start space-y-0 md:space-y-6 max-w-xl px-4 md:px-0 md:pl-20 h-full py-6 md:py-8">
-        <div className="space-y-3 md:space-y-6 pt-6 md:pt-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-            <span className="hero-title-line inline-block">No hablamos de <br />comida rápida</span>
-            <br />
-            <span className="hero-title-line inline-block text-amber-500">…hablamos de <br />alta cocina</span>
+      <div className="hero-content relative z-10 w-full flex flex-col justify-between md:justify-start items-start space-y-0 md:space-y-6 max-w-xl px-5 md:px-0 md:pl-20 h-full py-6 md:py-8">
+        <div className="space-y-3 md:space-y-6 pt-6 md:pt-12 w-full">
+          <h1 className="text-[1.6rem] xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-[1.15] tracking-tight break-words [text-wrap:balance]">
+            <span className="hero-title-line block">No hablamos de comida rápida</span>
+            <span className="hero-title-line block text-amber-500">…hablamos de alta cocina</span>
           </h1>
 
           <p className="hero-subtitle text-sm sm:text-base md:text-lg text-gray-200 max-w-md md:hidden">
@@ -95,7 +97,7 @@ export default function HeroSectionHome() {
           Carne madurada, ingredientes locales y un sabor que trasciende.
         </p>
 
-        <div className="hero-cta flex gap-3 md:gap-4 pb-6 md:pb-8 -translate-y-4">
+        <div className="hero-cta flex gap-3 md:gap-4 pb-20 md:pb-8 md:-translate-y-4">
           <Link href="/carta">
             <Button
               variant="secondary"
