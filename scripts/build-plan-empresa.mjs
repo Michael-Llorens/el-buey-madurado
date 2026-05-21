@@ -1,15 +1,10 @@
-// Genera docs/memoria.html con formato oficial PI (Arial 10, interlineado 1.15,
+// Genera docs/plan-empresa.html con formato oficial PI (Arial 10, interlineado 1.15,
 // encabezado/pie en cada página, índice clickable).
 //
 // Uso:
-//   node scripts/build-memoria.mjs
+//   node scripts/build-plan-empresa.mjs
 //
-// Luego: abrir docs/memoria.html en Chrome → Ctrl+P → "Guardar como PDF"
-//   - Diseño: Vertical
-//   - Tamaño: A4
-//   - Márgenes: Predeterminados
-//   - Activar "Encabezados y pies de página"
-//   - Activar "Gráficos de fondo"
+// Luego: abrir docs/plan-empresa.html en Chrome → Ctrl+P → "Guardar como PDF"
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { marked } from 'marked';
@@ -19,16 +14,13 @@ import { dirname, join } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 
-// Leer la memoria unificada
-const memoriaMd = readFileSync(join(root, 'docs', 'MEMORIA.md'), 'utf8');
+const planMd = readFileSync(join(root, 'docs', 'PLAN_EMPRESA.md'), 'utf8');
 
-// Configurar marked para generar IDs en encabezados (necesario para que
-// el índice pueda mostrar números de página vía CSS target-counter)
 function slugify(text) {
   return text
     .toString()
     .toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '') // quita acentos
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-')
@@ -48,25 +40,20 @@ marked.use({
   },
 });
 
-const html = marked.parse(memoriaMd);
+const html = marked.parse(planMd);
 
 const fullHtml = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Memoria — El Buey Madurado · Proyecto Integrado 2º DAW</title>
+  <title>Plan de Empresa — El Buey Madurado · Proyecto Integrado 2º DAW</title>
   <style>
-    /* ============================================================
-       CSS para impresión a PDF — formato oficial del PI
-       Font: Arial 10pt · Interlineado: 1.15 · Márgenes: estándares
-       ============================================================ */
     @page {
       size: A4;
-      /* Márgenes reducidos para mantenernos dentro del límite de 60 pp del PI */
       margin: 1.5cm 1.8cm 2cm 1.8cm;
 
       @top-center {
-        content: "El Buey Madurado — Memoria PI · 2º DAW";
+        content: "El Buey Madurado — Plan de Empresa · 2º DAW";
         font-family: Arial, sans-serif;
         font-size: 9pt;
         color: #666;
@@ -85,25 +72,21 @@ const fullHtml = `<!DOCTYPE html>
       }
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: Arial, Helvetica, sans-serif;
       font-size: 10pt;
-      line-height: 1.15;       /* Interlineado recomendado por las Instruccions del PI */
+      line-height: 1.15;
       color: #1a1a1a;
       max-width: 100%;
       margin: 0;
       padding: 0;
     }
 
-    /* Tablas: espaciado interno reducido para optimizar páginas */
     table { font-size: 9pt; }
     th, td { padding: 5pt 8pt; }
 
-    /* Encabezados — espaciado generoso + línea decorativa antes del H1 */
     h1 {
       font-size: 16pt;
       color: #8b4513;
@@ -116,11 +99,29 @@ const fullHtml = `<!DOCTYPE html>
       page-break-before: always;
       page-break-after: avoid;
     }
-    h1:first-of-type {
+    /* Portada: los dos primeros h1 ("PLAN DE EMPRESA" + "El Buey Madurado")
+       comparten página y no fuerzan salto. El primer salto aparece con la
+       sección "1. Resumen Ejecutivo". */
+    h1:nth-of-type(-n+2) {
       page-break-before: avoid;
       border-top: none;
       padding-top: 0;
       margin-top: 0;
+    }
+    /* Portada premium: títulos más grandes y con presencia */
+    div[align="center"] > h1:first-of-type {
+      font-size: 28pt;
+      letter-spacing: 1pt;
+      margin-top: 0;
+      border-top: none;
+    }
+    div[align="center"] > h1:nth-of-type(2) {
+      font-size: 20pt;
+      color: #8b4513;
+      margin-top: 6pt;
+      margin-bottom: 8pt;
+      border-bottom: none;
+      padding-bottom: 0;
     }
 
     h2 {
@@ -154,16 +155,12 @@ const fullHtml = `<!DOCTYPE html>
       widows: 3;
     }
 
-    /* Listas — espaciado compacto */
     ul, ol {
       margin: 4pt 0;
       padding-left: 18pt;
     }
-    li {
-      margin-bottom: 1.5pt;
-    }
+    li { margin-bottom: 1.5pt; }
 
-    /* Citas */
     blockquote {
       margin: 8pt 0;
       padding: 6pt 12pt;
@@ -174,7 +171,6 @@ const fullHtml = `<!DOCTYPE html>
       page-break-inside: avoid;
     }
 
-    /* Tablas */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -189,7 +185,7 @@ const fullHtml = `<!DOCTYPE html>
       text-align: left;
     }
     th {
-      background: #f4e1c1; /* fallback para entornos sin gradiente */
+      background: #f4e1c1; /* fallback */
       background-image: linear-gradient(180deg, #f4e1c1 0%, #e8c993 100%);
       font-weight: bold;
       color: #5a3e1b;
@@ -207,7 +203,27 @@ const fullHtml = `<!DOCTYPE html>
       font-weight: 500;
     }
 
-    /* Código */
+    /* Tagline premium para la portada */
+    .tagline {
+      font-size: 13pt;
+      font-style: italic;
+      color: #8b4513;
+      background: #fef3e2;
+      border-top: 2pt solid #d97706;
+      border-bottom: 2pt solid #d97706;
+      padding: 10pt 16pt;
+      margin: 20pt auto;
+      max-width: 80%;
+      text-align: center;
+      font-weight: 500;
+      letter-spacing: 0.3pt;
+    }
+
+    /* Espacio adicional para la tabla de datos de la portada */
+    div[align="center"] > table {
+      margin-top: 20pt;
+    }
+
     code {
       font-family: 'Consolas', 'Courier New', monospace;
       font-size: 9pt;
@@ -233,23 +249,15 @@ const fullHtml = `<!DOCTYPE html>
       color: #1a1a1a;
     }
 
-    /* Enlaces */
-    a {
-      color: #b45309;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
+    a { color: #b45309; text-decoration: none; }
+    a:hover { text-decoration: underline; }
 
-    /* Separadores horizontales */
     hr {
       border: none;
       border-top: 1pt solid #d97706;
       margin: 8pt 0;
     }
 
-    /* Imágenes: limitadas al 42% del ancho y 5.5cm de alto para optimizar páginas */
     img {
       max-width: 42%;
       max-height: 5.5cm;
@@ -269,46 +277,49 @@ const fullHtml = `<!DOCTYPE html>
       margin: 12pt auto;
     }
 
-    /* ════════════════════════════════════════════════════════════
-       ÍNDICE — con números de página automáticos
-       Usa target-counter() (CSS Paged Media, soportado por Chrome).
-       El <h1>Índice</h1> + el <ol> siguiente reciben tratamiento especial.
-       ═══════════════════════════════════════════════════════════ */
-    h1#índice + ol,
-    h1#indice + ol {
+    /* Portada centrada (PLAN_EMPRESA.md usa <div align="center"> al inicio) */
+    div[align="center"] {
+      text-align: center;
+    }
+    div[align="center"] table {
+      margin: 8pt auto;
+      max-width: 80%;
+    }
+    div[align="center"] table th,
+    div[align="center"] table td {
+      text-align: left;
+    }
+
+    /* Índice — números de página automáticos */
+    h2#indice + ol,
+    h2#índice + ol {
       list-style: none;
       counter-reset: toc-item;
       padding-left: 0;
       column-count: 1;
     }
-    h1#índice + ol li,
-    h1#indice + ol li {
+    h2#indice + ol li,
+    h2#índice + ol li {
       counter-increment: toc-item;
       margin: 4pt 0;
       padding-left: 0;
       font-size: 10.5pt;
     }
-    h1#índice + ol li a,
-    h1#indice + ol li a {
+    h2#indice + ol li a,
+    h2#índice + ol li a {
       text-decoration: none;
       color: #1a1a1a;
       display: inline-flex;
       width: 100%;
       align-items: baseline;
     }
-    /* Pone el número de página justo después del título del capítulo */
-    h1#índice + ol li a::after {
-      content: leader('.') ' ' target-counter(attr(href), page);
-      font-variant-numeric: tabular-nums;
-      color: #555;
-    }
-    h1#indice + ol li a::after {
+    h2#indice + ol li a::after,
+    h2#índice + ol li a::after {
       content: leader('.') ' ' target-counter(attr(href), page);
       font-variant-numeric: tabular-nums;
       color: #555;
     }
 
-    /* Pie de figura justo después de la imagen */
     p > em:only-child,
     p em:first-child {
       display: block;
@@ -319,33 +330,13 @@ const fullHtml = `<!DOCTYPE html>
       margin-bottom: 12pt;
     }
 
-    /* Énfasis */
-    strong {
-      color: #1a1a1a;
-      font-weight: bold;
-    }
-    em {
-      font-style: italic;
-    }
+    strong { color: #1a1a1a; font-weight: bold; }
+    em { font-style: italic; }
 
-    /* Portada */
-    .portada {
-      text-align: center;
-      padding-top: 60pt;
-      page-break-after: always;
-    }
-
-    /* Pequeños ajustes finales */
-    table p {
-      margin: 0;
-    }
+    table p { margin: 0; }
 
     /* ════════════════════════════════════════════════════════════
        CALLOUTS — bloques destacados para resaltar mensajes clave.
-       Tres variantes según el tipo de información:
-         .callout-dato        → cifra o métrica relevante (ámbar)
-         .callout-decision    → decisión técnica argumentada (gris/marrón)
-         .callout-limitacion  → limitación reconocida con honestidad (naranja)
        ═══════════════════════════════════════════════════════════ */
     .callout-dato,
     .callout-decision,
@@ -389,7 +380,6 @@ const fullHtml = `<!DOCTYPE html>
     }
     .callout-limitacion strong { color: #c2410c; }
 
-    /* Modo pantalla — vista previa antes de imprimir */
     @media screen {
       body {
         max-width: 21cm;
@@ -406,28 +396,23 @@ ${html}
 </body>
 </html>`;
 
-const outPath = join(root, 'docs', 'memoria.html');
+const outPath = join(root, 'docs', 'plan-empresa.html');
 writeFileSync(outPath, fullHtml, 'utf8');
 
 const sizeKb = Math.round(Buffer.byteLength(fullHtml, 'utf8') / 1024);
-const lineas = memoriaMd.split('\n').length;
-const palabras = memoriaMd.split(/\s+/).length;
-const paginasEstimadas = Math.ceil(palabras / 450); // ~450 palabras/pp en Arial 10 + 1.15
+const lineas = planMd.split('\n').length;
+const palabras = planMd.split(/\s+/).length;
+const paginasEstimadas = Math.ceil(palabras / 450);
 
 console.log('');
-console.log('✅ Memoria generada correctamente');
+console.log('✅ Plan de Empresa generado correctamente');
 console.log('────────────────────────────────');
-console.log(`📄 Archivo:           docs/memoria.html (${sizeKb} KB)`);
+console.log(`📄 Archivo:           docs/plan-empresa.html (${sizeKb} KB)`);
 console.log(`📊 Líneas Markdown:   ${lineas}`);
 console.log(`📊 Palabras:          ${palabras}`);
-console.log(`📊 Páginas estimadas: ~${paginasEstimadas} (límite oficial: 60)`);
+console.log(`📊 Páginas estimadas: ~${paginasEstimadas}`);
 console.log('');
 console.log('🖨️  Próximos pasos para generar el PDF:');
-console.log('   1. Abre docs/memoria.html en Chrome');
-console.log('   2. Ctrl+P (o Cmd+P en Mac)');
-console.log('   3. Destino: "Guardar como PDF"');
-console.log('   4. Más opciones:');
-console.log('      ✔ Encabezados y pies de página');
-console.log('      ✔ Gráficos de fondo');
-console.log('   5. Guardar en docs/Memoria-ElBueyMadurado.pdf');
+console.log('   npm run plan:pdf');
+console.log('   o bien abrir docs/plan-empresa.html en Chrome → Ctrl+P → "Guardar como PDF"');
 console.log('');
