@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { authApi } from '@/lib/apiClient';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export interface AuthUser {
   id: string;
@@ -52,12 +53,12 @@ export function useAuth() {
         localStorage.setItem('authToken', res.data.token);
         setToken(res.data.token);
         setUsuario(res.data.usuario);
-        return { success: true };
+        return { success: true, usuario: res.data.usuario };
       }
 
       return { success: false, error: res.error };
-    } catch (error: any) {
-      return { success: false, error: error.message };
+    } catch (error) {
+      return { success: false, error: getErrorMessage(error) };
     }
   };
 

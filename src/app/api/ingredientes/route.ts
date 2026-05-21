@@ -4,6 +4,8 @@ import Ingrediente from '@/lib/models/Ingrediente';
 import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { sanitizeBody } from '@/lib/utils/sanitize';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 // GET /api/ingredientes  -> lista
 export async function GET(request: NextRequest) {
@@ -19,10 +21,10 @@ export async function GET(request: NextRequest) {
       success: true,
       data: ingredientes,
     });
-  } catch (error: any) {
-    console.error('❌ Error en GET /api/ingredientes:', error);
+  } catch (error) {
+    logger.error('❌ Error en GET /api/ingredientes:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -50,10 +52,10 @@ export async function POST(request: NextRequest) {
       { success: true, data: ingredienteCreado },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('❌ Error en POST /api/ingredientes:', error);
+  } catch (error) {
+    logger.error('❌ Error en POST /api/ingredientes:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 400 }
     );
   }

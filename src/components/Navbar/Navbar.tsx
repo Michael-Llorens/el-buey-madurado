@@ -2,13 +2,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import Logo from './Logo';
 import NavLink from './NavLink';
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  void pathname;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -45,15 +49,22 @@ export default function Navbar() {
           <NavLink href="/contacto">Contacto</NavLink>
         </ul>
 
-        {/* Botón hamburguesa móvil */}
-        <div className="md:hidden">
-          <button
-            className="text-white hover:text-amber-500 transition-colors duration-200 text-4xl md:text-5xl p-4"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <span className="text-amber-500">✕</span> : '☰'}
-          </button>
+        {/* Pedir Online - Derecha */}
+        <div className="flex items-center gap-2">
+          <Link href="/pedir" className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-[#1a1410] rounded-full text-sm font-semibold shadow-lg transition-all duration-300 hover:scale-105 active:scale-95">
+            🛒 Pedir Online
+          </Link>
+
+          {/* Botón hamburguesa móvil */}
+          <div className="md:hidden">
+            <button
+              className="text-white hover:text-amber-500 transition-colors duration-200 text-4xl md:text-5xl p-4"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <span className="text-amber-500">✕</span> : '☰'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -69,6 +80,9 @@ export default function Navbar() {
         <ul className="flex flex-col items-start p-6 space-y-4" onClick={() => setMenuOpen(false)}>
           <NavLink href="/">Home</NavLink>
           <NavLink href="/carta">Carta</NavLink>
+          <Link href="/pedir" className="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-base font-bold transition">
+            Pedir Online
+          </Link>
           <NavLink href="/reservas">Reservar</NavLink>
           <NavLink href="/sobre-nosotros">Sobre Nosotros</NavLink>
           <NavLink href="/contacto">Contacto</NavLink>

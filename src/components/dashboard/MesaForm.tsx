@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 interface MesaFormData {
   nombre: string; 
@@ -125,9 +126,9 @@ export default function MesaForm({ mesa, onGuardar, onCancelar }: MesaFormProps)
 
       toast.success(mesa && mesa._id ? 'Mesa actualizada exitosamente' : 'Mesa creada exitosamente');
       onGuardar();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al guardar:', err);
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

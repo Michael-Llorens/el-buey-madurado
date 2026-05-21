@@ -1,9 +1,19 @@
 'use client';
 
+const CATEGORIA_ICON: Record<string, string> = {
+  Entrantes: '🍽️',
+  Hamburguesas: '🍔',
+  Carnes: '🥩',
+  Postres: '🍰',
+  Bebidas: '🥤',
+};
+
 interface Producto {
   _id: string;
   nombre: string;
   precio: number;
+  categoria?: string;
+  disponible?: boolean;
   stock: number;
   descripcion: string;
   imagen?: string;
@@ -49,24 +59,23 @@ export default function ProductCardGrid({
 
           {/* Contenido */}
           <div className="p-4">
-            <h3 className="text-lg font-bold text-white mb-2">{producto.nombre}</h3>
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-lg font-bold text-white truncate flex-1 min-w-0">{producto.nombre}</h3>
+              {producto.disponible === false && (
+                <span className="text-xs bg-red-600/20 text-red-400 px-2 py-0.5 rounded-full font-semibold shrink-0 ml-2">No disponible</span>
+              )}
+            </div>
 
-            <p className="text-gray-400 text-sm mb-3">{producto.descripcion || 'Sin descripción'}</p>
+            <p className="text-gray-400 text-sm flex items-center gap-1 mb-2">
+              <span>{CATEGORIA_ICON[producto.categoria ?? ''] ?? '📦'}</span>
+              {producto.categoria ?? 'Sin categoría'}
+            </p>
 
-            {/* Precio y Stock */}
+            <p className="text-gray-500 text-xs mb-3 line-clamp-2">{producto.descripcion || 'Sin descripción'}</p>
+
+            {/* Precio */}
             <div className="flex justify-between items-center mb-4">
-              <span className="text-amber-400 font-bold">${producto.precio.toFixed(2)}</span>
-              <span
-                className={`px-2 py-1 rounded text-sm font-semibold ${
-                  producto.stock > 10
-                    ? 'bg-green-600 text-white'
-                    : producto.stock > 0
-                    ? 'bg-yellow-600 text-white'
-                    : 'bg-red-600 text-white'
-                }`}
-              >
-                {producto.stock} u.
-              </span>
+              <span className="text-amber-400 font-bold text-lg">{producto.precio.toFixed(2)}€</span>
             </div>
 
             {/* Botones */}

@@ -1,0 +1,150 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": {
+    "started": "2026-03-25T09:00:00.000Z",
+    "last_updated": "2026-03-30T12:00:00.000Z"
+  },
+  "mode": "deep_scan",
+  "scan_level": "deep",
+  "project_root": "c:/Users/micha/Desktop/2º DAW/PI/el-buey-madurado",
+  "project_knowledge": "docs",
+  "project_types": [
+    {
+      "part_id": "root",
+      "project_type_id": "web",
+      "display_name": "Web Application (Next.js Full-Stack)"
+    }
+  ],
+  "scan_history": [
+    {
+      "date": "2026-03-25",
+      "type": "initial_scan",
+      "level": "quick",
+      "summary": "Escaneo inicial: 19 endpoints, 6 modelos, 20+ componentes"
+    },
+    {
+      "date": "2026-03-30",
+      "type": "deep_scan",
+      "level": "deep",
+      "summary": "Escaneo profundo: 41 endpoints, 6 modelos, ~59 componentes. Nuevos: sistema pedidos online, endpoints publicos, CartContext, WhatsApp, filtros stock, refresh 5s"
+    }
+  ],
+  "completed_steps": [
+    {"step": "step_1", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Escaneo completo de toda la estructura del proyecto"},
+    {"step": "step_2", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Lectura de todos los modelos Mongoose (6), API routes (17 archivos), componentes clave"},
+    {"step": "step_3", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: project-overview.md"},
+    {"step": "step_4", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: architecture.md"},
+    {"step": "step_5", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: data-models.md"},
+    {"step": "step_6", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: api-contracts.md (41 endpoints)"},
+    {"step": "step_7", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: component-inventory.md (~59 componentes)"},
+    {"step": "step_8", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: source-tree-analysis.md"},
+    {"step": "step_9", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "Documentacion actualizada: index.md (indice maestro)"},
+    {"step": "step_10", "status": "completed", "timestamp": "2026-03-30T12:00:00.000Z", "summary": "project-scan-report.json actualizado"}
+  ],
+  "current_step": "completed",
+  "findings": {
+    "project_classification": "Monolith web application - Next.js full-stack",
+    "technology_stack": {
+      "framework": "Next.js ^16.0.7",
+      "ui": "React ^19.2.3",
+      "language": "TypeScript ^5.9.3",
+      "styles": "Tailwind CSS ^3.4.18",
+      "database": "MongoDB 7 + Mongoose ^9.1.5",
+      "data_fetching": "SWR ^2.4.1",
+      "auth": "JWT (jose + jsonwebtoken) + bcryptjs",
+      "animations": "Framer Motion ^12.23.25",
+      "images": "Cloudinary (next-cloudinary ^6.17.5)",
+      "notifications": "Sonner ^2.0.7",
+      "pdf": "jsPDF + html2canvas",
+      "analytics": "Vercel Analytics ^1.6.1",
+      "testing": "Vitest ^4.1.0 + Playwright ^1.58.2"
+    },
+    "api_endpoints": {
+      "total": 41,
+      "groups": {
+        "auth": 4,
+        "productos": 7,
+        "ingredientes": 5,
+        "mesas": 5,
+        "pedidos": 7,
+        "public": 3,
+        "tickets_cocina": 4,
+        "usuarios": 5,
+        "reportes": 1
+      }
+    },
+    "data_models": {
+      "total": 6,
+      "models": ["Usuario", "Producto", "Pedido", "Mesa", "Ingrediente", "TicketCocina"],
+      "indices": 11
+    },
+    "ui_components": {
+      "total": 59,
+      "dashboard": 22,
+      "public_ordering": 4,
+      "home": 4,
+      "navbar": 3,
+      "footer": 6,
+      "sobre_nosotros": 6,
+      "reservas": 1,
+      "ui_reusable": 5,
+      "protection": 1,
+      "layouts": 3,
+      "hooks_dashboard": 4,
+      "hooks_swr": 7,
+      "hooks_global": 1,
+      "contexts": 1
+    },
+    "pages": {
+      "public": 10,
+      "dashboard": 7,
+      "login": 1,
+      "total": 18
+    },
+    "seed_data": {
+      "ingredientes": 68,
+      "productos": 64,
+      "mesas": 15,
+      "alergenos_ue": 14
+    },
+    "swr_refresh_intervals": {
+      "dashboard_hooks": "5s (ingredientes, productos, mesas, pedidos, reportes)",
+      "public_productos": "60s",
+      "usuarios": "sin refresh"
+    },
+    "security": {
+      "auth": "JWT (cookie httpOnly + localStorage)",
+      "middleware": "Edge Runtime (jose) en /dashboard/*",
+      "api_protection": "protegerRuta + verificarRol",
+      "rate_limiting": "Login (5/min), Register (5/min), Public orders (10/15min)",
+      "sanitization": "sanitizeBody en todas las API routes",
+      "id_validation": "validarObjectId en todas las rutas con [id]"
+    },
+    "changes_since_last_scan": [
+      "Sistema completo de pedidos online (/pedir con 5 paginas)",
+      "3 endpoints publicos sin autenticacion (/api/public/*)",
+      "CartContext con persistencia localStorage y personalizaciones",
+      "4 componentes public/ (ProductoCard, PersonalizarModal, CartDrawer, CartSummaryBar)",
+      "Boton WhatsApp en PedidoCard para pedidos listos",
+      "PedidoCard compacto con 2 filas de acciones e indicador de urgencia",
+      "Filtrado por turno actual/historial en panel de pedidos",
+      "StockPanel con filtros por categoria, busqueda y disponibilidad",
+      "Refresh automatico 5s en todos los hooks SWR del dashboard",
+      "Rate limiting por IP en endpoint publico de pedidos",
+      "68 ingredientes + 64 productos seeded del menu real",
+      "CobrarModal para proceso de cobro con calculo de cambio",
+      "Responsive audit en todas las paginas"
+    ]
+  },
+  "outputs_generated": [
+    "project-scan-report.json",
+    "project-overview.md",
+    "architecture.md",
+    "source-tree-analysis.md",
+    "api-contracts.md",
+    "data-models.md",
+    "component-inventory.md",
+    "index.md"
+  ],
+  "resume_instructions": "Deep scan completado el 2026-03-30. Todas las 8 documentaciones actualizadas."
+}

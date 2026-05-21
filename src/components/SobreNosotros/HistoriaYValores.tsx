@@ -1,36 +1,88 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
 import { FaStar } from 'react-icons/fa';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
+
+function AnimatedNumber({ value, suffix = '', decimals = 0 }: { value: number; suffix?: string; decimals?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [displayed, setDisplayed] = useState('0');
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (!ref.current || hasAnimated.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasAnimated.current) {
+        hasAnimated.current = true;
+        const duration = 1500;
+        const start = performance.now();
+        const animate = (now: number) => {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = eased * value;
+          setDisplayed(decimals > 0 ? current.toFixed(decimals) : Math.floor(current).toString());
+          if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+        observer.disconnect();
+      }
+    }, { threshold: 0.5 });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [value, decimals]);
+
+  return <span ref={ref}>{displayed}{suffix}</span>;
+}
 
 export default function HistoriaYValores() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    if (!sectionRef.current) return;
+    const root = sectionRef.current;
+
+    const animateOnScroll = (
+      selector: string,
+      vars: gsap.TweenVars,
+      triggerStart = 'top 85%'
+    ) => {
+      const el = root.querySelector(selector);
+      if (!el) return;
+      gsap.from(el, {
+        ...vars,
+        scrollTrigger: { trigger: el, start: triggerStart, toggleActions: 'play none none none' },
+      });
+    };
+
+    animateOnScroll('[data-anim="header"]', { opacity: 0, y: 30, duration: 0.8, ease: 'power2.out' });
+    animateOnScroll('[data-anim="text"]', { opacity: 0, x: -50, duration: 0.8, ease: 'power2.out' });
+    animateOnScroll('[data-anim="values"]', { opacity: 0, x: 50, duration: 0.8, ease: 'power2.out' });
+    animateOnScroll('[data-anim="philosophy"]', { opacity: 0, y: 30, duration: 0.8, ease: 'power2.out' });
+    animateOnScroll('[data-anim="stats"]', { opacity: 0, y: 30, duration: 0.8, delay: 0.2, ease: 'power2.out' });
+  }, { scope: sectionRef });
+
   return (
-    <section className="py-20 bg-black">
+    <section ref={sectionRef} className="py-20 bg-black">
       <div className="max-w-5xl mx-auto px-6">
         {/* Encabezado */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
+        <div data-anim="header" className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-heading text-white uppercase tracking-wide mb-6">
             Nuestra Historia
           </h2>
           <p className="text-amber-400 text-lg font-semibold">
             Tradición, pasión y excelencia en cada corte
           </p>
-        </motion.div>
+        </div>
 
         {/* Contenido principal */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           {/* Texto */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-6"
-          >
+          <div data-anim="text" className="space-y-6">
             <p className="text-white/90 text-lg leading-relaxed">
               <span className="text-amber-400 font-bold text-2xl">El Buey Madurado</span> nace de la pasión por la<span className="text-amber-400"> carne de calidad</span>. <br />En Xátiva, Valencia, decidimos crear un espacio donde la tradición gastronómica se encuentra con la excelencia.
             </p>
@@ -40,27 +92,22 @@ export default function HistoriaYValores() {
             </p>
 
             <p className="text-white/90 text-lg leading-relaxed">
-              <span className="text-amber-400">Si hay una frase que nos define es:</span>{" "}
-              <span className="italic">< br/>“Cuñao, prueba esto que vas a flipar”.</span>
+              <span className="text-amber-400">Si hay una frase que nos define es:</span>{' '}
+              <span className="italic"><br />“Cuñao, prueba esto que vas a flipar”.</span>
             </p>
-          </motion.div>
+          </div>
 
           {/* Valores */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-6"
-          >
+          <div data-anim="values" className="space-y-6">
             {/* Valor 1 */}
             <div className="bg-white/5 border border-amber-400/30 rounded-xl p-8 hover:border-amber-400/60 transition-all">
               <div className="flex items-start gap-4">
                 <FaStar className="text-amber-400 text-2xl flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-white font-bold text-xl mb-2">Selección del producto</h3>
-                    <p className="text-white/70">
-                      De la mano de especialistas como Cárnicas LYO, escogemos cada pieza para que la carne hable por sí sola en cada plato.
-                    </p>
+                  <p className="text-white/70">
+                    De la mano de especialistas como Cárnicas LYO, escogemos cada pieza para que la carne hable por sí sola en cada plato.
+                  </p>
                 </div>
               </div>
             </div>
@@ -90,48 +137,43 @@ export default function HistoriaYValores() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Sección de filosofía */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+        <div
+          data-anim="philosophy"
           className="bg-gradient-to-r from-amber-900/20 via-black to-amber-900/20 border border-amber-400/20 rounded-2xl p-10 md:p-14 text-center"
         >
           <h3 className="text-3xl md:text-4xl font-heading text-white uppercase tracking-wide mb-6">
             Nuestra Filosofía
           </h3>
           <p className="text-white/90 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto">
-            <span className="text-amber-400 font-bold">"La carne no se explica, se respeta."</span> Este es nuestro mantra. 
+            <span className="text-amber-400 font-bold">"La carne no se explica, se respeta."</span> Este es nuestro mantra.
             Desde el origen del animal hasta el fuego que lo cocina, cada proceso refleja nuestro compromiso con la <span className="text-amber-400">excelencia gastronómica</span>.
           </p>
           <p className="text-white/70 text-lg mt-6">
-            En El Buey Madurado, no vendemos solo carne. Vendemos <span className="text-amber-400">experiencias</span>, 
+            En El Buey Madurado, no vendemos solo carne. Vendemos <span className="text-amber-400">experiencias</span>,
             <span className="text-amber-400"> tradición</span> y la <span className="text-amber-400">dedicación</span> de quienes creen que los detalles son lo que hace grande un restaurante.
           </p>
-        </motion.div>
+        </div>
 
         {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid md:grid-cols-4 gap-6 mt-20"
-        >
+        <div data-anim="stats" className="grid md:grid-cols-4 gap-6 mt-20">
           {[
-            { number: "5.0", label: "Rating en Google" },
-            { number: "55+", label: "Reseñas verificadas" },
-            { number: "100%", label: "Carne Premium" },
-            { number: "2", label: "Socios apasionados" }
+            { value: 5, decimals: 1, suffix: '', label: 'Rating en Google' },
+            { value: 55, decimals: 0, suffix: '+', label: 'Reseñas verificadas' },
+            { value: 100, decimals: 0, suffix: '%', label: 'Carne Premium' },
+            { value: 2, decimals: 0, suffix: '', label: 'Socios apasionados' },
           ].map((stat, i) => (
             <div key={i} className="text-center">
-              <p className="text-4xl font-bold text-amber-400 mb-2">{stat.number}</p>
+              <p className="text-4xl font-bold text-amber-400 mb-2">
+                <AnimatedNumber value={stat.value} suffix={stat.suffix} decimals={stat.decimals} />
+              </p>
               <p className="text-white/70 text-sm">{stat.label}</p>
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

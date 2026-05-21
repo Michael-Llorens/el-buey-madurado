@@ -5,6 +5,8 @@ import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
 import { sanitizeBody } from '@/lib/utils/sanitize';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type Ctx = { params: Promise<{ id: string }> }; // Next 15: params es Promise [web:366]
 
@@ -29,10 +31,10 @@ export async function GET(request: NextRequest, { params }: Ctx) {
     }
 
     return NextResponse.json<ApiResponse>({ success: true, data: ingrediente });
-  } catch (error: any) {
-    console.error('❌ Error en GET /api/ingredientes/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en GET /api/ingredientes/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -71,10 +73,10 @@ export async function PUT(request: NextRequest, { params }: Ctx) {
     }
 
     return NextResponse.json<ApiResponse>({ success: true, data: ingrediente });
-  } catch (error: any) {
-    console.error('❌ Error en PUT /api/ingredientes/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en PUT /api/ingredientes/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 400 }
     );
   }
@@ -108,10 +110,10 @@ export async function DELETE(request: NextRequest, { params }: Ctx) {
     }
 
     return NextResponse.json<ApiResponse>({ success: true, data: ingrediente });
-  } catch (error: any) {
-    console.error('❌ Error en DELETE /api/ingredientes/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en DELETE /api/ingredientes/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }

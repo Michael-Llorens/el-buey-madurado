@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Producto from '@/lib/models/Producto';
 import Ingrediente from '@/lib/models/Ingrediente';
-import { protegerRuta } from '@/lib/middlewareAuth';
+import { protegerRuta, protegerRutaPorRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import mongoose from 'mongoose';
 import { sanitizeBody } from '@/lib/utils/sanitize';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 // ===========================
 // GET - Listar todos los productos
@@ -13,9 +15,9 @@ import { sanitizeBody } from '@/lib/utils/sanitize';
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
-    await protegerRuta(req);
+    const auth = await protegerRuta(req);
+    if (!auth.valido) return auth.response!;
 
-    // ✅ FORZAR REGISTRO (evita warning de TypeScript)
     void Ingrediente;
 
     const productos = await Producto.find()
@@ -26,12 +28,12 @@ export async function GET(req: NextRequest) {
       success: true,
       data: productos,
     });
-  } catch (error: any) {
-    console.error('❌ Error en GET /api/productos:', error);
+  } catch (error) {
+    logger.error('❌ Error en GET /api/productos:', error);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       },
       { status: 500 }
     );
@@ -44,7 +46,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    await protegerRuta(req);
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     const body = sanitizeBody(await req.json());
 
@@ -68,12 +71,12 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('❌ Error en POST /api/productos:', error);
+  } catch (error) {
+    logger.error('❌ Error en POST /api/productos:', error);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       },
       { status: 500 }
     );
@@ -86,7 +89,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     await connectDB();
-    await protegerRuta(req);
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     const body = await req.json();
     const { id, ...datosActualizados } = body;
@@ -131,12 +135,12 @@ export async function PUT(req: NextRequest) {
       data: productoActualizado,
       message: 'Producto actualizado exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en PUT /api/productos:', error);
+  } catch (error) {
+    logger.error('❌ Error en PUT /api/productos:', error);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       },
       { status: 500 }
     );
@@ -149,7 +153,8 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     await connectDB();
-    await protegerRuta(req);
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -180,12 +185,12 @@ export async function DELETE(req: NextRequest) {
       success: true,
       message: 'Producto eliminado exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en DELETE /api/productos:', error);
+  } catch (error) {
+    logger.error('❌ Error en DELETE /api/productos:', error);
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       },
       { status: 500 }
     );

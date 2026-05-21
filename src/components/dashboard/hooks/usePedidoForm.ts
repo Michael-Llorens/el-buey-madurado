@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useMesas as useMesasSWR, useProductos as useProductosSWR } from '@/lib/hooks/swr';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 interface Mesa {
   _id: string;
@@ -134,6 +135,122 @@ export function usePedidoForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Nuevo: búsqueda, categorías, secciones colapsables ──
+  const [busquedaProducto, setBusquedaProducto] = useState('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('todas');
+  const [mostrarNotas, setMostrarNotas] = useState(false);
+  const [mostrarDescuento, setMostrarDescuento] = useState(false);
+  const [mostrarEnvio, setMostrarEnvio] = useState(false);
+
+  // Categorías únicas de los productos disponibles
+  const categorias = useMemo(() => {
+    const cats = new Set<string>();
+    productosDisponibles.forEach((p) => {
+      if (p.categoria) cats.add(p.categoria);
+    });
+    return Array.from(cats).sort();
+  }, [productosDisponibles]);
+
+  // Productos filtrados por búsqueda + categoría
+  const productosFiltrados = useMemo(() => {
+    let resultado = productosDisponibles;
+    // En modo búsqueda (_busqueda) o "todas", no filtrar por categoría
+    if (categoriaSeleccionada !== 'todas' && categoriaSeleccionada !== '_busqueda') {
+      resultado = resultado.filter((p) => p.categoria === categoriaSeleccionada);
+    }
+    if (busquedaProducto.trim()) {
+      const q = busquedaProducto.toLowerCase().trim();
+      resultado = resultado.filter((p) => p.nombre.toLowerCase().includes(q));
+    }
+    return resultado;
+  }, [productosDisponibles, categoriaSeleccionada, busquedaProducto]);
+
+  // Añadir producto rápido (1 tap): si ya existe, incrementa cantidad
+  const handleAddProductoRapido = (productoId: string) => {
+    const existente = productosSeleccionados.findIndex((p) => p.producto === productoId && !p.personalizaciones?.ingredientesExtra?.length && !p.personalizaciones?.ingredientesRemovidos?.length);
+    if (existente >= 0) {
+      setProductosSeleccionados((prev) =>
+        prev.map((p, i) => (i === existente ? { ...p, cantidad: p.cantidad + 1 } : p))
+      );
+    } else {
+      setProductosSeleccionados((prev) => [
+        ...prev,
+        { producto: productoId, cantidad: 1, notas: '' },
+      ]);
+    }
+  };
+
+  // +/- cantidad en producto ya añadido
+  const handleIncrementarCantidad = (index: number) => {
+    setProductosSeleccionados((prev) =>
+      prev.map((p, i) => (i === index ? { ...p, cantidad: p.cantidad + 1 } : p))
+    );
+  };
+
+  const handleDecrementarCantidad = (index: number) => {
+    setProductosSeleccionados((prev) => {
+      const item = prev[index];
+      if (item.cantidad <= 1) return prev.filter((_, i) => i !== index);
+      return prev.map((p, i) => (i === index ? { ...p, cantidad: p.cantidad - 1 } : p));
+    });
+  };
+
+  // Cambiar tipo directamente (para tabs)
+  const setTipo = (tipo: TipoPedido) => {
+    setFormData((prev) => ({ ...prev, tipo }));
+  };
+
+  // Categorías que necesitan punto de carne
+  const CATEGORIAS_PUNTO_CARNE = ['carnes', 'carne', 'hamburguesas', 'hamburguesa', 'burger', 'burgers', 'parrilla', 'grill'];
+  const PUNTOS_CARNE = ['Poco hecho', 'Medio', 'Hecho', 'Muy hecho'] as const;
+
+  // Comprobar si un producto necesita punto de carne por su categoría
+  const necesitaPuntoCarne = (productoId: string): boolean => {
+    const prod = productosDisponibles.find((p) => p._id === productoId);
+    if (!prod?.categoria) return false;
+    return CATEGORIAS_PUNTO_CARNE.includes(prod.categoria.toLowerCase());
+  };
+
+  // Extraer punto de carne de las notas (formato: "🥩Medio | resto de notas")
+  const getPuntoCarne = (notas: string): string | null => {
+    const match = notas.match(/^🥩(Poco hecho|Medio|Hecho|Muy hecho)/);
+    return match ? match[1] : null;
+  };
+
+  // Establecer punto de carne en un producto del carrito
+  const handleSetPuntoCarne = (index: number, punto: string | null) => {
+    setProductosSeleccionados((prev) =>
+      prev.map((p, i) => {
+        if (i !== index) return p;
+        // Quitar punto anterior de las notas
+        let notas = p.notas.replace(/^🥩(Poco hecho|Medio|Hecho|Muy hecho)(\s*\|\s*)?/, '').trim();
+        // Añadir nuevo punto
+        if (punto) {
+          notas = notas ? `🥩${punto} | ${notas}` : `🥩${punto}`;
+        }
+        return { ...p, notas };
+      })
+    );
+  };
+
+  // Nota rápida inline (sin punto de carne)
+  const getNotaSinPunto = (notas: string): string => {
+    return notas.replace(/^🥩(Poco hecho|Medio|Hecho|Muy hecho)(\s*\|\s*)?/, '').trim();
+  };
+
+  const handleSetNotaRapida = (index: number, nota: string) => {
+    setProductosSeleccionados((prev) =>
+      prev.map((p, i) => {
+        if (i !== index) return p;
+        const punto = getPuntoCarne(p.notas);
+        const nuevaNota = punto
+          ? (nota ? `🥩${punto} | ${nota}` : `🥩${punto}`)
+          : nota;
+        return { ...p, notas: nuevaNota };
+      })
+    );
+  };
+
   // Precargar si edit
   useEffect(() => {
     if (modo !== 'add') return;
@@ -188,6 +305,11 @@ export function usePedidoForm({
     });
 
     setProductosSeleccionados(productos);
+
+    // Expandir secciones si ya tienen datos
+    if (pedidoInicial.notas) setMostrarNotas(true);
+    if (pedidoInicial.descuento && pedidoInicial.descuento > 0) setMostrarDescuento(true);
+    if (pedidoInicial.gastoEnvio && pedidoInicial.gastoEnvio > 0) setMostrarEnvio(true);
   }, [modo, pedidoInicial]);
 
   // Limpiar mesa si se cambia de tipo local a otro
@@ -379,9 +501,9 @@ export function usePedidoForm({
 
       toast.success(modo === 'edit' ? 'Pedido actualizado' : 'Pedido creado exitosamente');
       await onGuardar();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al guardar:', err);
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -405,6 +527,20 @@ export function usePedidoForm({
     error,
     totales,
 
+    // nuevo: búsqueda + categorías + secciones
+    busquedaProducto,
+    setBusquedaProducto,
+    categorias,
+    categoriaSeleccionada,
+    setCategoriaSeleccionada,
+    productosFiltrados,
+    mostrarNotas,
+    setMostrarNotas,
+    mostrarDescuento,
+    setMostrarDescuento,
+    mostrarEnvio,
+    setMostrarEnvio,
+
     // setters
     setProductoSeleccionado,
     setCantidadProducto,
@@ -418,6 +554,17 @@ export function usePedidoForm({
     handleAbrirPersonalizacion,
     handleConfirmarPersonalizacion,
     handleRemoveProducto,
+    handleAddProductoRapido,
+    handleIncrementarCantidad,
+    handleDecrementarCantidad,
+    setTipo,
+    // punto de carne + nota rápida
+    necesitaPuntoCarne,
+    getPuntoCarne,
+    handleSetPuntoCarne,
+    getNotaSinPunto,
+    handleSetNotaRapida,
+    PUNTOS_CARNE,
     handleSubmit,
     getNombreProducto,
     getPrecioProducto,

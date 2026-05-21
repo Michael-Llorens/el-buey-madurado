@@ -96,12 +96,13 @@ describe('ocuparMesa', () => {
 describe('liberarMesa', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('llama a Mesa.findByIdAndUpdate con estado libre y pedidoActual null', async () => {
+  it('llama a Mesa.findByIdAndUpdate liberando estado, pedido y comensales', async () => {
     await liberarMesa('mesa-id-2');
 
     expect(mockFindByIdAndUpdate).toHaveBeenCalledWith('mesa-id-2', {
       estado: 'libre',
       pedidoActual: null,
+      comensalesActuales: 0,
     });
   });
 });

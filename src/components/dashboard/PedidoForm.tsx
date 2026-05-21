@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { toast } from 'sonner';
 import PersonalizarProductoModal from './PersonalizarProductoModal';
 import { usePedidoForm } from './hooks/usePedidoForm';
 
@@ -47,12 +49,43 @@ type PedidoInicial = {
 interface PedidoFormProps {
   onGuardar: () => void | Promise<void>;
   onCancelar: () => void;
-
   modo?: 'add' | 'edit';
   pedidoId?: string;
   pedidoInicial?: PedidoInicial | null;
   mesaIdPreseleccionada?: string;
 }
+
+// ═══ Estilos por categoría principal (gradientes + iconos + colores) ═══
+const CATEGORIA_STYLE: Record<string, { icon: string; gradient: string; accent: string; text: string; ring: string }> = {
+  Bebidas:      { icon: '🥤', gradient: 'from-cyan-900/50 to-blue-900/30',   accent: 'border-cyan-600/60',   text: 'text-cyan-300',   ring: 'hover:border-cyan-400' },
+  Carnes:       { icon: '🥩', gradient: 'from-red-900/50 to-rose-900/30',    accent: 'border-red-600/60',    text: 'text-red-300',    ring: 'hover:border-red-400' },
+  Entrantes:    { icon: '🍽️', gradient: 'from-emerald-900/50 to-green-900/30', accent: 'border-emerald-600/60', text: 'text-emerald-300', ring: 'hover:border-emerald-400' },
+  Hamburguesas: { icon: '🍔', gradient: 'from-orange-900/50 to-amber-900/30', accent: 'border-orange-600/60', text: 'text-orange-300', ring: 'hover:border-orange-400' },
+  Postres:      { icon: '🍰', gradient: 'from-pink-900/50 to-fuchsia-900/30', accent: 'border-pink-600/60',   text: 'text-pink-300',   ring: 'hover:border-pink-400' },
+};
+const STYLE_DEFAULT = { icon: '📦', gradient: 'from-gray-800 to-gray-900', accent: 'border-gray-700', text: 'text-gray-200', ring: 'hover:border-gray-500' };
+const getCategoriaStyle = (cat: string) => CATEGORIA_STYLE[cat] ?? STYLE_DEFAULT;
+
+// ═══ Detección automática de sub-categoría de bebida por nombre ═══
+type SubcatBebida = 'vinos' | 'cervezas' | 'refrescos' | 'aguas' | 'otros';
+
+function detectarSubcategoriaBebida(nombre: string): SubcatBebida {
+  const n = nombre.toLowerCase();
+  if (/\bagua\b|aquarel|font ?vella|bezoya|solán/.test(n)) return 'aguas';
+  if (/mahou|estrella|alhambra|cerveza|ipa|lager|radler|heineken|amstel|cruzcampo/.test(n)) return 'cervezas';
+  if (/refresco|tónica|tonica|coca[ -]?cola|fanta|sprite|nestea|aquarius|bitter|kas|seven ?up|7up|pepsi|red ?bull/.test(n)) return 'refrescos';
+  if (/vino|tinto|blanco|rosado|rosé|albariño|reserva|crianza|verdejo|tempranillo|godello|garnacha|ribera|rioja|priorat|\b(19|20)\d{2}\b/.test(n)) return 'vinos';
+  return 'otros';
+}
+
+const SUBCAT_BEBIDA_STYLE: Record<SubcatBebida, { icon: string; label: string; gradient: string; accent: string; text: string }> = {
+  vinos:     { icon: '🍷', label: 'Vinos',     gradient: 'from-purple-900/40 to-rose-900/30', accent: 'border-purple-600/60', text: 'text-purple-300' },
+  cervezas:  { icon: '🍺', label: 'Cervezas',  gradient: 'from-amber-900/40 to-yellow-900/30', accent: 'border-amber-600/60', text: 'text-amber-300' },
+  refrescos: { icon: '🥤', label: 'Refrescos', gradient: 'from-cyan-900/40 to-sky-900/30',   accent: 'border-cyan-600/60',   text: 'text-cyan-300' },
+  aguas:     { icon: '💧', label: 'Aguas',     gradient: 'from-blue-900/40 to-sky-900/30',   accent: 'border-blue-600/60',   text: 'text-blue-300' },
+  otros:     { icon: '🥃', label: 'Otros',     gradient: 'from-stone-900/40 to-gray-900/30', accent: 'border-stone-600/60', text: 'text-stone-300' },
+};
+const ORDEN_SUBCAT: SubcatBebida[] = ['vinos', 'cervezas', 'refrescos', 'aguas', 'otros'];
 
 export default function PedidoForm({
   onGuardar,
@@ -67,9 +100,18 @@ export default function PedidoForm({
     productosSeleccionados,
     mesasDisponibles,
     productosDisponibles,
-    productoSeleccionado,
-    cantidadProducto,
-    notasProducto,
+    productosFiltrados,
+    busquedaProducto,
+    setBusquedaProducto,
+    categorias,
+    categoriaSeleccionada,
+    setCategoriaSeleccionada,
+    mostrarNotas,
+    setMostrarNotas,
+    mostrarDescuento,
+    setMostrarDescuento,
+    mostrarEnvio,
+    setMostrarEnvio,
     modalAbierto,
     productoAPersonalizar,
     cantidadTemp,
@@ -83,9 +125,18 @@ export default function PedidoForm({
     setProductoAPersonalizar,
     handleChange,
     handleDireccionChange,
-    handleAbrirPersonalizacion,
     handleConfirmarPersonalizacion,
     handleRemoveProducto,
+    handleAddProductoRapido,
+    handleIncrementarCantidad,
+    handleDecrementarCantidad,
+    setTipo,
+    necesitaPuntoCarne,
+    getPuntoCarne,
+    handleSetPuntoCarne,
+    getNotaSinPunto,
+    handleSetNotaRapida,
+    PUNTOS_CARNE,
     handleSubmit,
     getNombreProducto,
     getPrecioProducto,
@@ -98,371 +149,544 @@ export default function PedidoForm({
     onCancelar,
   });
 
+  const tipoTabs: { key: TipoPedido; label: string; icon: string }[] = [
+    { key: 'local', label: 'Local', icon: '🍽️' },
+    { key: 'recoger', label: 'Recoger', icon: '🛍️' },
+    { key: 'domicilio', label: 'Domicilio', icon: '🛵' },
+  ];
+
+  // Control de nota rápida inline abierta (-1 = ninguna)
+  const [notaAbiertaIdx, setNotaAbiertaIdx] = useState(-1);
+
+  // Abrir personalización para un producto concreto del carrito
+  const abrirPersonalizacionProducto = (index: number) => {
+    const item = productosSeleccionados[index];
+    const prod = productosDisponibles.find((p: any) => p._id === item.producto);
+    if (!prod) {
+      toast.warning('Producto no encontrado');
+      return;
+    }
+    setProductoSeleccionado(prod._id);
+    setCantidadProducto(String(item.cantidad));
+    setNotasProducto(item.notas || '');
+    setProductoAPersonalizar(prod);
+    setModalAbierto(true);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="flex flex-col h-full">
       {error && (
-        <div className="bg-red-600 text-white p-4 rounded">
-          ❌ {error}
+        <div className="bg-red-600/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm mb-4">
+          {error}
         </div>
       )}
 
-      {/* SELECTOR DE TIPO */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Tipo de Pedido *</label>
-        <select
-          name="tipo"
-          value={formData.tipo}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-        >
-          <option value="local">🍽️ Local (comer aquí)</option>
-          <option value="recoger">🛍️ Para recoger</option>
-          <option value="domicilio">🚗 Domicilio</option>
-        </select>
+      {/* ═══ TIPO DE PEDIDO ═══ */}
+      <div className="mb-4">
+        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-2 block">Tipo de pedido</label>
+        <div className="flex gap-1 bg-gray-900 rounded-xl p-1">
+          {tipoTabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setTipo(tab.key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-semibold transition ${
+                formData.tipo === tab.key
+                  ? 'bg-amber-600 text-white shadow-lg'
+                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+              }`}
+            >
+              <span className="text-base">{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* MESA */}
-      {formData.tipo === 'local' && (
-        <div>
-          <label className="block text-sm font-medium mb-2">Mesa *</label>
+      {/* ═══ DATOS DEL PEDIDO ═══ */}
+      <div className="mb-4 space-y-3">
+        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold block">
+          {formData.tipo === 'local' ? 'Mesa y cliente' : formData.tipo === 'recoger' ? 'Datos del cliente' : 'Cliente y dirección'}
+        </label>
+
+        {/* Mesa (solo local) */}
+        {formData.tipo === 'local' && (
           <select
             name="mesa"
             value={formData.mesa}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:border-amber-500 focus:outline-none"
           >
-            <option value="">-- Selecciona una mesa --</option>
+            <option value="">Seleccionar mesa...</option>
             {mesasDisponibles.map((mesa: Mesa) => (
               <option key={mesa._id} value={mesa._id}>
-                {mesa.nombre} · {mesa.capacidad} personas · {mesa.estado === 'libre' ? '🟢 Libre' : mesa.estado === 'ocupada' ? '🔴 Ocupada' : '🟡 Reservada'}
+                {mesa.nombre} · {mesa.capacidad} pers · {mesa.estado === 'libre' ? '🟢' : mesa.estado === 'ocupada' ? '🔴' : '🟡'}
               </option>
             ))}
           </select>
-        </div>
-      )}
+        )}
 
-      {/* CLIENTE Y TELÉFONO */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Cliente {(formData.tipo === 'domicilio' || formData.tipo === 'recoger') && '*'}
-          </label>
+        {/* Cliente + Teléfono */}
+        <div className="grid grid-cols-2 gap-2">
           <input
             type="text"
             name="cliente"
             value={formData.cliente}
             onChange={handleChange}
             required={formData.tipo !== 'local'}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            placeholder={`Nombre${formData.tipo !== 'local' ? ' *' : ' (opcional)'}`}
+            className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Teléfono {formData.tipo !== 'local' && '*'}
-          </label>
           <input
             type="tel"
             name="telefono"
             value={formData.telefono}
             onChange={handleChange}
             required={formData.tipo !== 'local'}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            placeholder={`Teléfono${formData.tipo !== 'local' ? ' *' : ' (opcional)'}`}
+            className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none"
           />
         </div>
+
+        {/* Dirección (solo domicilio) */}
+        {formData.tipo === 'domicilio' && (
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 space-y-2">
+            <p className="text-xs font-semibold text-amber-400 mb-1">📍 Dirección de entrega</p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <input type="text" name="calle" value={formData.direccionEntrega.calle} onChange={handleDireccionChange} required placeholder="Calle *" className="col-span-2 sm:col-span-3 px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+              <input type="text" name="numero" value={formData.direccionEntrega.numero} onChange={handleDireccionChange} required placeholder="Nº *" className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input type="text" name="piso" value={formData.direccionEntrega.piso} onChange={handleDireccionChange} placeholder="Piso" className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+              <input type="text" name="ciudad" value={formData.direccionEntrega.ciudad} onChange={handleDireccionChange} required placeholder="Ciudad *" className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+              <input type="text" name="codigoPostal" value={formData.direccionEntrega.codigoPostal} onChange={handleDireccionChange} required placeholder="CP *" maxLength={5} className="px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+            </div>
+            <input type="tel" name="telefono" value={formData.direccionEntrega.telefono} onChange={handleDireccionChange} required placeholder="Teléfono de contacto *" className="w-full px-3 py-2.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:border-amber-500 focus:outline-none" />
+          </div>
+        )}
       </div>
 
-      {/* DIRECCIÓN */}
-      {formData.tipo === 'domicilio' && (
-        <div className="bg-gray-700 p-4 rounded space-y-4">
-          <h3 className="text-sm font-semibold text-amber-400 mb-3">📍 Dirección de Entrega</h3>
+      {/* ═══ CATÁLOGO DE PRODUCTOS (2 pasos) ═══ */}
+      <div className="mb-4">
+        <label className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-2 block">Añadir productos</label>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:sm:col-span-2">
-              <input
-                type="text"
-                name="calle"
-                value={formData.direccionEntrega.calle}
-                onChange={handleDireccionChange}
-                required
-                placeholder="Calle *"
-                className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                name="numero"
-                value={formData.direccionEntrega.numero}
-                onChange={handleDireccionChange}
-                required
-                placeholder="Nº *"
-                className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <input
-                type="text"
-                name="piso"
-                value={formData.direccionEntrega.piso}
-                onChange={handleDireccionChange}
-                placeholder="Piso/Puerta"
-                className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                name="ciudad"
-                value={formData.direccionEntrega.ciudad}
-                onChange={handleDireccionChange}
-                required
-                placeholder="Ciudad *"
-                className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                name="codigoPostal"
-                value={formData.direccionEntrega.codigoPostal}
-                onChange={handleDireccionChange}
-                required
-                placeholder="CP *"
-                maxLength={5}
-                className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <input
-              type="tel"
-              name="telefono"
-              value={formData.direccionEntrega.telefono}
-              onChange={handleDireccionChange}
-              required
-              placeholder="Teléfono de contacto *"
-              className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <textarea
-              name="notas"
-              value={formData.direccionEntrega.notas}
-              onChange={handleDireccionChange}
-              placeholder="Instrucciones de entrega"
-              className="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded text-white focus:border-amber-500 focus:outline-none"
-              rows={2}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* PRODUCTOS */}
-      <div className="bg-gray-700 p-4 rounded space-y-4">
-        <h3 className="text-sm font-semibold text-amber-400 mb-3">🍽️ Productos del Pedido</h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
-          <div className="sm:col-span-5">
-            <select
-              value={productoSeleccionado}
-              onChange={(e) => setProductoSeleccionado(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:border-amber-500 focus:outline-none"
-            >
-              <option value="">-- Seleccionar producto --</option>
-              {productosDisponibles.map((prod) => (
-                <option key={prod._id} value={prod._id}>
-                  {prod.nombre} - {prod.precio.toFixed(2)}€
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="sm:col-span-2">
-            <input
-              type="number"
-              value={cantidadProducto}
-              onChange={(e) => setCantidadProducto(e.target.value)}
-              placeholder="Cant."
-              min="1"
-              className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="sm:col-span-3">
-            <input
-              type="text"
-              value={notasProducto}
-              onChange={(e) => setNotasProducto(e.target.value)}
-              placeholder="Notas rápidas..."
-              className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white text-sm focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="sm:col-span-2">
-            <button
-              type="button"
-              onClick={handleAbrirPersonalizacion}
-              className="w-full px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold text-sm flex items-center justify-center gap-1"
-              title="Personalizar producto"
-            >
-              <span>⚙️</span>
-              <span className="hidden sm:inline">Añadir</span>
-            </button>
-          </div>
+        {/* Búsqueda — siempre visible, al escribir muestra todos los productos */}
+        <div className="relative mb-3">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
+          <input
+            type="text"
+            value={busquedaProducto}
+            onChange={(e) => {
+              setBusquedaProducto(e.target.value);
+              // Si el usuario busca, saltar a vista de todos los productos
+              if (e.target.value.trim()) setCategoriaSeleccionada('_busqueda');
+              else setCategoriaSeleccionada('todas');
+            }}
+            placeholder="Buscar producto..."
+            className="w-full pl-9 pr-9 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none"
+          />
+          {busquedaProducto && (
+            <button type="button" onClick={() => { setBusquedaProducto(''); setCategoriaSeleccionada('todas'); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">✕</button>
+          )}
         </div>
 
-        {productosSeleccionados.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="text-xs text-gray-400">Productos añadidos:</p>
+        {/* PASO 1: Grid de categorías (solo si no hay búsqueda y estamos en "todas") */}
+        {categoriaSeleccionada === 'todas' && !busquedaProducto && categorias.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {categorias.map((cat) => {
+              const numProductos = productosDisponibles.filter((p: any) => p.categoria === cat).length;
+              const productosEnCarrito = productosSeleccionados.filter((p) => {
+                const prod = productosDisponibles.find((pd: any) => pd._id === p.producto);
+                return prod && (prod as any).categoria === cat;
+              }).reduce((s, p) => s + p.cantidad, 0);
+              const style = getCategoriaStyle(cat);
+
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setCategoriaSeleccionada(cat)}
+                  className={`relative overflow-hidden flex flex-col items-center justify-center gap-1.5 p-4 sm:p-5 bg-gradient-to-br ${style.gradient} border-2 ${style.accent} ${style.ring} rounded-xl transition-all active:scale-95 text-center shadow-md`}
+                >
+                  {productosEnCarrito > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                      {productosEnCarrito}
+                    </span>
+                  )}
+                  <span className="text-2xl sm:text-3xl">{style.icon}</span>
+                  <span className={`${style.text} text-sm sm:text-base font-bold capitalize`}>{cat}</span>
+                  <span className="text-gray-400 text-[11px]">{numProductos} producto{numProductos !== 1 ? 's' : ''}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          /* PASO 2: Productos de la categoría seleccionada (o resultados de búsqueda) */
+          <div>
+            {/* Cabecera con botón volver — botón rojo bien visible */}
+            {categoriaSeleccionada !== '_busqueda' && (
+              <div className="flex items-center gap-3 mb-3">
+                <button
+                  type="button"
+                  onClick={() => { setCategoriaSeleccionada('todas'); setBusquedaProducto(''); }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition active:scale-95 shadow-md shadow-red-600/30"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                  Categorías
+                </button>
+                <span className="text-2xl">{getCategoriaStyle(categoriaSeleccionada).icon}</span>
+                <span className={`${getCategoriaStyle(categoriaSeleccionada).text} text-base font-bold capitalize`}>
+                  {categoriaSeleccionada}
+                </span>
+                <span className="text-gray-500 text-xs ml-auto">{productosFiltrados.length} producto{productosFiltrados.length !== 1 ? 's' : ''}</span>
+              </div>
+            )}
+
+            {/* Si es Bebidas → agrupar por sub-categoría detectada (vinos / cervezas / refrescos / aguas / otros) */}
+            {categoriaSeleccionada === 'Bebidas' && !busquedaProducto ? (
+              <div className="max-h-[35vh] sm:max-h-[400px] overflow-y-auto pr-1 space-y-4">
+                {(() => {
+                  const grupos: Record<SubcatBebida, typeof productosFiltrados> = {
+                    vinos: [], cervezas: [], refrescos: [], aguas: [], otros: [],
+                  };
+                  productosFiltrados.forEach((p) => {
+                    grupos[detectarSubcategoriaBebida(p.nombre)].push(p);
+                  });
+
+                  return ORDEN_SUBCAT.filter((sc) => grupos[sc].length > 0).map((sc) => {
+                    const sub = SUBCAT_BEBIDA_STYLE[sc];
+                    return (
+                      <div key={sc}>
+                        <div className={`flex items-center gap-2 mb-2 pb-1.5 border-b ${sub.accent}`}>
+                          <span className="text-lg">{sub.icon}</span>
+                          <span className={`${sub.text} text-sm font-bold uppercase tracking-wider`}>{sub.label}</span>
+                          <span className="text-gray-500 text-xs">({grupos[sc].length})</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                          {grupos[sc].map((prod) => {
+                            const enCarrito = productosSeleccionados.find((p) => p.producto === prod._id);
+                            return (
+                              <button
+                                key={prod._id}
+                                type="button"
+                                onClick={() => handleAddProductoRapido(prod._id)}
+                                className={`relative flex flex-col items-start p-3 rounded-lg text-left transition active:scale-95 bg-gradient-to-br ${sub.gradient} ${
+                                  enCarrito ? 'border-2 border-amber-500 shadow-lg shadow-amber-600/20' : `border ${sub.accent} hover:brightness-125`
+                                }`}
+                              >
+                                {enCarrito && (
+                                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                                    {enCarrito.cantidad}
+                                  </span>
+                                )}
+                                <span className="text-white text-sm font-medium leading-tight line-clamp-2">{prod.nombre}</span>
+                                <span className="text-amber-400 text-sm font-bold mt-1.5">{prod.precio.toFixed(2)}€</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            ) : (
+              /* Vista plana para otras categorías o búsqueda */
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[35vh] sm:max-h-[260px] overflow-y-auto pr-1">
+                {productosFiltrados.length === 0 ? (
+                  <p className="col-span-full text-center text-gray-500 text-sm py-6">
+                    {busquedaProducto ? `Sin resultados para "${busquedaProducto}"` : 'No hay productos en esta categoría'}
+                  </p>
+                ) : (
+                  productosFiltrados.map((prod) => {
+                    const enCarrito = productosSeleccionados.find((p) => p.producto === prod._id);
+                    const catStyle = getCategoriaStyle(prod.categoria);
+                    return (
+                      <button
+                        key={prod._id}
+                        type="button"
+                        onClick={() => handleAddProductoRapido(prod._id)}
+                        className={`relative flex flex-col items-start p-3 rounded-lg text-left transition active:scale-95 bg-gradient-to-br ${catStyle.gradient} ${
+                          enCarrito
+                            ? 'border-2 border-amber-500 shadow-lg shadow-amber-600/20'
+                            : `border ${catStyle.accent} hover:brightness-125`
+                        }`}
+                      >
+                        {enCarrito && (
+                          <span className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                            {enCarrito.cantidad}
+                          </span>
+                        )}
+                        <span className="text-white text-sm font-medium leading-tight line-clamp-2">{prod.nombre}</span>
+                        <span className="text-amber-400 text-sm font-bold mt-1.5">{prod.precio.toFixed(2)}€</span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ═══ CARRITO ═══ */}
+      {productosSeleccionados.length > 0 && (
+        <div className="mb-4">
+          <label className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-2 block">
+            Pedido ({productosSeleccionados.reduce((s, p) => s + p.cantidad, 0)} uds)
+          </label>
+          <div className="bg-gray-800/50 border border-gray-700 rounded-lg divide-y divide-gray-700/30 max-h-[300px] overflow-y-auto">
             {productosSeleccionados.map((item, idx) => {
               const precioFinal =
                 typeof item.precioPersonalizado === 'number'
                   ? item.precioPersonalizado
                   : getPrecioProducto(item.producto) * item.cantidad;
+              const tienePersonalizacion = !!(item.personalizaciones?.ingredientesExtra?.length || item.personalizaciones?.ingredientesRemovidos?.length);
+              const esCarne = necesitaPuntoCarne(item.producto);
+              const puntoActual = getPuntoCarne(item.notas);
+              const notaSinPunto = getNotaSinPunto(item.notas);
 
               return (
-                <div
-                  key={idx}
-                  className="flex items-start justify-between bg-gray-600 px-3 py-2 rounded text-sm"
-                >
-                  <div className="flex-1">
-                    <span className="text-white font-semibold">
-                      {item.cantidad}x {getNombreProducto(item.producto)}
-                    </span>
+                <div key={idx} className="px-3 py-2.5">
+                  {/* Fila principal: +/- | Nombre + detalles | Precio | Acciones */}
+                  <div className="flex items-center gap-2">
+                    {/* +/- */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button type="button" onClick={() => handleDecrementarCantidad(idx)} className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-red-600/80 text-white rounded-lg text-base font-bold transition active:scale-90" style={{ minWidth: '40px', minHeight: '40px' }}>−</button>
+                      <span className="w-7 text-center text-white text-sm font-bold">{item.cantidad}</span>
+                      <button type="button" onClick={() => handleIncrementarCantidad(idx)} className="w-10 h-10 flex items-center justify-center bg-gray-700 hover:bg-green-600/80 text-white rounded-lg text-base font-bold transition active:scale-90" style={{ minWidth: '40px', minHeight: '40px' }}>+</button>
+                    </div>
 
-                    {item.personalizaciones?.ingredientesExtra?.length ? (
-                      <p className="text-xs text-green-400 mt-1">
-                        ➕ {item.personalizaciones.ingredientesExtra.join(', ')}
-                      </p>
-                    ) : null}
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-white text-sm font-medium truncate">{getNombreProducto(item.producto)}</span>
+                        {puntoActual && (
+                          <span className="text-[10px] bg-orange-600/20 text-orange-300 px-1.5 py-0.5 rounded font-medium shrink-0">🥩 {puntoActual}</span>
+                        )}
+                      </div>
+                      {item.personalizaciones?.ingredientesExtra?.length ? (
+                        <p className="text-[10px] text-emerald-400 truncate">+ {item.personalizaciones.ingredientesExtra.join(', ')}</p>
+                      ) : null}
+                      {item.personalizaciones?.ingredientesRemovidos?.length ? (
+                        <p className="text-[10px] text-red-400 truncate">- {item.personalizaciones.ingredientesRemovidos.join(', ')}</p>
+                      ) : null}
+                      {notaSinPunto ? <p className="text-[10px] text-gray-500 truncate">📝 {notaSinPunto}</p> : null}
+                    </div>
 
-                    {item.personalizaciones?.ingredientesRemovidos?.length ? (
-                      <p className="text-xs text-red-400 mt-1">
-                        ➖ Sin: {item.personalizaciones.ingredientesRemovidos.join(', ')}
-                      </p>
-                    ) : null}
+                    {/* Precio */}
+                    <span className="text-amber-400 text-sm font-semibold shrink-0">{precioFinal.toFixed(2)}€</span>
 
-                    {item.notas ? <p className="text-xs text-gray-400 mt-1">📝 {item.notas}</p> : null}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-amber-400 font-semibold">{precioFinal.toFixed(2)}€</span>
+                    {/* Acciones: nota, personalizar, quitar */}
+                    <button
+                      type="button"
+                      onClick={() => setNotaAbiertaIdx(notaAbiertaIdx === idx ? -1 : idx)}
+                      className={`w-9 h-9 flex items-center justify-center rounded-lg text-base transition shrink-0 ${
+                        notaSinPunto
+                          ? 'bg-gray-600/40 text-yellow-400 hover:bg-gray-600/60'
+                          : 'bg-gray-700/40 text-gray-500 hover:text-gray-300 hover:bg-gray-700'
+                      }`}
+                      title="Nota rápida"
+                    >
+                      📝
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => abrirPersonalizacionProducto(idx)}
+                      className={`w-9 h-9 flex items-center justify-center rounded-lg text-base transition shrink-0 ${
+                        tienePersonalizacion
+                          ? 'bg-amber-600/30 text-amber-400 hover:bg-amber-600/50'
+                          : 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
+                      }`}
+                      title="Personalizar (extras, quitar)"
+                    >
+                      ✏️
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveProducto(idx)}
-                      className="text-red-400 hover:text-red-300 font-bold"
+                      className="w-9 h-9 flex items-center justify-center rounded-lg text-base bg-red-600/15 text-red-400 hover:bg-red-600/30 transition shrink-0"
+                      title="Quitar"
                     >
-                      ✕
+                      🗑️
                     </button>
                   </div>
+
+                  {/* Punto de carne — solo si aplica */}
+                  {esCarne && (
+                    <div className="flex items-center gap-1.5 mt-2 ml-[76px]">
+                      <span className="text-[10px] text-gray-500 mr-1">🥩 Punto:</span>
+                      {PUNTOS_CARNE.map((punto) => (
+                        <button
+                          key={punto}
+                          type="button"
+                          onClick={() => handleSetPuntoCarne(idx, puntoActual === punto ? null : punto)}
+                          className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${
+                            puntoActual === punto
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-gray-700 text-gray-400 hover:text-white hover:bg-gray-600'
+                          }`}
+                        >
+                          {punto}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Nota rápida inline — se abre al pulsar 📝 */}
+                  {notaAbiertaIdx === idx && (
+                    <div className="flex items-center gap-2 mt-2 ml-[76px]">
+                      <input
+                        type="text"
+                        value={notaSinPunto}
+                        onChange={(e) => handleSetNotaRapida(idx, e.target.value)}
+                        placeholder="Sin sal, sin cebolla, al punto..."
+                        className="flex-1 px-2.5 py-1.5 bg-gray-900 border border-gray-700 rounded-lg text-white text-xs placeholder-gray-500 focus:border-amber-500 focus:outline-none"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setNotaAbiertaIdx(-1)}
+                        className="text-xs text-gray-500 hover:text-white transition"
+                      >
+                        OK
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
-        )}
-      </div>
-
-      {/* DESCUENTO + ENVÍO */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Descuento (€)</label>
-          <input
-            type="number"
-            name="descuento"
-            value={formData.descuento}
-            onChange={handleChange}
-            step="0.01"
-            min="0"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-          />
-        </div>
-
-        {formData.tipo === 'domicilio' && (
-          <div>
-            <label className="block text-sm font-medium mb-2">Gasto de envío (€)</label>
-            <input
-              type="number"
-              name="gastoEnvio"
-              value={formData.gastoEnvio}
-              onChange={handleChange}
-              step="0.01"
-              min="0"
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* NOTAS */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Notas del pedido</label>
-        <textarea
-          name="notas"
-          value={formData.notas}
-          onChange={handleChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-          rows={3}
-        />
-      </div>
-
-      {/* RESUMEN */}
-      {productosSeleccionados.length > 0 && (
-        <div className="bg-gray-700 p-4 rounded space-y-2">
-          <h3 className="text-sm font-semibold text-amber-400 mb-3">💰 Resumen del Pedido</h3>
-          <div className="flex justify-between text-sm text-gray-300">
-            <span>Subtotal:</span>
-            <span>{totales.subtotal}€</span>
-          </div>
-          <div className="flex justify-between text-sm text-gray-300">
-            <span>IVA (21%):</span>
-            <span>{totales.impuestos}€</span>
-          </div>
-          {formData.tipo === 'domicilio' && parseFloat(totales.gastoEnvio) > 0 && (
-            <div className="flex justify-between text-sm text-blue-400">
-              <span>🚗 Gasto de envío:</span>
-              <span>{totales.gastoEnvio}€</span>
-            </div>
-          )}
-          {formData.descuento > 0 && (
-            <div className="flex justify-between text-sm text-red-400">
-              <span>Descuento:</span>
-              <span>-{Number(formData.descuento).toFixed(2)}€</span>
-            </div>
-          )}
-          <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-700">
-            <span>TOTAL:</span>
-            <span className="text-amber-400">{totales.total}€</span>
-          </div>
         </div>
       )}
 
-      {/* BOTONES */}
-      <div className="flex gap-4 pt-6">
-        <button
-          type="submit"
-          disabled={loading || productosSeleccionados.length === 0}
-          className="flex-1 px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-600 text-white font-semibold rounded transition"
-        >
-          {loading ? (modo === 'edit' ? 'Actualizando...' : 'Creando...') : modo === 'edit' ? '✅ Actualizar Pedido' : '✅ Crear Pedido'}
-        </button>
+      {/* ═══ FOOTER: Total + Extras + Acción ═══ */}
+      <div className="sticky bottom-0 bg-gray-900 border-t border-gray-700 -mx-4 sm:-mx-8 px-4 sm:px-8 py-4 mt-auto">
+        {productosSeleccionados.length > 0 && (
+          <>
+            {/* Opciones inline: nota, descuento, envío */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3">
+              {/* Nota */}
+              {!mostrarNotas ? (
+                <button type="button" onClick={() => setMostrarNotas(true)} className="text-xs text-gray-500 hover:text-amber-400 transition">
+                  + Añadir nota
+                </button>
+              ) : (
+                <div className="w-full mb-1">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      name="notas"
+                      value={formData.notas}
+                      onChange={handleChange}
+                      placeholder="Nota del pedido..."
+                      className="flex-1 px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs placeholder-gray-500 focus:border-amber-500 focus:outline-none"
+                    />
+                    <button type="button" onClick={() => { setMostrarNotas(false); handleChange({ target: { name: 'notas', value: '' } } as any); }} className="text-gray-600 hover:text-red-400 text-xs">✕</button>
+                  </div>
+                </div>
+              )}
 
-        <button
-          type="button"
-          onClick={onCancelar}
-          className="flex-1 px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded transition"
-        >
-          ❌ Cancelar
-        </button>
+              {/* Descuento */}
+              {!mostrarDescuento ? (
+                <button type="button" onClick={() => setMostrarDescuento(true)} className="text-xs text-gray-500 hover:text-amber-400 transition">
+                  + Descuento
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500">Dto:</span>
+                  <input
+                    type="number"
+                    name="descuento"
+                    value={formData.descuento}
+                    onChange={handleChange}
+                    step="0.01"
+                    min="0"
+                    className="w-20 px-2 py-1 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs focus:border-amber-500 focus:outline-none"
+                  />
+                  <span className="text-xs text-gray-500">€</span>
+                  <button type="button" onClick={() => { setMostrarDescuento(false); handleChange({ target: { name: 'descuento', value: '0' } } as any); }} className="text-gray-600 hover:text-red-400 text-xs">✕</button>
+                </div>
+              )}
+
+              {/* Gasto envío (solo domicilio) */}
+              {formData.tipo === 'domicilio' && (
+                <>
+                  {!mostrarEnvio ? (
+                    <button type="button" onClick={() => setMostrarEnvio(true)} className="text-xs text-gray-500 hover:text-amber-400 transition">
+                      + Gasto envío
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-gray-500">Envío:</span>
+                      <input
+                        type="number"
+                        name="gastoEnvio"
+                        value={formData.gastoEnvio}
+                        onChange={handleChange}
+                        step="0.01"
+                        min="0"
+                        className="w-20 px-2 py-1 bg-gray-800 border border-gray-700 rounded-lg text-white text-xs focus:border-amber-500 focus:outline-none"
+                      />
+                      <span className="text-xs text-gray-500">€</span>
+                      <button type="button" onClick={() => { setMostrarEnvio(false); handleChange({ target: { name: 'gastoEnvio', value: '0' } } as any); }} className="text-gray-600 hover:text-red-400 text-xs">✕</button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Desglose */}
+            <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-500 mb-2">
+              <span>Subtotal: {totales.subtotal}€</span>
+              <span>IVA: {totales.impuestos}€</span>
+              {formData.tipo === 'domicilio' && parseFloat(totales.gastoEnvio) > 0 && (
+                <span className="text-blue-400">Envío: {totales.gastoEnvio}€</span>
+              )}
+              {formData.descuento > 0 && (
+                <span className="text-red-400">Dto: -{Number(formData.descuento).toFixed(2)}€</span>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Total + Botones */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <p className="text-2xl font-bold text-white">
+              {productosSeleccionados.length > 0 ? (
+                <><span className="text-gray-400 text-sm font-normal">TOTAL </span><span className="text-amber-400">{totales.total}€</span></>
+              ) : (
+                <span className="text-gray-600 text-base">Añade productos al pedido</span>
+              )}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onCancelar}
+            className="px-4 sm:px-5 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-semibold transition text-sm"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            disabled={loading || productosSeleccionados.length === 0}
+            className="px-5 sm:px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl font-bold transition text-sm whitespace-nowrap"
+          >
+            {loading
+              ? (modo === 'edit' ? 'Guardando...' : 'Creando...')
+              : modo === 'edit'
+                ? 'Guardar cambios'
+                : 'Crear Pedido'
+            }
+          </button>
+        </div>
       </div>
 
-      {/* MODAL */}
+      {/* ═══ MODAL PERSONALIZACIÓN ═══ */}
       {modalAbierto && productoAPersonalizar && (
         <PersonalizarProductoModal
           producto={productoAPersonalizar}

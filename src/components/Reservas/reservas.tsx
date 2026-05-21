@@ -4,7 +4,7 @@ import Script from 'next/script';
 
 export default function Reservas() {
   return (
-    <section className="w-full px-4 md:px-0 md:max-w-4xl mx-auto py-8 sm:py-12">
+    <section className="w-full px-4 sm:px-6 md:px-8 md:max-w-4xl mx-auto py-8 sm:py-12">
       <h2 className="text-amber-500 text-2xl sm:text-3xl font-bold text-center mb-6">
         Reservar mesa
       </h2>
@@ -33,7 +33,8 @@ export default function Reservas() {
             src="https://www.covermanager.com/reservation/module_restaurant/restaurante-el-buey-madurado-xativa/spanish"
             allow="payment"
             frameBorder="0"
-            className="w-full min-h-[400px] sm:min-h-[500px] md:min-h-[550px]"
+            width="100%"
+            style={{ minHeight: '450px', height: '60vh', maxHeight: '700px' }}
           />
         </div>
       </div>

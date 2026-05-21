@@ -38,14 +38,16 @@ vi.mock('@/lib/hooks/swr', () => ({
 
 import { usePedidoPanel } from '../usePedidoPanel';
 
-// Pedidos de ejemplo para tests
+// Pedidos de ejemplo para tests.
+// `createdAt` = ahora, para que pasen el filtro de "turno actual" del hook.
+const ahora = new Date().toISOString();
 const pedidosMock = [
-  { _id: '1', estado: 'pendiente', total: 20 },
-  { _id: '2', estado: 'preparando', total: 15 },
-  { _id: '3', estado: 'listo', total: 30 },
-  { _id: '4', estado: 'pagado', total: 50 },
-  { _id: '5', estado: 'pagado', total: 25 },
-  { _id: '6', estado: 'servido', total: 18 },
+  { _id: '1', estado: 'pendiente', total: 20, createdAt: ahora },
+  { _id: '2', estado: 'preparando', total: 15, createdAt: ahora },
+  { _id: '3', estado: 'listo', total: 30, createdAt: ahora },
+  { _id: '4', estado: 'pagado', total: 50, createdAt: ahora },
+  { _id: '5', estado: 'pagado', total: 25, createdAt: ahora },
+  { _id: '6', estado: 'servido', total: 18, createdAt: ahora },
 ];
 
 beforeEach(() => {

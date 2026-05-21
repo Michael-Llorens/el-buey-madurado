@@ -9,7 +9,8 @@ import { authFetcher } from './fetcher';
 export function useProductos() {
   const { data, error, isLoading, mutate } = useSWR<any[]>(
     '/api/productos',
-    authFetcher
+    authFetcher,
+    { refreshInterval: 5_000 }
   );
 
   return {

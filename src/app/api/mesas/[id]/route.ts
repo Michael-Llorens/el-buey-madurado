@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Mesa from '@/lib/models/Mesa';
-import { protegerRuta } from '@/lib/middlewareAuth';
+import { protegerRutaPorRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
 import { sanitizeBody } from '@/lib/utils/sanitize';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 // ===========================
 // PUT - Actualizar mesa
@@ -15,7 +17,8 @@ export async function PUT(
 ) {
   try {
     await connectDB();
-    await protegerRuta(req);
+    const auth = await protegerRutaPorRol(req, ['admin', 'camarero']);
+    if (!auth.valido) return auth.response!;
 
     const rawBody = sanitizeBody(await req.json());
     const { id } = await params;
@@ -78,6 +81,13 @@ export async function PUT(
       }
     }
 
+    // Si se libera la mesa, resetear comensales a 0 (a menos que el cliente
+    // haya enviado un valor explícito en el mismo update).
+    if (update.estado === 'libre' && comensales === undefined) {
+      update.comensalesActuales = 0;
+      update.pedidoActual = null;
+    }
+
     const mesaActualizada = await Mesa.findByIdAndUpdate(
       id,
       { $set: update },
@@ -96,10 +106,10 @@ export async function PUT(
       data: mesaActualizada,
       message: 'Mesa actualizada exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en PUT /api/mesas/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en PUT /api/mesas/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -114,7 +124,8 @@ export async function DELETE(
 ) {
   try {
     await connectDB();
-    await protegerRuta(req);
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     const { id } = await params;
     const idError = validarObjectId(id);
@@ -135,10 +146,10 @@ export async function DELETE(
       data: mesaEliminada,
       message: 'Mesa eliminada exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en DELETE /api/mesas/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en DELETE /api/mesas/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }

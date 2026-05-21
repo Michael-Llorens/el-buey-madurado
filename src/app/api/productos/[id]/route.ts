@@ -5,6 +5,7 @@ import { protegerRuta, verificarRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
 import { sanitizeBody } from '@/lib/utils/sanitize';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 
 export async function GET(
@@ -12,7 +13,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   // ✅ PROTEGER
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   try {
@@ -35,10 +36,10 @@ export async function GET(
       success: true,
       data: producto,
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 500 });
   }
 }
@@ -49,7 +50,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   // ✅ PROTEGER - Solo admin
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin', 'cocinero'])) {
@@ -85,10 +86,10 @@ export async function PUT(
       success: true,
       data: producto,
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 400 });
   }
 }
@@ -99,7 +100,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   // ✅ PROTEGER - Solo admin
-  const auth = protegerRuta(request);
+  const auth = await protegerRuta(request);
   if (!auth.valido) return auth.response!;
 
   if (!verificarRol(auth.payload!, ['admin'])) {
@@ -130,10 +131,10 @@ export async function DELETE(
       success: true,
       data: producto,
     });
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json<ApiResponse>({
       success: false,
-      error: error.message,
+      error: getErrorMessage(error),
     }, { status: 500 });
   }
 }

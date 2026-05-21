@@ -2,6 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import {
+  ALERGENOS_UE,
+  ALERGENOS_LABELS,
+  ALERGENOS_ICONOS,
+  ALERGENOS_COLORES,
+  type AlergenoUE,
+} from '@/lib/constants/alergenos';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 interface IngredienteFormProps {
   ingrediente?: any | null;
@@ -33,7 +41,6 @@ export default function IngredienteForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState('');
-  const [alergeno, setAlergeno] = useState('');
 
   // ✅ Al montar o cambiar ingrediente, precargar datos
   useEffect(() => {
@@ -83,20 +90,12 @@ export default function IngredienteForm({
     }
   };
 
-  const handleAddAlergeno = () => {
-    if (alergeno.trim() && !formData.alergenos.includes(alergeno.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        alergenos: [...prev.alergenos, alergeno.trim()],
-      }));
-      setAlergeno('');
-    }
-  };
-
-  const handleRemoveAlergeno = (index: number) => {
+  const handleToggleAlergeno = (alergeno: AlergenoUE) => {
     setFormData(prev => ({
       ...prev,
-      alergenos: prev.alergenos.filter((_, i) => i !== index),
+      alergenos: prev.alergenos.includes(alergeno)
+        ? prev.alergenos.filter(a => a !== alergeno)
+        : [...prev.alergenos, alergeno],
     }));
   };
 
@@ -167,9 +166,9 @@ export default function IngredienteForm({
       );
 
       onGuardar(data.data);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error al guardar:', err);
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -193,7 +192,7 @@ export default function IngredienteForm({
           value={formData.nombre}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           placeholder="Ej: Carne de res"
         />
       </div>
@@ -206,7 +205,7 @@ export default function IngredienteForm({
           value={formData.categoria}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
         >
           <option value="">-- Selecciona una categoría --</option>
           <option value="Carnes">Carnes</option>
@@ -225,7 +224,7 @@ export default function IngredienteForm({
           name="descripcion"
           value={formData.descripcion}
           onChange={handleChange}
-          className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+          className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           rows={3}
           placeholder="Describe el ingrediente"
         />
@@ -234,29 +233,38 @@ export default function IngredienteForm({
       {/* Precios */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Precio Base (€) *</label>
-          <input
-            type="number"
-            name="precioBase"
-            value={formData.precioBase}
-            onChange={handleChange}
-            required
-            step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-            placeholder="0.00"
-          />
+          <label className="block text-sm font-medium mb-2">Precio Base *</label>
+          <div className="relative">
+            <input
+              type="number"
+              name="precioBase"
+              value={formData.precioBase}
+              onChange={handleChange}
+              required
+              step="0.01"
+              min="0"
+              className="w-full px-4 py-2.5 pr-10 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+              placeholder="0.00"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">€</span>
+          </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Precio Extra (€)</label>
-          <input
-            type="number"
-            name="precioExtra"
-            value={formData.precioExtra}
-            onChange={handleChange}
-            step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-            placeholder="0.00"
-          />
+          <label className="block text-sm font-medium mb-2">Precio Extra</label>
+          <div className="relative">
+            <input
+              type="number"
+              name="precioExtra"
+              value={formData.precioExtra}
+              onChange={handleChange}
+              step="0.01"
+              min="0"
+              className="w-full px-4 py-2.5 pr-10 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+              placeholder="0.00"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">€</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Precio cuando se añade como extra</p>
         </div>
       </div>
 
@@ -271,7 +279,7 @@ export default function IngredienteForm({
             onChange={handleChange}
             required
             step="0.01"
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
             placeholder="0"
           />
         </div>
@@ -281,7 +289,7 @@ export default function IngredienteForm({
             name="inventario.unidad"
             value={formData.inventario.unidad}
             onChange={handleChange}
-            className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
+            className="w-full px-4 py-2.5 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
           >
             <option value="kg">kg</option>
             <option value="g">g</option>
@@ -297,10 +305,19 @@ export default function IngredienteForm({
         <label className="block text-sm font-medium mb-2">Imagen</label>
         <input
           type="file"
-          accept="image/*"
-          onChange={handleImageChange}
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file && file.size > 5 * 1024 * 1024) {
+              alert('La imagen no puede superar 5MB');
+              e.target.value = '';
+              return;
+            }
+            handleImageChange(e);
+          }}
           className="w-full px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white"
         />
+        <p className="text-xs text-gray-500 mt-1">JPG, PNG o WebP. Máximo 5MB.</p>
         {preview && (
           <div className="mt-4">
             <img src={preview} alt="Preview" className="w-24 sm:w-32 h-24 sm:h-32 object-cover rounded" />
@@ -308,40 +325,35 @@ export default function IngredienteForm({
         )}
       </div>
 
-      {/* Alergenos */}
+      {/* Alérgenos UE (14 regulados) */}
       <div>
-        <label className="block text-sm font-medium mb-2">Alergenos</label>
-        <div className="flex gap-2 mb-2">
-          <input
-            type="text"
-            value={alergeno}
-            onChange={(e) => setAlergeno(e.target.value)}
-            placeholder="Ej: Gluten"
-            className="flex-1 px-4 py-2 bg-gray-700 border border-gray-700 rounded text-white focus:border-amber-500 focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={handleAddAlergeno}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded font-semibold"
-          >
-            Añadir
-          </button>
+        <label className="block text-sm font-medium mb-2">
+          Alérgenos <span className="text-gray-400 text-xs">(14 regulados UE)</span>
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          {ALERGENOS_UE.map((alerg) => {
+            const isSelected = formData.alergenos.includes(alerg);
+            return (
+              <button
+                key={alerg}
+                type="button"
+                onClick={() => handleToggleAlergeno(alerg)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all text-left text-sm ${
+                  isSelected
+                    ? `${ALERGENOS_COLORES[alerg]} border-white text-white font-semibold`
+                    : 'bg-gray-700 border-gray-600 text-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <span className="text-lg">{ALERGENOS_ICONOS[alerg]}</span>
+                <span>{ALERGENOS_LABELS[alerg]}</span>
+              </button>
+            );
+          })}
         </div>
         {formData.alergenos.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {formData.alergenos.map((alerg, idx) => (
-              <div key={idx} className="bg-amber-600 px-3 py-1 rounded text-sm flex items-center gap-2">
-                {alerg}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveAlergeno(idx)}
-                  className="text-white hover:text-red-200 font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
+          <p className="mt-2 text-xs text-amber-400">
+            {formData.alergenos.length} alérgeno{formData.alergenos.length !== 1 ? 's' : ''} seleccionado{formData.alergenos.length !== 1 ? 's' : ''}
+          </p>
         )}
       </div>
 

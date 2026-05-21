@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 import Pedido from '@/lib/models/Pedido';
 import Producto from '@/lib/models/Producto';
-import { protegerRuta } from '@/lib/middlewareAuth';
+import Ingrediente from '@/lib/models/Ingrediente';
+import { protegerRuta, protegerRutaPorRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import { validarObjectId } from '@/lib/utils/validateId';
 import { sanitizeBody } from '@/lib/utils/sanitize';
 import mongoose from 'mongoose';
 import { normalizarPedido, liberarMesa } from '@/lib/services/pedidoService';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -17,9 +20,10 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function GET(req: NextRequest, context: Ctx) {
   try {
     await connectDB();
+    void Producto; void Ingrediente; // asegurar registro para populate anidado
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRuta(req);
+    if (!auth.valido) return auth.response!;
 
     const { id } = await context.params;
     const idError = validarObjectId(id);
@@ -27,8 +31,12 @@ export async function GET(req: NextRequest, context: Ctx) {
 
     const pedido = await Pedido.findById(id)
       .populate('mesa', 'nombre numero capacidad estado')
-      .populate('productos.producto', 'nombre precio imagen descripcion')
-      .populate('camarero', 'nombre email rol'); // ✅ añade rol
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen descripcion ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
+      .populate('camarero', 'nombre email rol');
 
     if (!pedido) {
       return NextResponse.json<ApiResponse>(
@@ -41,10 +49,10 @@ export async function GET(req: NextRequest, context: Ctx) {
       success: true,
       data: normalizarPedido(pedido),
     });
-  } catch (error: any) {
-    console.error('❌ Error en GET /api/pedidos/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en GET /api/pedidos/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -57,8 +65,8 @@ export async function PUT(req: NextRequest, context: Ctx) {
   try {
     await connectDB();
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRuta(req);
+    if (!auth.valido) return auth.response!;
 
     const body = sanitizeBody(await req.json());
     const { id } = await context.params;
@@ -97,6 +105,53 @@ export async function PUT(req: NextRequest, context: Ctx) {
       pedido.productos = productosConPrecios;
     }
 
+    // Actualizar estado de un producto individual (solo para pedidos locales)
+    if (body.productoIndex !== undefined && body.estadoProducto) {
+      const idx = Number(body.productoIndex);
+      if (idx >= 0 && idx < pedido.productos.length) {
+        (pedido.productos as any)[idx].estadoProducto = body.estadoProducto;
+        pedido.markModified('productos');
+
+        // Si el pedido está pendiente, pasarlo a preparando automáticamente
+        if (pedido.estado === 'pendiente') {
+          pedido.estado = 'preparando';
+        }
+
+        // Guardar primero para que el populate funcione con datos actualizados
+        await pedido.save();
+
+        // Si todos los productos de cocina (no bebidas) están listos, el pedido pasa a "listo"
+        const productosPoblados = await Pedido.findById(id).populate('productos.producto', 'categoria');
+        if (productosPoblados) {
+          const productosCocina = productosPoblados.productos.filter((p: any) => {
+            const cat = (p.producto as any)?.categoria?.toLowerCase() ?? '';
+            return cat !== 'bebidas';
+          });
+          const todosListos = productosCocina.length > 0 && productosCocina.every((p: any) => p.estadoProducto === 'listo');
+          if (todosListos) {
+            pedido.estado = 'listo';
+            await pedido.save();
+          }
+        }
+
+        // Devolver respuesta aquí (no seguir con el save de abajo)
+        const pedidoActualizado = await Pedido.findById(id)
+          .populate('mesa', 'nombre numero capacidad')
+          .populate({
+            path: 'productos.producto',
+            select: 'nombre precio imagen categoria ingredientes',
+            populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+          })
+          .populate('camarero', 'nombre email rol');
+
+        return NextResponse.json<ApiResponse>({
+          success: true,
+          data: normalizarPedido(pedidoActualizado),
+          message: 'Estado del plato actualizado',
+        });
+      }
+    }
+
     if (body.estado) pedido.estado = body.estado;
     if (body.cliente !== undefined) pedido.cliente = body.cliente;
     if (body.notas !== undefined) pedido.notas = body.notas;
@@ -117,18 +172,22 @@ export async function PUT(req: NextRequest, context: Ctx) {
 
     const pedidoActualizado = await Pedido.findById(id)
       .populate('mesa', 'nombre numero capacidad')
-      .populate('productos.producto', 'nombre precio imagen')
-      .populate('camarero', 'nombre email rol'); // ✅ añade rol
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen categoria ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
+      .populate('camarero', 'nombre email rol');
 
     return NextResponse.json<ApiResponse>({
       success: true,
       data: normalizarPedido(pedidoActualizado),
       message: 'Pedido actualizado exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en PUT /api/pedidos/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en PUT /api/pedidos/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -141,8 +200,8 @@ export async function DELETE(req: NextRequest, context: Ctx) {
   try {
     await connectDB();
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     const { id } = await context.params;
     const idError = validarObjectId(id);
@@ -167,10 +226,10 @@ export async function DELETE(req: NextRequest, context: Ctx) {
       success: true,
       message: 'Pedido cancelado exitosamente',
     });
-  } catch (error: any) {
-    console.error('❌ Error en DELETE /api/pedidos/[id]:', error);
+  } catch (error) {
+    logger.error('❌ Error en DELETE /api/pedidos/[id]:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }

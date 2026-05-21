@@ -4,12 +4,14 @@ import Pedido from '@/lib/models/Pedido';
 import Mesa from '@/lib/models/Mesa';
 import Producto from '@/lib/models/Producto';
 import Usuario from '@/lib/models/Usuario';
-import { protegerRuta } from '@/lib/middlewareAuth';
+import { protegerRuta, protegerRutaPorRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
 import mongoose from 'mongoose';
 import { sanitizeBody } from '@/lib/utils/sanitize';
 import { getPaginationParams, buildPaginatedResponse } from '@/lib/utils/pagination';
 import { normalizarPedido, ocuparMesa, validarProductosYObtenerPrecios } from '@/lib/services/pedidoService';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 // ===========================
 // GET - Listar todos los pedidos
@@ -18,8 +20,8 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRuta(req);
+    if (!auth.valido) return auth.response!;
 
     // Forzar registro de modelos
     void Mesa;
@@ -32,16 +34,29 @@ export async function GET(req: NextRequest) {
     const tipo = searchParams.get('tipo');
 
     const filtros: any = {};
-    if (estado) filtros.estado = estado;
+    if (estado) {
+      // Soportar múltiples estados separados por coma: ?estado=pendiente,preparando
+      filtros.estado = estado.includes(',') ? { $in: estado.split(',') } : estado;
+    } else {
+      // Por defecto NO mostrar pedidos en pendiente_pago (aún no confirmados por Stripe)
+      filtros.estado = { $ne: 'pendiente_pago' };
+    }
     if (mesaId) filtros.mesa = mesaId;
     if (tipo) filtros.tipo = tipo;
 
     const { page, limit, sort } = getPaginationParams(req);
     const total = await Pedido.countDocuments(filtros);
 
+    // Forzar registro del modelo Ingrediente para el populate anidado
+    await import('@/lib/models/Ingrediente');
+
     const pedidos = await Pedido.find(filtros)
       .populate('mesa', 'nombre numero capacidad estado')
-      .populate('productos.producto', 'nombre precio imagen')
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen categoria ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
       .populate('camarero', 'nombre email rol')
       .sort(sort)
       .skip((page - 1) * limit)
@@ -51,10 +66,10 @@ export async function GET(req: NextRequest) {
       success: true,
       data: buildPaginatedResponse(pedidos.map(normalizarPedido), total, { page, limit, sort }),
     });
-  } catch (error: any) {
-    console.error('❌ Error en GET /api/pedidos:', error);
+  } catch (error) {
+    logger.error('❌ Error en GET /api/pedidos:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -67,9 +82,9 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
-    const payload = auth?.payload;
+    const auth = await protegerRutaPorRol(req, ['admin', 'camarero']);
+    if (!auth.valido) return auth.response!;
+    const payload = auth.payload!;
 
     const body = sanitizeBody(await req.json());
 
@@ -143,8 +158,7 @@ export async function POST(req: NextRequest) {
     // ✅ VALIDAR PRODUCTOS Y OBTENER PRECIOS
     const productosConPrecios = await validarProductosYObtenerPrecios(body.productos);
 
-    const userId =
-      payload?.userId || payload?.id || payload?._id || payload?.uid || null;
+    const userId = payload.userId;
 
     const nuevoPedido = new Pedido({
       tipo,
@@ -171,8 +185,12 @@ export async function POST(req: NextRequest) {
 
     const pedidoCompleto = await Pedido.findById(nuevoPedido._id)
       .populate('mesa', 'nombre numero capacidad')
-      .populate('productos.producto', 'nombre precio imagen')
-      .populate('camarero', 'nombre email rol'); // ✅ añade rol
+      .populate({
+        path: 'productos.producto',
+        select: 'nombre precio imagen categoria ingredientes',
+        populate: { path: 'ingredientes.ingrediente', select: 'nombre alergenos' },
+      })
+      .populate('camarero', 'nombre email rol');
 
     return NextResponse.json<ApiResponse>(
       {
@@ -188,10 +206,10 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('❌ Error en POST /api/pedidos:', error);
+  } catch (error) {
+    logger.error('❌ Error en POST /api/pedidos:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }

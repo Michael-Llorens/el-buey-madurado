@@ -3,15 +3,17 @@ import { connectDB } from '@/lib/db';
 import Pedido from '@/lib/models/Pedido';
 import Producto from '@/lib/models/Producto';
 import Mesa from '@/lib/models/Mesa';
-import { protegerRuta } from '@/lib/middlewareAuth';
+import { protegerRutaPorRol } from '@/lib/middlewareAuth';
 import { ApiResponse } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/errors';
 
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const auth: any = await protegerRuta(req);
-    if (!auth?.valido) return auth?.response!;
+    const auth = await protegerRutaPorRol(req, ['admin']);
+    if (!auth.valido) return auth.response!;
 
     // Forzar registro de modelos para populate
     void Producto;
@@ -185,10 +187,10 @@ export async function GET(req: NextRequest) {
         })),
       },
     });
-  } catch (error: any) {
-    console.error('Error en GET /api/reportes:', error);
+  } catch (error) {
+    logger.error('Error en GET /api/reportes:', error);
     return NextResponse.json<ApiResponse>(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   }

@@ -1,8 +1,12 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaStar } from 'react-icons/fa';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 interface Review {
     author: string;
@@ -76,27 +80,50 @@ const reviews: Review[] = [
 
 export default function GoogleReviews() {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [direction, setDirection] = useState(0);
+    const directionRef = useRef(0);
+    const sectionRef = useRef<HTMLElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const headerRef = useRef<HTMLDivElement>(null);
+
+    // Header entrance animation (one-shot on scroll)
+    useGSAP(() => {
+        if (!headerRef.current) return;
+        gsap.from(headerRef.current, {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: headerRef.current, start: 'top 85%', toggleActions: 'play none none none' },
+        });
+    }, { scope: sectionRef });
+
+    // Slide-in animation when currentIndex changes
+    useGSAP(() => {
+        if (!cardRef.current) return;
+        const dir = directionRef.current >= 0 ? 1 : -1;
+        gsap.fromTo(
+            cardRef.current,
+            { x: dir * 400, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.6, ease: 'power2.inOut' }
+        );
+    }, { dependencies: [currentIndex], scope: sectionRef });
 
     useEffect(() => {
         const interval = setInterval(() => {
-            const nextIndex = (currentIndex + 1) % reviews.length;
-            setDirection(nextIndex > currentIndex ? 1 : -1);
-            setCurrentIndex(nextIndex);
+            setCurrentIndex((prev) => {
+                const next = (prev + 1) % reviews.length;
+                directionRef.current = next > prev ? 1 : -1;
+                return next;
+            });
         }, 5000);
         return () => clearInterval(interval);
-    }, [currentIndex]);
+    }, []);
 
     return (
-        <section className="py-20 bg-gradient-to-b from-black/20 to-black/40">
+        <section ref={sectionRef} className="py-20 bg-gradient-to-b from-black/20 to-black/40">
             <div className="max-w-5xl mx-auto px-6">
                 {/* Título */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center mb-16"
-                >
+                <div ref={headerRef} className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-heading text-white uppercase tracking-wide mb-4">
                         Lo que dicen nuestros clientes
                     </h2>
@@ -108,49 +135,44 @@ export default function GoogleReviews() {
                         <span className="text-3xl md:text-4xl font-bold">5.0</span>
                         <span className="text-white/80 text-lg md:text-xl">(55 reseñas en Google)</span>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Carrusel de cartas */}
                 <div className="overflow-hidden">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentIndex}
-                            initial={{ x: direction > 0 ? 400 : -400, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: direction > 0 ? -400 : 400, opacity: 0 }}
-                            transition={{ duration: 0.6, ease: 'easeInOut' }}
-                            className="min-h-[450px] md:min-h-[400px] flex items-center justify-center"
-                        >
-                            <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/20 max-w-2xl w-full">
-                                {/* Estrellas */}
-                                <div className="flex gap-2 mb-8">
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                        <FaStar
-                                            key={i}
-                                            className="text-amber-400 fill-amber-400 text-2xl"
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* Texto reseña */}
-                                <p className="text-white/90 text-xl md:text-2xl leading-relaxed mb-10 italic font-light">
-                                    "{reviews[currentIndex].text}"
-                                </p>
-
-                                {/* Autor y fecha */}
-                                <div className="border-t border-white/20 pt-6">
-                                    <p className="font-semibold text-white text-xl mb-1">
-                                        {reviews[currentIndex].author}
-                                    </p>
-                                    <p className="text-white/60 text-sm flex items-center gap-2">
-                                        <span>Verificado en Google</span>
-                                        <span>•</span>
-                                        <span>{reviews[currentIndex].date}</span>
-                                    </p>
-                                </div>
+                    <div
+                        ref={cardRef}
+                        key={currentIndex}
+                        className="min-h-[450px] md:min-h-[400px] flex items-center justify-center"
+                    >
+                        <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 md:p-12 border border-white/20 max-w-2xl w-full">
+                            {/* Estrellas */}
+                            <div className="flex gap-2 mb-8">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <FaStar
+                                        key={i}
+                                        className="text-amber-400 fill-amber-400 text-2xl"
+                                    />
+                                ))}
                             </div>
-                        </motion.div>
-                    </AnimatePresence>
+
+                            {/* Texto reseña */}
+                            <p className="text-white/90 text-xl md:text-2xl leading-relaxed mb-10 italic font-light">
+                                "{reviews[currentIndex].text}"
+                            </p>
+
+                            {/* Autor y fecha */}
+                            <div className="border-t border-white/20 pt-6">
+                                <p className="font-semibold text-white text-xl mb-1">
+                                    {reviews[currentIndex].author}
+                                </p>
+                                <p className="text-white/60 text-sm flex items-center gap-2">
+                                    <span>Verificado en Google</span>
+                                    <span>•</span>
+                                    <span>{reviews[currentIndex].date}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

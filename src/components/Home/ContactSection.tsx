@@ -1,7 +1,13 @@
 // components/Home/ContactSection.tsx
 'use client';
 
+import { useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { FaWhatsapp } from "react-icons/fa";
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const WHATSAPP_URL = "https://wa.me/34670775786";
 
@@ -14,9 +20,26 @@ const WRITE_REVIEW_URL =
 const MAPS_DIRECTIONS_URL = "https://maps.app.goo.gl/PFgL2Ww84fGHULMp6";
 
 const ContactSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    gsap.from('.contact-header', {
+      y: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '.contact-header', start: 'top 85%' },
+    });
+    gsap.from('.contact-card-left', {
+      x: -50, opacity: 0, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '.contact-grid', start: 'top 80%' },
+    });
+    gsap.from('.contact-card-right', {
+      x: 50, opacity: 0, duration: 0.8, delay: 0.15, ease: 'power2.out',
+      scrollTrigger: { trigger: '.contact-grid', start: 'top 80%' },
+    });
+  }, { scope: sectionRef });
+
   return (
-    <section id="contact" className="max-w-6xl mx-auto px-6 pt-10 pb-20 fade-in">
-      <div className="flex flex-col gap-2 mb-8">
+    <section ref={sectionRef} id="contact" className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-20">
+      <div className="contact-header flex flex-col gap-2 mb-8">
         <h2 className="text-amber-600 text-4xl font-bold text-beige-100">
           Contacto y Localización
         </h2>
@@ -25,9 +48,9 @@ const ContactSection = () => {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-10 items-stretch">
+      <div className="contact-grid grid md:grid-cols-2 gap-6 md:gap-10 items-stretch">
         {/* Información de contacto */}
-        <div className="bg-[#0f0f0f] p-8 rounded-xl border border-gray-800 shadow-lg flex flex-col">
+        <div className="contact-card-left bg-[#0f0f0f] p-8 rounded-xl border border-gray-800 shadow-lg flex flex-col">
           {/* Encabezado */}
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
@@ -41,7 +64,7 @@ const ContactSection = () => {
               href={MAPS_DIRECTIONS_URL}
               target="_blank"
               rel="noreferrer"
-              className="shrink-0 px-4 py-2 text-sm font-semibold text-amber-500 border border-amber-600 rounded-md hover:bg-amber-600 hover:text-black transition"
+              className="shrink-0 px-4 py-2.5 text-sm font-semibold text-amber-500 border border-amber-600 rounded-md hover:bg-amber-600 hover:text-black transition"
             >
               Cómo llegar →
             </a>
@@ -84,11 +107,11 @@ const ContactSection = () => {
             <p>
               <strong className="text-gray-200">Teléfono:</strong>{" "}
               <a
-                href="tel:+34670777586"
-                aria-label="Llamar al 670 77 75 86"
+                href="tel:+34670775786"
+                aria-label="Llamar al 670 77 57 86"
                 className="text-amber-500 hover:underline"
               >
-                +34 670 77 75 86
+                +34 670 77 57 86
               </a>
             </p>
 
@@ -126,7 +149,7 @@ const ContactSection = () => {
                   href={GOOGLE_REVIEWS_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-2 text-sm font-semibold text-white border border-white/15 rounded-md hover:bg-white/5 transition"
+                  className="px-4 py-2.5 text-sm font-semibold text-white border border-white/15 rounded-md hover:bg-white/5 transition"
                 >
                   Ver reseñas →
                 </a>
@@ -135,7 +158,7 @@ const ContactSection = () => {
                   href={WRITE_REVIEW_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className="px-4 py-2 text-sm font-semibold bg-amber-500 text-[#1a1410] rounded-md hover:bg-amber-400 transition"
+                  className="px-4 py-2.5 text-sm font-semibold bg-amber-500 text-[#1a1410] rounded-md hover:bg-amber-400 transition"
                 >
                   Déjanos tu opinión
                 </a>
@@ -145,7 +168,7 @@ const ContactSection = () => {
         </div>
 
         {/* Mapa */}
-        <div className="relative rounded-xl overflow-hidden border border-gray-800 shadow-lg h-[220px] md:h-[280px]">
+        <div className="contact-card-right relative rounded-xl overflow-hidden border border-gray-800 shadow-lg h-[250px] sm:h-[300px] md:h-[350px]">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193.823107430763!2d-0.5263494328058195!3d38.988622750395706!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd61a3a2f5215229%3A0x7ecfefdab1c14599!2sRestaurante%20el%20buey%20madurado!5e0!3m2!1ses!2ses!4v1767974032149!5m2!1ses!2ses"
             className="w-full h-full"
@@ -162,7 +185,7 @@ const ContactSection = () => {
               href={MAPS_DIRECTIONS_URL}
               target="_blank"
               rel="noreferrer"
-              className="px-3 py-2 text-xs font-semibold rounded-md bg-black/60 text-white border border-white/15 hover:bg-black/70 backdrop-blur transition"
+              className="px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-md bg-black/60 text-white border border-white/15 hover:bg-black/70 backdrop-blur transition"
             >
               Abrir Maps
             </a>

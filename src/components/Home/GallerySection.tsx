@@ -2,6 +2,11 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
+
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const SLIDE_MS = 3200;
 
@@ -161,20 +166,37 @@ export default function GallerySection() {
     };
   }, [images.length]);
 
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    gsap.from('.gallery-title', {
+      y: 40, opacity: 0, duration: 0.8, ease: 'power2.out',
+      scrollTrigger: { trigger: '.gallery-title', start: 'top 85%' },
+    });
+    gsap.from('.gallery-subtitle', {
+      y: 30, opacity: 0, duration: 0.7, delay: 0.15, ease: 'power2.out',
+      scrollTrigger: { trigger: '.gallery-title', start: 'top 85%' },
+    });
+    gsap.from('.gallery-container', {
+      scale: 0.92, opacity: 0, duration: 1, ease: 'power2.out',
+      scrollTrigger: { trigger: '.gallery-container', start: 'top 85%' },
+    });
+  }, { scope: sectionRef });
+
   return (
-    <section className="w-full px-4 md:px-6 py-10 md:py-14">
+    <section ref={sectionRef} className="w-full px-4 md:px-6 py-10 md:py-14">
       <div className="max-w-6xl mx-auto">
         <div className="mb-5 md:mb-7">
-          <h2 className="text-white text-2xl md:text-4xl font-bold leading-tight">
+          <h2 className="gallery-title text-white text-2xl md:text-4xl font-bold leading-tight">
             El producto mas exclusivo.
             <span className="text-amber-500"> Todo por vosotros.</span>
           </h2>
-          <p className="text-white/70 text-sm md:text-base mt-3 max-w-2xl">
+          <p className="gallery-subtitle text-white/70 text-sm md:text-base mt-3 max-w-2xl">
             Maduración · Experiencia · Pasión
           </p>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl ring-1 ring-white/10 shadow-2xl">
+        <div className="gallery-container relative overflow-hidden rounded-3xl ring-1 ring-white/10 shadow-2xl">
           {/* MÓVIL */}
           <div className="md:hidden -mx-4">
             <div

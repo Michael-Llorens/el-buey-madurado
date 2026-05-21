@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { getErrorMessage } from '@/lib/utils/errors';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -21,19 +23,32 @@ export default function LoginPage() {
       const result = await login(email, password);
 
       if (result.success) {
-        router.push('/dashboard');
+        // Redirigir según rol: camarero → mesas, cocinero → cocina, admin → pedidos
+        const rol = result.usuario?.rol;
+        if (rol === 'cocinero') {
+          router.push('/dashboard?modulo=cocina');
+        } else if (rol === 'camarero') {
+          router.push('/dashboard/mesas');
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         setError(result.error || 'Error al iniciar sesión');
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <div className="admin-themed min-h-screen bg-gray-900 flex items-center justify-center p-4 relative">
+      {/* Toggle de tema en esquina superior derecha */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle variant="pill" />
+      </div>
+
       <div className="bg-gray-800 rounded-lg p-8 w-full max-w-md border border-gray-700">
         <h1 className="text-2xl font-bold text-amber-400 mb-6 text-center">
           🔐 Acceso Admin
@@ -54,7 +69,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-3 text-white focus:outline-none focus:border-amber-400"
               required
             />
           </div>
@@ -67,7 +82,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-amber-400"
+              className="w-full bg-gray-700 border border-gray-600 rounded px-4 py-3 text-white focus:outline-none focus:border-amber-400"
               required
             />
           </div>
@@ -75,7 +90,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded transition"
+            className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 text-white font-bold py-3 px-4 rounded transition"
           >
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>

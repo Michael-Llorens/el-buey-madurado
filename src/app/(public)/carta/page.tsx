@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import gsap from 'gsap';
 import { menuItems } from '@/data/menu';
 import './carta.css';
 
@@ -68,9 +69,16 @@ export default function CartaPage() {
       setAnimationDirection(null);
       setIsAnimating(false);
 
-      // ✅ Y AHORA subimos suave (después del cambio)
+      // Stagger de entrada en los nuevos items
       requestAnimationFrame(() => {
         scrollToTopSmooth();
+        const items = cartaWrapperRef.current?.querySelectorAll('.carta-product-item');
+        if (items?.length) {
+          gsap.fromTo(items,
+            { y: 20, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.4, stagger: 0.04, ease: 'power2.out', overwrite: true }
+          );
+        }
       });
     }, ANIMATION_MS);
   };
@@ -130,6 +138,29 @@ export default function CartaPage() {
             <h2 className="carta-category-title">{titulo}</h2>
             <div className="carta-decorative-line"></div>
           </div>
+
+          {/* 🍰 BLOQUE COLABORACIÓN LETI'S (solo Postres) */}
+          {_categoria === 'Postres' && (
+            <div className="carta-letis-block">
+              <img
+                src="/assets/images/letis.webp"
+                alt="Leti’s Pastelería"
+                className="carta-letis-logo"
+                loading="lazy"
+              />
+
+              <div className="carta-letis-text">
+                <span className="carta-letis-title">
+                  Postres de autor by Leti’s Atelier Gourmet
+                </span>
+
+                <p className="carta-letis-description">
+                  Tartas de queso elaboradas artesanalmente en Xàtiva.
+                </p>
+              </div>
+            </div>
+          )}
+
 
           {/* ✅ BLOQUE ÚNICO DE GUARNICIÓN (solo Burgers) */}
           {_categoria === 'Hamburguesas' && (

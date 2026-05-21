@@ -3,8 +3,9 @@ import { connectDB } from '@/lib/db';
 import Usuario from '@/lib/models/Usuario';
 import { generarToken } from '@/lib/auth';
 import { ApiResponse } from '@/lib/types';
-import { sanitizeBody } from '@/lib/utils/sanitize';
+
 import { checkRateLimit } from '@/lib/utils/rateLimiter';
+import { logger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +23,9 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     
-    const { email, password } = sanitizeBody(await request.json());
+    const body = await request.json();
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const password = typeof body.password === 'string' ? body.password : '';
 
     // Validar entrada
     if (!email || !password) {
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generar token
-    const token = generarToken(usuario);
+    const token = await generarToken(usuario);
 
     // Actualizar último login
     usuario.ultimoLogin = new Date();
@@ -92,8 +95,8 @@ export async function POST(request: NextRequest) {
 
     return response;
 
-  } catch (error: any) {
-    console.error('Error login:', error);
+  } catch (error) {
+    logger.error('Error login:', error);
     return NextResponse.json<ApiResponse>({
       success: false,
       error: 'Error al iniciar sesión',
