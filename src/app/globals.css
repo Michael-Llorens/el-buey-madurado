@@ -14,9 +14,23 @@ iframe[src*="stripe.com/connect"] {
   display: none !important;
 }
 
+/* ============================================================
+   SCROLL: una sola barra siempre (la del html).
+
+   Solución definitiva tras probar varias variantes con `clip`/`hidden`:
+   - `overflow-y: scroll` en html → SIEMPRE hay barra (cero saltos al
+     cargar, cero FOUC, cero discrepancias entre renders SSR/cliente).
+   - `overflow-x: hidden` en html → recorta cualquier desbordamiento
+     horizontal sin afectar el flujo vertical.
+   - body sin overflow → garantiza que NO genera su propia barra,
+     no se convierte en scroll container, no propaga al viewport.
+   - Anti-FOUC: html.bg = body.bg = #160a00 (mismo color de marca).
+   ============================================================ */
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  overflow-y: scroll;
+  background-color: #160a00;
 }
 
 body {
@@ -27,9 +41,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #160a00;
   color: white;
-  overflow-x: hidden;
   width: 100%;
-  max-width: 100vw;
+  /* Forzamos overflow visible para garantizar que body NO sea scroll
+     container y NO genere su propia barra. Tailwind/otros componentes
+     podrían reintroducir `overflow-x: hidden`; por eso usamos !important. */
+  overflow: visible !important;
 }
 
 /* Protección anti-overflow global: medios siempre dentro del viewport */

@@ -407,10 +407,12 @@ export function usePedidoForm({
       return sum + precio * item.cantidad;
     }, 0);
 
-    const impuestos = subtotal * 0.21;
+    // IVA contenido (10 % en restauración, ya incluido en el precio).
+    // Es informativo para facturas/reportes, NO se suma al total.
+    const impuestos = subtotal - subtotal / 1.10;
     const gastoEnvio = formData.tipo === 'domicilio' ? Number(formData.gastoEnvio) || 0 : 0;
     const descuento = Number(formData.descuento) || 0;
-    const total = subtotal + impuestos + gastoEnvio - descuento;
+    const total = subtotal + gastoEnvio - descuento;
 
     return {
       subtotal: subtotal.toFixed(2),

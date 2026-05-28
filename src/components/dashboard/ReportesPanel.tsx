@@ -624,9 +624,9 @@ export default function ReportesPanel() {
       {/* ============ DETALLE FISCAL ============ */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card
-          titulo="IVA recaudado (21%)"
+          titulo="IVA recaudado (10%)"
           valor={euro(resumen.impuestosTotales)}
-          subtitulo="sobre todos los pedidos"
+          subtitulo="incluido en el precio (restauración)"
           color="text-orange-400"
         />
         <Card

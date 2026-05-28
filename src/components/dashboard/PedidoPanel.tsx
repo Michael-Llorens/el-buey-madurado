@@ -108,7 +108,7 @@ async function generarTicketPDF(pedido: any) {
     pdf.text(subtotalTxt, w - m - pdf.getTextWidth(subtotalTxt), y); y += 3.5;
 
     const ivaTxt = Number(pedido.impuestos || 0).toFixed(2) + '€';
-    pdf.text('IVA (21%):', m, y);
+    pdf.text('IVA incluido (10%):', m, y);
     pdf.text(ivaTxt, w - m - pdf.getTextWidth(ivaTxt), y); y += 3.5;
 
     if (Number(pedido.gastoEnvio || 0) > 0) {
@@ -604,7 +604,7 @@ export default function PedidosPanel() {
                                         <span>{Number(pedidoDetalle.subtotal || 0).toFixed(2)}€</span>
                                     </div>
                                     <div className="flex justify-between text-gray-400">
-                                        <span>IVA (21%)</span>
+                                        <span>IVA incluido (10%)</span>
                                         <span>{Number(pedidoDetalle.impuestos || 0).toFixed(2)}€</span>
                                     </div>
                                     {Number(pedidoDetalle.gastoEnvio || 0) > 0 && (

@@ -142,7 +142,8 @@ describe('validarProductosYObtenerPrecios', () => {
     expect(result[0].subtotal).toBe(65); // 32.5 * 2
     expect(result[0].cantidad).toBe(2);
     expect(result[0].notas).toBe('');
-    expect(result[0].personalizaciones).toEqual({});
+    // Sin extras seleccionados → precioExtras 0 (añadido para trazabilidad)
+    expect(result[0].personalizaciones).toEqual({ precioExtras: 0 });
   });
 
   it('preserva notas y personalizaciones del item', async () => {
@@ -162,7 +163,8 @@ describe('validarProductosYObtenerPrecios', () => {
     ]);
 
     expect(result[0].notas).toBe('sin sal');
-    expect(result[0].personalizaciones).toEqual({ punto: 'medio' });
+    // Conserva las personalizaciones del item y añade precioExtras calculado
+    expect(result[0].personalizaciones).toEqual({ punto: 'medio', precioExtras: 0 });
   });
 
   it('lanza error si el producto no existe en BD', async () => {

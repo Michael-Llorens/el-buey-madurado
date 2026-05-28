@@ -92,11 +92,42 @@ export async function validarProductosYObtenerPrecios(
 > {
   return Promise.all(
     (productos || []).map(async (item: any) => {
-      const prod = await Producto.findById(item.producto);
+      // findById + populate de los ingredientes para leer su precioExtra.
+      // Hacemos el populate condicional para no romper en entornos de test
+      // donde findById está mockeado y no devuelve un Query con .populate().
+      const query: any = Producto.findById(item.producto);
+      const prod =
+        query && typeof query.populate === 'function'
+          ? await query.populate('ingredientes.ingrediente')
+          : await query;
       if (!prod) throw new Error(`Producto ${item.producto} no encontrado`);
       if (!prod.disponible) throw new Error(`Producto "${prod.nombre}" no disponible`);
 
-      const precioUnitario = prod.precio;
+      // Construir la lista oficial de extras disponibles (igual lógica que el
+      // frontend en PersonalizarModal.tsx). Dos fuentes:
+      // (1) ingredientes del producto con precioExtra > 0
+      // (2) producto.ingredientesExtra (extras definidos explícitamente).
+      // Validamos server-side para evitar manipulación del JSON del cliente.
+      const extrasOficiales: Array<{ nombre: string; precio: number }> = [];
+      for (const ing of prod.ingredientes || []) {
+        const ingDoc: any = ing.ingrediente;
+        if (ingDoc?.nombre && (ingDoc.precioExtra ?? 0) > 0) {
+          extrasOficiales.push({ nombre: ingDoc.nombre, precio: ingDoc.precioExtra });
+        }
+      }
+      const nombresVistos = new Set(extrasOficiales.map((e) => e.nombre));
+      for (const e of prod.ingredientesExtra || []) {
+        if (!nombresVistos.has(e.nombre)) {
+          extrasOficiales.push({ nombre: e.nombre, precio: e.precio });
+        }
+      }
+
+      const extrasSeleccionados: string[] = item.personalizaciones?.ingredientesExtra ?? [];
+      const precioExtras = extrasOficiales
+        .filter((e) => extrasSeleccionados.includes(e.nombre))
+        .reduce((sum, e) => sum + (e.precio || 0), 0);
+
+      const precioUnitario = prod.precio + precioExtras;
       const subtotal = precioUnitario * item.cantidad;
 
       return {
@@ -105,7 +136,10 @@ export async function validarProductosYObtenerPrecios(
         precioUnitario,
         subtotal,
         notas: item.notas || '',
-        personalizaciones: item.personalizaciones || {},
+        personalizaciones: {
+          ...(item.personalizaciones || {}),
+          precioExtras, // guardado para trazabilidad en reportes/factura
+        },
       };
     })
   );

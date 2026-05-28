@@ -974,18 +974,10 @@
   transform: scale(0.99);
 }
 
-/* ===== PREVENT SCROLLBAR SHIFT ===== */
-html {
-  scrollbar-gutter: stable;
-  overflow-y: scroll;
-}
-
-body {
-  scrollbar-gutter: stable;
-}
-
+/* ===== PREVENT SCROLLBAR SHIFT =====
+   Las reglas globales scrollbar-gutter: stable están en globals.css.
+   Aquí solo neutralizamos el padding-right que algunos modales añaden. */
 html.modal-open {
-  overflow-y: scroll;
   padding-right: 0 !important;
 }
 .carta-nav-grid {
