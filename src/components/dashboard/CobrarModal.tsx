@@ -152,7 +152,7 @@ export default function CobrarModal({ pedido, onClose, onCobrado }: CobrarModalP
               <span className="font-mono">{pedido.subtotal.toFixed(2)} EUR</span>
             </div>
             <div className="flex justify-between text-sm text-gray-400">
-              <span>IVA (21%)</span>
+              <span>IVA incluido (10%)</span>
               <span className="font-mono">{pedido.impuestos.toFixed(2)} EUR</span>
             </div>
             {pedido.descuento > 0 && (

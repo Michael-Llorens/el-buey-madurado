@@ -182,20 +182,27 @@ PedidoSchema.index({ estado: 1, createdAt: -1 });
 PedidoSchema.index({ camarero: 1, createdAt: -1 });
 
 // Método para calcular totales
+// NOTA: los precios mostrados en la carta YA INCLUYEN IVA (estándar español
+// en hostelería para consumo en local / recogida, 10 % aplicado al precio
+// de venta final). Por eso el `impuestos` aquí es informativo: se calcula
+// como la parte del IVA ya contenida en el subtotal (subtotal * 10/110),
+// no se suma al total. Así el cliente paga exactamente lo que ve en pantalla.
 PedidoSchema.methods.calcularTotales = function() {
-  // Calcular subtotal de productos
+  // Calcular subtotal de productos (precios con IVA incluido)
   this.subtotal = this.productos.reduce((sum: number, prod: IProductoPedido) => {
     return sum + prod.subtotal;
   }, 0);
 
-  // Calcular IVA (21% en España)
-  this.impuestos = Math.round(this.subtotal * 0.21 * 100) / 100;
+  // Calcular el IVA contenido en el subtotal (10 % en restauración, ya
+  // incluido en el precio de venta). Es informativo para reportes / factura.
+  this.impuestos = Math.round((this.subtotal - this.subtotal / 1.10) * 100) / 100;
 
-  // Calcular total final (incluye gasto de envío)
+  // Total final: lo que ve y paga el cliente (subtotal + envío - descuento).
+  // NO se suma `impuestos` porque ya está incluido en el subtotal.
   this.total = Math.round(
-    (this.subtotal + this.impuestos + (this.gastoEnvio || 0) - (this.descuento || 0)) * 100
+    (this.subtotal + (this.gastoEnvio || 0) - (this.descuento || 0)) * 100
   ) / 100;
-  
+
   return this;
 };
 
